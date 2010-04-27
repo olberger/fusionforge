@@ -328,7 +328,7 @@ if ($rows < 1) {
 		$tech_box=html_build_select_box_from_arrays ($tech_id_arr,$tech_name_arr,'assigned_to',
 		'100',true,_('No Change'));
 
-		echo '<script language="JavaScript" type="text/javascript">
+		echo '<script type="text/javascript">
 	<!--
 	function checkAll(val) {
 		al=document.taskList;
