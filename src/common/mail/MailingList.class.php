@@ -217,7 +217,7 @@ Thank you for registering your project with %1$s.
 			$this->setError(sprintf(_('Error Getting %1$s'), _('Error Getting %1$s')));
 			return false;
 		}
-		$this->dataArray =& db_fetch_array($res);
+		$this->dataArray = db_fetch_array($res);
 		db_free_result($res);
 		return true;
 	}
