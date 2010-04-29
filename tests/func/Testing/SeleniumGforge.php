@@ -48,12 +48,19 @@ require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 
 class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 {
+	protected $output;
+
     protected function setUp()
     {
-	if (defined('DB_INIT_CMD')) {
-		// Reload a fresh database before running this test suite.
-		system(DB_INIT_CMD);
-	}
+		if (getenv('SELENIUM_RC_DIR') && getenv('SELENIUM_RC_URL')) {
+			$this->captureScreenshotOnFailure = true;
+			$this->screenshotPath = getenv('SELENIUM_RC_DIR');
+			$this->screenshotUrl = getenv('SELENIUM_RC_URL');
+		}
+    	if (defined('DB_INIT_CMD')) {
+			// Reload a fresh database before running this test suite.
+			system(DB_INIT_CMD);
+		}
 
     	$this->setBrowser('*firefox');
         $this->setBrowserUrl(URL);
@@ -67,6 +74,39 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 //		$this->test->assertFalse($this->isTextPresent("Notice: Undefined index:"));
 //		$this->test->assertFalse($this->isTextPresent("Warning: Missing argument"));
 //	}
+
+	protected function db($sql)
+	{
+		system("echo \"$sql\" | psql -q -Upostgres ".DB_NAME);
+	}
+
+	protected function cron($cmd)
+	{
+		system("/usr/bin/php -q -d include_path=.:/etc/gforge:/opt/gforge:/opt/gforge/www/include /opt/gforge/$cmd");
+	}
+
+	protected function clearMail() {
+		system('/opt/gforge/acde/scripts/catch_mail.php -c');
+	}
+
+	protected function screenshot() {
+		$this->captureEntirePageScreenshot(SELENIUM_RC_DIR.'/capture'.get_class().'.png', '');
+	}
+
+	protected function getMail() {
+		if (file_exists('/tmp/catch_mail.log')) {
+			return file_get_contents('/tmp/catch_mail.log');
+		}
+		else {
+			return false;
+		}
+	}
+
+	protected function fetchMail() {
+		$mail = $this->getMail();
+		if ($mail !== false) $this->clearMail();
+		return $mail;
+	}
 
     protected function init() {
 		$this->createProject('ProjectA');
@@ -111,6 +151,8 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		
 		// Create a simple project.
 		$this->open( BASE );
+		$this->waitForPageToLoad("30000");
+		$this->assertTrue($this->isTextPresent('Log In'));
 		$this->click("link=Log In");
 		$this->waitForPageToLoad("30000");
 		$this->type("form_loginname", "admin");
@@ -181,6 +223,73 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$this->click("//a[contains(@href, \"javascript:change('".ROOT."/admin/pluginman.php?update=$pluginName&action=activate','$pluginName');\")]");
 		$this->waitForPageToLoad("30000");
 		$this->logout();
+	}
+
+	protected function activateWiki($project='ProjectA') {
+                // Activate the wiki plugin and check that the wiki menu has appeared.
+
+		static $global_active = false;
+
+		// Activate wiki plugin for the forge
+		if (!$global_active) {
+			$this->click("link=Site Admin");
+			$this->waitForPageToLoad("30000");
+			$this->click("link=Plugin Manager");
+			$this->waitForPageToLoad("30000");
+			$this->click("wiki");
+			$this->click("//a[contains(@href, \"javascript:change('".ROOT."/admin/pluginman.php?update=wiki&action=activate','wiki');\")]");
+			$this->waitForPageToLoad("30000");
+			$global_active = true;
+		}
+
+		// Activate wiki plugin for the project
+                $this->click("link=Home");
+                $this->waitForPageToLoad("30000");
+                $this->click("link=$project");
+                $this->waitForPageToLoad("30000");
+                $this->click("link=Project Admin");
+                $this->waitForPageToLoad("30000");
+
+                // Enter the public info and activate the wiki plugin.
+                $this->click("link=Tools");
+                $this->waitForPageToLoad("30000");
+                $this->click("use_wikiplugin");
+                $this->click("submit");
+                $this->waitForPageToLoad("30000");
+                $this->assertTrue($this->isTextPresent("Project information updated"));
+
+                $this->click("link=Project Summary");
+                $this->waitForPageToLoad("30000");
+
+                // Verify that the wiki text is now present.
+                $this->assertTrue($this->isTextPresent("Wiki"));
+                $this->click("link=Wiki");
+                $this->waitForPageToLoad("90000");
+                $this->assertTrue($this->isTextPresent("Loading up virgin wiki"));
+                $this->assertTrue($this->isTextPresent("Complete"));
+                $this->click("link=Wiki");
+                $this->waitForPageToLoad("30000");
+
+	}
+
+	protected function CLI($command)
+	{
+		exec("echo y | " . CLI_CMD . " $command", $output, $ret);
+		$this->output = join("\n", $output);
+		return $ret;
+	}
+
+	protected function Jagosi($command, $pipe="")
+	{
+		$value = exec(JAGOSI_CMD . "/$command -U http://" . SITE . "/soap/ $pipe", $output, $ret);
+		$this->output = $output;
+		$this->assertEquals($ret, 0);
+		return $value;
+	}
+
+	protected function getOutput()
+	{
+		return $this->output;
 	}
 }
 

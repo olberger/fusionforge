@@ -86,16 +86,8 @@ class fckeditorPlugin extends Plugin {
 				return false;
 			}
 			if ( $project->usesPlugin ( $this->name ) ) { // only if the plugin is activated for the project show the fckeditor box
-				if (strtoupper(getStringFromServer('HTTPS')) == 'ON') {
-					$http = "https://";
-				} else {
-					$http = "http://";
-				}
-				if (@$params['name']) {
-					$oFCKeditor = new FCKeditor($params['name']) ;
-				} else {
-					$oFCKeditor = new FCKeditor('body') ;
-				}
+				$name = isset($params['name'])? $params['name'] : 'body';
+				$oFCKeditor = new FCKeditor($name) ;
 				if ($use_system_fckeditor) {
 					$oFCKeditor->BasePath = util_make_url ('/fckeditor/');
 					$oFCKeditor->Config['CustomConfigurationsPath'] = "/plugins/fckeditor/fckconfig.js"  ;
@@ -105,7 +97,7 @@ class fckeditorPlugin extends Plugin {
 				$oFCKeditor->Value = $params['body']; // this is the initial text that will be displayed (if any)
 				$oFCKeditor->Width = $params['width'];
 				$oFCKeditor->Height = $params['height'];
-				$oFCKeditor->ToolbarSet = "GForge";
+				$oFCKeditor->ToolbarSet = "FForge";
 				$oFCKeditor->Create() ;
 				$GLOBALS['editor_was_set_up'] = true;
 			} else {

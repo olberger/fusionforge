@@ -32,14 +32,14 @@ require_once $gfcommon.'include/cron_utils.php';
 $err = '';
 
 /* Need full power, switching to an admin guy */
-$res = db_query("SELECT user_id FROM user_group WHERE group_id=1");
+$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=$1', array(1));
 $admin_id = db_result($res,0,'user_id');
 session_set_new($admin_id);
 
 // Get user id's from users who have open tasks
-$res = db_query("SELECT DISTINCT u.user_id, u.realname, u.email FROM users u, project_assigned_to pat, project_task_vw ptv 
-		WHERE u.user_id > 100 AND u.user_id=pat.assigned_to_id AND pat.project_task_id=ptv.project_task_id 
-		AND ptv.status_id=1 ORDER BY u.user_id;");
+$res = db_query_params('SELECT DISTINCT u.user_id, u.realname, u.email FROM users u, project_assigned_to pat, project_task_vw ptv 
+		WHERE u.user_id > $1 AND u.user_id=pat.assigned_to_id AND pat.project_task_id=ptv.project_task_id 
+		AND ptv.status_id=$2 ORDER BY u.user_id', array(100, 1));
 
 $now = time();
 $today = date("n/j/y");
@@ -92,8 +92,8 @@ for ($i=0; $i<db_numrows($res);$i++) {
 						}
 						echo "Summary: ". html_entity_decode($task->getSummary())."\n";
 						echo 'Status: ***'. (($now>$task->getEndDate())? 'overdue' : "due $end_date"). "***\n";
-						echo 'http://'.$sys_default_domain.'/pm/task.php?func=detailtask&project_task_id='.
-						$task->getID().'&group_id='.$group->getID().'&group_project_id='.$projectGroup->getID();
+						echo util_make_url ('/pm/task.php?func=detailtask&project_task_id='.
+								    $task->getID().'&group_id='.$group->getID().'&group_project_id='.$projectGroup->getID());
 						echo "\n\n";
 				
 						$last_group = $group->getID();

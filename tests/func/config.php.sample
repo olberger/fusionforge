@@ -12,11 +12,13 @@
 
 // Host where selenium-rc is running
 define ('SELENIUM_RC_HOST', 'localhost');
+define ('SELENIUM_RC_DIR', 'D:');
 
 // The forge's hostname
-define ('FORGE_HOSTNAME', 'test.local');
+define ('HOST', 'centos52.local');
 
 // Base URL where FusionForge is installed
+define ('ROOT', '');
 define ('BASE', '');
 
 // Database connection parameters.
@@ -31,6 +33,12 @@ define('DB_INIT_CMD', 'php '.dirname(__FILE__).'/db_reload.php');
 define ('EXISTING_USER', 'admin');
 define ('PASSWD_OF_EXISTING_USER', 'xxxxx');
 
+// Where CLI is installed
+define ('CLI_CMD', '/opt/gforge/acde/tools/gforge-cli/gforge.php');
+
+// Where Java CLI is installed
+define ('JAGOSI_CMD', '/opt/gforge/acde/tools/gforge-java-cli/');
+
 // Enter true when file is configured.
 define('CONFIGURED', false);
 
@@ -41,7 +49,7 @@ define('CONFIGURED', false);
 // These are deduced from the previous definitions.
 
 // URL to access the application
-define ('URL', 'http://'.FORGE_HOSTNAME.'/');
+define ('URL', 'http://'.HOST.'/');
 
 // WSDL of the forges SOAP API
 define ('WSDL_URL', URL.'soap/index.php?wsdl');
