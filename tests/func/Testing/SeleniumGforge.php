@@ -43,7 +43,7 @@
  * ALONE BASIS."
  */
 
-$config = getenv('CONFIG_PHP') ? getenv('CONFIG_PHP'): dirname(__FILE__).'/config.php';
+$config = getenv('CONFIG_PHP') ? getenv('CONFIG_PHP'): 'func/config.php';
 require_once $config;
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';

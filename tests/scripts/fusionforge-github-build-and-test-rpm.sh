@@ -9,8 +9,8 @@ export HOST=centos52.local
 export CONFIGURED=true
 
 rm -fr build/ reports/
-
 mkdir -p build/packages reports/coverage
+
 make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all
 
 cp gforge/rpm-specific/fusionforge.repo build/packages/fusionforge.repo
@@ -21,4 +21,5 @@ cd tests
 phpunit --log-junit $WORKSPACE/reports/phpunit-selenium.xml RPMCentos52Tests.php
 
 cd ..
-cp $WORKSPACE/reports/phpunit-selenium.xml $WORKSPACE/reports/phpunit-selenium.xml.org; xalan -in $WORKSPACE/reports/phpunit-selenium.xml.org -xsl fix_phpunit.xslt -out $WORKSPACE/reports/phpunit-selenium.xml
+cp $WORKSPACE/reports/phpunit-selenium.xml $WORKSPACE/reports/phpunit-selenium.xml.org
+xalan -in $WORKSPACE/reports/phpunit-selenium.xml.org -xsl fix_phpunit.xslt -out $WORKSPACE/reports/phpunit-selenium.xml
