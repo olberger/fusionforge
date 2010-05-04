@@ -24,7 +24,7 @@
  */
 
 require_once('../env.inc.php');
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfcommon.'include/account.php';
 
 $passwd = getStringFromRequest('passwd');
@@ -85,8 +85,8 @@ if (getStringFromRequest("submit")) {
 		$u->setNewEmailAndHash('', 0);
 
 		$HTML->header(array('title'=>"Password changed"));
-		printf (_('<h2>Password changed</h2><p>Congratulations, you have re-set your account password. You may <a href="%1$s">login</a> to the site now.</p>',
-			  util_make_url ("/account/login.php")));
+		printf (_('<h2>Password changed</h2><p>Congratulations, you have re-set your account password. You may <a href="%1$s">login</a> to the site now.</p>'),
+			  util_make_url ("/account/login.php"));
 		$HTML->footer(array());
 		exit();
 	}

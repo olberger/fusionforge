@@ -23,7 +23,6 @@
  * USA
  */
 
-require_once $gfwww.'include/vote_function.php';
 $USER_OBJ=array();
 
 /**
@@ -276,7 +275,7 @@ class GFUser extends Error {
 			return false;
 		}
 		if (!validate_email($email)) {
-			$this->setError(_('Invalid Email Address'));
+			$this->setError(_('Invalid Email Address') . $email);
 			return false;
 		}
 		if ($jabber_address && !validate_email($jabber_address)) {
@@ -588,7 +587,8 @@ Enjoy the site.
 			// user (ratings by others should not be removed,
 			// as it opens possibility to abuse rate system)
 			if (!$use_ratings && $this->usesRatings()) {
-				vote_remove_all_ratings_by($this->getID());
+				db_query_params ('DELETE FROM user_ratings WHERE rated_by=$1',
+						 array($user_id));
 			}
 			if (!$this->fetchData($this->getID())) {
 				db_rollback();
