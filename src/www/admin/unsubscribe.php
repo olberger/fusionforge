@@ -7,20 +7,20 @@
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -46,7 +46,7 @@ if (getStringFromRequest('submit') && $user_name) {
 		site_admin_header(array('title'=>_('Site Mailings Subscription Maintenance')));
 		?>
 
-		<h4><?php echo _('Unsubscribe user:'); ?> <?php echo $user_name; ?></h4>
+		<h1><?php echo _('Unsubscribe user:'); ?> <?php echo $user_name; ?></h1>
 		<p>
 		<?php echo _('You can unsubscribe user either from admin-initiated sitewide mailings or from all site mailings (admin-initiated and automated mailings, like forum and file release notifications).'); ?>
 		</p>
@@ -71,18 +71,16 @@ if (getStringFromRequest('submit') && $user_name) {
 
 		$u =& user_get_object_by_name($user_name);
 		if (!$u || !is_object($u)) {
-			exit_error('Error','Could Not Get User');
+			exit_error(_('Could Not Get User'),'home');
 		} elseif ($u->isError()) {
-			exit_error('Error',$u->getErrorMessage());
+			exit_error($u->getErrorMessage(),'home');
 		}
 
 		if (!$u->unsubscribeFromMailings($type=='ALL' ? 1 : 0)) {
-			exit_error(
-				_('Error, Could not unsubscribe user:') .$u->getErrorMessage()
-			);
+			exit_error(_('Could not unsubscribe user: ').$u->getErrorMessage(),'home');
 		}
 
-		$feedback .= _('User unsubscribed').'<br />';
+		$feedback .= _('User unsubscribed');
 	}
 }
 

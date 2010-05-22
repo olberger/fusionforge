@@ -1,22 +1,22 @@
 <?php
 
 /**
- * GForge Monitored Forums Track Page
+ * FusionForge Monitored Forums Track Page
  *
  * Portions Copyright 1999-2001 (c) VA Linux Systems
  * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 2005 (c) - Daniel Perez
+ * Copyright 2010 (c) Franck Villaume - Capgemini
+ * http://fusionforge.org/
  *
- * @version   
+ * This file is part of FusionForge.
  *
- * This file is part of GForge.
- *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,10 +25,6 @@
  * along with GForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-/* my monitored forums
-	by Daniel Perez - 2005
-*/
 
 require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
@@ -59,8 +55,15 @@ echo "<h1>" . _('My Monitored Forums') . "</h1>";
 //get the user monitored forums
 $result = db_query_params ('SELECT mon.forum_id, fg.group_id FROM forum_monitored_forums mon,forum_group_list fg where mon.user_id=$1 and fg.group_forum_id=mon.forum_id',
 			   array ($user_id));
-if (!$result || db_numrows($result) < 1) {
-	exit_error(_('You have no monitored forums'),_('You are not monitoring any forums.').' '.db_error(), 'forums');
+if (!$result) {
+    echo '<div class="error">Database error :'.db_error().'</div>';
+    forum_footer(array());
+    exit;
+}
+if ( db_numrows($result) < 1) {
+    echo '<div class="feedback">'._('You have no monitored forums').'</div>';
+    forum_footer(array());
+    exit;
 }
 
 //now, i need to create a forum object per each forum that the user is monitoring
@@ -86,7 +89,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 	}
 	$f = new Forum($g,$monitored_forums[$i]["forum_id"]);
 	if (!$f || !is_object($f) || $f->isError()) {
-		exit_error(_('Error'));
+		exit_error($f->isError(),'forums');
 	}
 	if (!is_object($f)) {
 		//just skip it - this object should never have been placed here
@@ -97,16 +100,16 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 
 		$fh = new ForumHTML($f);
 		if (!$fh || !is_object($fh)) {
-			exit_error(_('Error'), "Error getting new ForumHTML");
+			exit_error(_('Error getting new ForumHTML'),'forums');
 		}	elseif ($fh->isError()) {
-			exit_error(_('Error'),$fh->getErrorMessage());
+			exit_error($fh->getErrorMessage(),'forums');
 		}
 
 		$fmf = new ForumMessageFactory($f);
 		if (!$fmf || !is_object($fmf)) {
-			exit_error(_('Error'), "Error getting new ForumMessageFactory");
+			exit_error(_('Error getting new ForumMessageFactory'),'forums');
 		}	elseif ($fmf->isError()) {
-			exit_error(_('Error'),$fmf->getErrorMessage());
+			exit_error($fmf->getErrorMessage(),'forums');
 		}
 		$fmf->setUp($offset,$style,$max_rows,$set);
 		$style=$fmf->getStyle();
@@ -114,7 +117,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 		$offset=$fmf->offset;
 		$msg_arr =& $fmf->nestArray($fmf->getNested());
 		if ($fmf->isError()) {
-			echo $fmf->getErrorMessage();
+			exit_error($fmf->getErrorMessage(),'forums');
 		}
 		$rows=count($msg_arr[0]);
 		$avail_rows=$fmf->fetched_rows;
@@ -130,7 +133,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 			foreach ($forum_msg_arr as $forum_msg) {
 				if ($f->getSavedDate() < $forum_msg->getPostDate()) {
 				//we've got ourselves a new message or followup for this forum. note that, exit the search
-				$newcontent = "<center>" . html_image("ic/new.png","25","11",array("border"=>"0")) . "</center>";
+				$newcontent = "<center>" . html_image("ic/new.png","25","11") . "</center>";
 				break;
 				}
 			}
@@ -143,7 +146,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 			$total_rows++;
 			if ($f->getSavedDate() < $msg->getPostDate()) {
 				//we've got ourselves a new message for this forum. note that, exit the search
-				$newcontent = "<center>" . html_image("ic/new.png","25","11",array("border"=>"0")) . "</center>";
+				$newcontent = "<center>" . html_image("ic/new.png","25","11") . "</center>";
 				break;
 			}
 			$j++;
@@ -153,7 +156,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 		echo '<tr '. $HTML->boxGetAltRowStyle($j) . '>
 			<td>' . $this_forum_group->getPublicName() . '</td>
 			<td><a href="forum.php?forum_id='. $f->getID() .'">'.
-			html_image("ic/forum20w.png","20","20",array("border"=>"0")) .
+			html_image("ic/forum20w.png","20","20") .
 			'&nbsp;' .
 			$f->getName() .'</a></td>
 			<td>'.$f->getDescription().'</td>

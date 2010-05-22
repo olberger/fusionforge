@@ -4,23 +4,24 @@
  * Project Admin: Edit Packages
  *
  * Copyright 1999-2001 (c) VA Linux Systems
- * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 2002-2004 (c) GForge Team
+ * Copyright 2010 (c) Franck Villaume - Capgemini
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -37,16 +38,16 @@ if (!$group_id) {
 }
 
 $project =& group_get_object($group_id);
-if (!$project || $project->isError()) {
-	exit_error('Error',$project->getErrorMessage());
+if (!$project || !is_object($project)) {
+    exit_no_group();
+} elseif ($project->isError()) {
+	exit_error($project->getErrorMessage(),'frs');
 }
 
 session_require_perm ('frs', $group_id, 'write') ;
 
 /*
-
 	Relatively simple form to edit/add packages of releases
-
 */
 
 // only admin can modify packages (vs modifying releases of packages)
@@ -58,21 +59,19 @@ if (getStringFromRequest('submit')) {
 	$is_public = getStringFromRequest('is_public');
 
 	/*
-
 		make updates to the database
-
 	*/
 	if ($func=='add_package' && $package_name) {
 
 		//create a new package
 		$frsp = new FRSPackage($project);
 		if (!$frsp || !is_object($frsp)) {
-			exit_error('Error','Could Not Get FRS Package');
+			exit_error(_('Could Not Get FRS Package'),'frs');
 		} elseif ($frsp->isError()) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		}
 		if (!$frsp->create($package_name,$is_public)) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		} else {
 			$feedback .=_('Added Package');
 		}
@@ -82,15 +81,15 @@ if (getStringFromRequest('submit')) {
 		//delete a package
 		$frsp = new FRSPackage($project,$package_id);
 		if (!$frsp || !is_object($frsp)) {
-			exit_error('Error','Could Not Get FRS Package');
+			exit_error(_('Could Not Get FRS Package'),'frs');
 		} elseif ($frsp->isError()) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		}
 		
 		$sure = getIntFromRequest("sure");
 		$really_sure = getIntFromRequest("really_sure");
 		if (!$frsp->delete($sure,$really_sure)) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		} else {
 			$feedback .=_('Deleted');
 		}
@@ -98,18 +97,16 @@ if (getStringFromRequest('submit')) {
 	} else if ($func=='update_package' && $package_id && $package_name && $status_id) {
 		$frsp = new FRSPackage($project,$package_id);
 		if (!$frsp || !is_object($frsp)) {
-			exit_error('Error','Could Not Get FRS Package');
+			exit_error(_('Could Not Get FRS Package'),'frs');
 		} elseif ($frsp->isError()) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		}
 		if (!$frsp->update($package_name,$status_id)) {
-			exit_error('Error',$frsp->getErrorMessage());
+			exit_error($frsp->getErrorMessage(),'frs');
 		} else {
 			$feedback .= _('Updated Package');
 		}
-
 	}
-
 }
 
 
@@ -120,7 +117,7 @@ $res=db_query_params ('SELECT status_id,package_id,name AS package_name
 			array($group_id));
 $rows=db_numrows($res);
 if ($res && $rows > 0) {
-	echo '<h3>'._('QRS').'</h3>';
+	echo '<h2>'._('QRS').'</h2>';
 	printf(_('Click here to %1$s quick-release a file %2$s'), '<a href="qrs.php?group_id=' . $group_id . '">', '</a>').'<br />';
 }
 ?>
@@ -144,15 +141,13 @@ if ($res && $rows > 0) {
 
 <?php
 /*
-
 	Show a list of existing packages
 	for this project so they can
 	be edited
-
 */
 
 if (!$res || $rows < 1) {
-	echo '<p><strong>'._('You Have No Packages Defined').'</strong></p>';
+	echo '<div class="warning">'._('You Have No Packages Defined').'</div>';
 } else {
 	$title_arr=array();
 	$title_arr[]=_('Releases');
@@ -195,9 +190,7 @@ if (!$res || $rows < 1) {
 }
 
 /*
-
 	form to create a new package
-
 */
 
 ?>

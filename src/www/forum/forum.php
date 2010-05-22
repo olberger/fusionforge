@@ -1,21 +1,27 @@
 <?php
 /**
- * GForge Forums Facility
+ * Forums Facility
  *
- * Copyright 2002 GForge, LLC
- * http://gforge.org/
+ * Copyright 1999-2001, Tim Perdue - Sourceforge
+ * Copyright 2002, Tim Perdue - GForge, LLC
+ * Copyright 2010 (c) Franck Villaume - Capgemini
+ * http://fusionforge.org
  *
+ * This file is part of FusionForge. FusionForge is free software;
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the Licence, or (at your option)
+ * any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with FusionForge; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-
-/*
-	Message Forums
-	By Tim Perdue, Sourceforge, 11/99
-
-	Massive rewrite by Tim Perdue 7/2000 (nested/views/save)
-
-	Complete OO rewrite by Tim Perdue 12/2002
-*/
 
 require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
@@ -45,7 +51,7 @@ if ($forum_id) {
 		WHERE group_forum_id=$1',
 			array($forum_id));
 	if (!$result || db_numrows($result) < 1) {
-		exit_error(_('Error'),_('Error forum not found ').' '.db_error());
+		exit_error(_('Error forum not found: ').db_error(),'forums');
 	}
 	$group_id=db_result($result,0,'group_id');
 
@@ -59,9 +65,9 @@ if ($forum_id) {
 
 	$f=new Forum($g,$forum_id);
 	if (!$f || !is_object($f)) {
-		exit_error(_('Error'),_('Error getting new Forum'));
+		exit_error(_('Error getting new Forum'),'forums');
 	} elseif ($f->isError()) {
-		exit_error(_('Error'),$f->getErrorMessage());
+		exit_error($f->getErrorMessage(),'forums');
 	}
 
 	/*
@@ -69,7 +75,7 @@ if ($forum_id) {
 	*/
 	if (getStringFromRequest('post_message')) {
 		if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-			exit_form_double_submit();
+			exit_form_double_submit('forums');
 		}
 		$subject = getStringFromRequest('subject');
 		$body = getStringFromRequest('body');
@@ -78,10 +84,10 @@ if ($forum_id) {
 		$fm=new ForumMessage($f);
 		if (!$fm || !is_object($fm)) {
 			form_release_key(getStringFromRequest("form_key"));
-			exit_error(_('Error'), _('Error getting new ForumMessage'));
+			exit_error(_('Error getting new ForumMessage'),'forums');
 		} elseif ($fm->isError()) {
 			form_release_key(getStringFromRequest("form_key"));
-			exit_error(_('Error'),_('Error getting new ForumMessage: '.$fm->getErrorMessage()));
+			exit_error(_('Error getting new ForumMessage: '.$fm->getErrorMessage()),'forums');
 		}
 
 		$sanitizer = new TextSanitizer();
@@ -96,7 +102,7 @@ if ($forum_id) {
 
 		if (!$fm->create($subject, $body, $thread_id, $is_followup_to,$has_attach) || $fm->isError()) {
 			form_release_key(getStringFromRequest("form_key"));
-			exit_error(_('Error'),_('Error creating ForumMessage: ').$fm->getErrorMessage());
+			exit_error(_('Error creating ForumMessage: ').$fm->getErrorMessage(),'forums');
 		} else {
 			if ($fm->isPending() ) {
 				$feedback=_('Message Queued for moderation -> Please wait until the admin approves/rejects it');
@@ -121,10 +127,10 @@ if ($forum_id) {
 	$fmf = new ForumMessageFactory($f);
 	if (!$fmf || !is_object($fmf)) {
 		form_release_key(getStringFromRequest("form_key"));
-		exit_error(_('Error'),_('Error getting new ForumMessageFactory'));
+		exit_error(_('Error getting new ForumMessageFactory'),'forums');
 	} elseif ($fmf->isError()) {
 		form_release_key(getStringFromRequest("form_key"));
-		exit_error(_('Error'),$fmf->getErrorMessage());
+		exit_error($fmf->getErrorMessage(),'forums');
 	}
 
 //echo "<br /> style: $style|max_rows: $max_rows|offset: $offset+";
@@ -138,12 +144,12 @@ if ($forum_id) {
 
 	$fh = new ForumHTML($f);
 	if (!$fh || !is_object($fh)) {
-		exit_error(_('Error'),_('Error getting new ForumHTML'));
+		exit_error(_('Error getting new ForumHTML'),'forums');
 	} elseif ($fh->isError()) {
-		exit_error(_('Error'),$fh->getErrorMessage());
+		exit_error($fh->getErrorMessage(),'forums');
 	}
 
-	forum_header(array('title'=>$f->getName(),'forum_id'=>$forum_id));
+	forum_header(array('title'=>_('Forum: ') . $f->getName(),'forum_id'=>$forum_id));
 
 /**
  *
@@ -197,7 +203,9 @@ if ($forum_id) {
 		$msg_arr =& $fmf->nestArray($fmf->getNested());
 
 		if ($fmf->isError()) {
-			echo $fmf->getErrorMessage();
+			echo '<div class="error">'.$fmf->getErrorMessage().'</div>';
+	        forum_footer(array());
+            exit;
 		}
 
 		$rows=count($msg_arr["0"]);
@@ -207,6 +215,7 @@ if ($forum_id) {
 		}
 
 		$i=0;
+		$total_rows = 0;
 		while (($i < $rows) && ($total_rows < $max_rows)) {
 
 			$total_rows++;
@@ -229,7 +238,9 @@ if ($forum_id) {
 
 		$msg_arr =& $fmf->nestArray($fmf->getThreaded());
 		if ($fmf->isError()) {
-			echo $fmf->getErrorMessage();
+			echo '<div class="error">'.$fmf->getErrorMessage().'</div>';
+	        forum_footer(array());
+            exit;
 		}
 
 		$title_arr=array();
@@ -245,6 +256,7 @@ if ($forum_id) {
 			$rows=$max_rows;
 		}
 		$i=0;
+        $total_rows = 0;
 		while (($i < $rows) && ($total_rows < $max_rows)) {
 			$msg =& $msg_arr["0"][$i];
 			$total_rows++;
@@ -252,7 +264,7 @@ if ($forum_id) {
 			$ret_val .= '<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($total_rows) .'>
 				<td><a href="'.util_make_url ('/forum/message.php?msg_id='.$msg->getID().
 							      '&amp;group_id='.$group_id).'&amp;reply=0">'.
-				html_image('ic/msg.png',"10","12",array("border"=>"0")).' ';
+				html_image('ic/msg.png',"10","12").' ';
 			/*
 				See if this message is new or not
 				If so, highlite it in bold
@@ -268,7 +280,7 @@ if ($forum_id) {
 				show the subject and poster
 			*/
 			$ret_val .= $bold_begin.$msg->getSubject() .$bold_end.'</a></td>'.
-				'<td><a href="/users/'.$msg->getPosterName().'/">'.$msg->getPosterRealName().'</a></td>'.
+				'<td>'.util_display_user($msg->getPosterName(), $msg->getPosterID(), $msg->getPosterRealName()).'</td>'.
 				'<td>'. date(_('Y-m-d H:i'),$msg->getPostDate()) .'</td></tr>';
 
 			if ($msg->hasFollowups()) {
@@ -283,7 +295,9 @@ if ($forum_id) {
 
 		$msg_arr =& $fmf->getFlat($thread_id);
 		if ($fmf->isError()) {
-			echo $fmf->getErrorMessage();
+			echo '<div class="error">'.$fmf->getErrorMessage().'</div>';
+	        forum_footer(array());
+            exit;
 		}
 		$avail_rows=$fmf->fetched_rows;
 
@@ -326,7 +340,7 @@ ORDER BY f.most_recent_date DESC',
 				$ret_val .= '
 					<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'><td><a href="'.util_make_url ('/forum/forum.php?thread_id='.
 															$row['thread_id'].'&amp;forum_id='.$forum_id.'&amp;group_id='.$group_id).'">'.
-					html_image('ic/cfolder15.png',"15","13",array("border"=>"0")) . '  &nbsp; ';
+					html_image('ic/cfolder15.png',"15","13") . '  &nbsp; ';
 				/*
 						See if this message is new or not
 						If so, highlite it in bold
@@ -342,7 +356,7 @@ ORDER BY f.most_recent_date DESC',
 						show the subject and poster
 				*/
 				$ret_val .= $bold_begin.$row['subject'] .$bold_end.'</a></td>'.
-					'<td><a href="/users/'.$row['user_name'].'/">'.$row['realname'].'</a></td>'.
+				'<td>'.util_display_user($row['user_name'], $row['user_id'], $row['realname']).'</td>'.
 					'<td>'. $row['followups'] .'</td>'.
 					'<td>'.date(_('Y-m-d H:i'),$row['recent']).'</td></tr>';
 				$i++;
@@ -361,7 +375,7 @@ ORDER BY f.most_recent_date DESC',
 	if ($offset != 0) {
 		$ret_val .= '<span class="prev">
 		<a href="javascript:history.back()"><strong>' .
-		html_image('t2.png',"15","15",array("border"=>"0","align"=>"middle")) ._('Previous Messages').'</strong></a></span>';
+			html_image('t2.png',"15","15") ._('Newer Messages').'</strong></a></span>';
 	} else {
 		$ret_val .= '&nbsp;';
 	}
@@ -372,8 +386,8 @@ ORDER BY f.most_recent_date DESC',
 		$ret_val .= '<span class="next">
 		<a href="'.util_make_url ('/forum/forum.php?max_rows='.$max_rows.'&amp;style='.$style.'&amp;offset='.($offset+$i).
 					  '&amp;forum_id='.$forum_id.'&amp;group_id='.$group_id).'">
-		<strong> '._('Next Messages') .
-		html_image('t.png',"15","15",array("border"=>"0","align"=>"middle")) . '</strong></a></span>';
+		<strong> '._('Older Messages') .
+			html_image('t.png',"15","15") . '</strong></a></span>';
 	} else {
 		$ret_val .= '&nbsp;';
 	}
@@ -396,7 +410,7 @@ ORDER BY f.most_recent_date DESC',
 
 } else {
 
-	exit_error(_('Error'),_('No forum chosen'));
+	exit_error(_('No forum chosen'),'forums');
 
 }
 

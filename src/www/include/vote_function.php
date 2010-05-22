@@ -2,10 +2,25 @@
 /**
  * vote_function.php
  *
- * SourceForge: Breaking Down the Barriers to Open Source Development
- * Copyright 1999-2001 (c) VA Linux Systems
- * http://sourceforge.net
+ * Copyright 1999-2001 (c) VA Linux Systems 
+ * Copyright 2010, FusionForge Team
+ * http://fusionforge.org
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /**
@@ -23,10 +38,10 @@ function vote_number_to_stars($raw) {
 	}
 	$count=intval($raw/2);
 	for ($i=0; $i<$count; $i++) {
-		$return .= html_image("ic/check.png","15","16",array());
+		$return .= html_image("ic/check.png","15","16");
 	}
 	if ($show_half==1) {
-		$return .= html_image("ic/halfcheck.png","15","16",array());
+		$return .= html_image("ic/halfcheck.png","15","16");
 	}
 	return $return;
 }
@@ -99,11 +114,11 @@ function vote_show_release_radios ($vote_on_id,$flag) {
 	<input type="radio" name="redirect_to" value="<?php echo urlencode(getStringFromServer('REQUEST_URI')); ?>" />
 	<input type="radio" name="flag" value="<?php echo $flag; ?>" />
 	<div align="center">
-	<?php echo html_image("rateit.png","100","9",array()); ?>
+	<?php echo html_image("rateit.png","100","9"); ?>
 	<br />
 	<?php
 		echo html_blankimage(1,$rating);
-		echo html_image("ic/caret.png","9","6",array());
+		echo html_image("ic/caret.png","9","6");
 	?>
 	<br />
 	<input type="radio" name="response" value="1" />

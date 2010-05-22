@@ -1,21 +1,26 @@
 <?php
 /**
- * GForge Forums Facility
+ * Forums Facility
  *
- * Copyright 2002 GForge, LLC
- * http://gforge.org/
+ * Copyright 1999-2001, Tim Perdue - Sourceforge
+ * Copyright 2002, Tim Perdue - GForge, LLC
+ * Copyright 2010 (c) Franck Villaume - Capgemini
  *
+ * This file is part of FusionForge. FusionForge is free software;
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the Licence, or (at your option)
+ * any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with FusionForge; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-
-/*
-    Message Forums
-    By Tim Perdue, Sourceforge, 11/99
-
-    Massive rewrite by Tim Perdue 7/2000 (nested/views/save)
-
-    Complete OO rewrite by Tim Perdue 12/2002
-*/
 
 require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
@@ -32,28 +37,26 @@ if ($group_id) {
 
 	$ff=new ForumFactory($g);
 	if (!$ff || !is_object($ff) || $ff->isError()) {
-		exit_error(_('Error'),$ff->getErrorMessage());
+		exit_error($ff->getErrorMessage(),'forums');
 	}
 
 	$farr =& $ff->getForums();
 
 	if ( $farr !== false && count($farr) == 1 ) {
-  		Header("Location: ".util_make_url ("/forum/forum.php?forum_id=".$farr[0]->getID()));
-		exit();
+        session_redirect('/forum/forum.php?forum_id='.$farr[0]->getID());
 	}
 
 	forum_header(array('title'=>sprintf(_('Forums for %1$s'), $g->getPublicName()) ));
-	echo '<h1>'.sprintf(_('Forums for %1$s'), $g->getPublicName()) .'</h1>';
 
-	if ($ff->isError() || count($farr) < 1) {
+	if ($ff->isError()) {
+        echo '<div class="error">'. $ff->getErrorMessage().'</div>';
+		forum_footer(array());
+		exit;
+    } else if ( count($farr) < 1) {
 		echo '<div class="warning_msg">'.sprintf(_('No Forums Found for %1$s'), $g->getPublicName()) .'</div>';
-		if($ff->isError()) {
-			echo $ff->getErrorMessage();
-		}
 		forum_footer(array());
 		exit;
 	}
-
 
 //	echo _('<p>Choose a forum and you can browse, search, and post messages.<p>');
 
@@ -76,12 +79,12 @@ if ($group_id) {
 		} else {
 			switch ($farr[$j]->getModerationLevel()) {
 				case 0 : $modlvl = _('No Moderation');break;
-				case 1 : $modlvl = _('Anonymous & Non Group Users');break;
+				case 1 : $modlvl = _('Anonymous & Non Project Users');break;
 				case 2 : $modlvl = _('All Except Admins');break;
 			}
 			echo '<tr '. $HTML->boxGetAltRowStyle($j) . '><td><a href="forum.php?forum_id='. $farr[$j]->getID() .
 				'&amp;group_id=' . $group_id . '">'.
-				html_image("ic/forum20w.png","20","20",array("border"=>"0")) .
+				html_image("ic/forum20w.png","20","20") .
 				'&nbsp;' .
 				$farr[$j]->getName() .'</a></td>
 				<td>'.$farr[$j]->getDescription().'</td>

@@ -3,6 +3,8 @@ TARGET = build/
 XSL = xsl/
 DOCBOOK_XSL = ${XSL}docbook/
 DB2LATEX_XSL = ${XSL}db2latex/
+XSLFOP = /usr/share/xml/docbook/stylesheet/docbook-xsl/fo/
+FOP = fop
 #DEVNULL = >>/tmp/debug 2>&1
 DEVNULL = &> /dev/null
 
@@ -60,6 +62,28 @@ html-guide: $(SRC)/user_guide/user_guide.xml
 #	rm -f guide/images/*
 #	cp -p images/* guide/images/
 
+pdffop: validate prepare
+	##
+	# Generating PDF output
+	#
+	# Inspired from Alain Peyrat suggestion
+	#xsltproc --xinclude -o tmp.fo $(XSL)/fo-stylesheet.xsl $(XML)/user_guide/user_guide_full.xml
+	#$(FOP) -fo tmp.fo -pdf help_guide/user_guide.pdf
+	@for book in ${BOOKS}; do \
+		echo '# . Generating PDF output for book '$$book; \
+		xsltproc --xinclude --output ${TARGET}$$book/$$book.fo ${XSLFOP}docbook.xsl ${SRC}$$book.xml ${DEVNULL}; \
+		(cd ${TARGET}$$book; $(FOP) -fo $$book.fo -pdf $$book.pdf ${DEVNULL};); \
+	done;
+
+	@for article in ${ARTICLES}; do \
+		echo '# . Generating PDF output for article '$$article; \
+		xsltproc --xinclude --output ${TARGET}$$article/$$article.fo ${XSLFOP}docbook.xsl ${SRC}$$article/$$article.xml ${DEVNULL}; \
+		(cd ${TARGET}$$article; $(FOP) -fo $$article.fo -pdf $$article.pdf ${DEVNULL};); \
+	done;
+	#
+	# Done
+	##
+
 pdf: validate prepare
 	##
 	# Generating PDF output
@@ -89,7 +113,7 @@ prepare:
 	##
 	# Preparing build environment
 	#
-	@test -d ${TARGET} || mkdir ${TARGET};
+	@test -d ${TARGET} || mkdir -p ${TARGET};
 	@for book in ${BOOKS}; do \
 		test -d ${TARGET}$$book || mkdir ${TARGET}$$book; \
 	done;
@@ -150,11 +174,19 @@ debianhtml:
 	@[ ! -L xsl/docbook ] && ln -s /usr/share/xml/docbook/stylesheet/nwalsh xsl/docbook || echo "docbook link already done"
 	@make html
 
-debianpdf:
+debianpdfold:
 	@echo "=====> Intalling necessary packages"
-	@sudo apt-get install db2latex-xsl tetex-extra latex-ucs
+	@sudo apt-get install db2latex-xsl texlive-latex-recommended # Was tetex-extra latex-ucs
 	@echo "Making db2latex dir"
 	@[ ! -d xsl/db2latex ] && mkdir xsl/db2latex || echo "db2latex dir already done"
 	@echo "=====> Link to docbook"
 	@[ ! -L xsl/db2latex/xsl ] && ln -s /usr/share/xml/docbook/stylesheet/db2latex/latex xsl/db2latex/xsl || echo "docbook link already done"
 	@make pdf
+
+debianpdf:
+	@echo "=====> Intalling necessary packages"
+	@sudo apt-get install xsltproc fop
+	@make pdffop
+
+#xsltproc --xinclude -o tmp.fo $(XSL)/fo-stylesheet.xsl $(XML)/user_guide/user_guide_full.xml
+#$(FOP) -fo tmp.fo -pdf help_guide/user_guide.pdf

@@ -1,14 +1,27 @@
 <?php
 /**
- * SourceForge Generic Tracker facility
+ * Tracker Detail
  *
- * SourceForge: Breaking Down the Barriers to Open Source Development
  * Copyright 1999-2001 (c) VA Linux Systems
- * http://sourceforge.net
+ * http://fusionforge.org/
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 if (!defined('BASE')) require('illegal_access.inc.php');
-
 
 
 $ath->header(array 
@@ -42,14 +55,14 @@ if (session_loggedin()) {
 				}
 				echo '
 				<a href="index.php?group_id='.$group_id.'&amp;artifact_id='.$ah->getID().'&amp;atid='.$ath->getID().'&amp;func=monitor"><strong>'.
-					html_image('ic/'.$img.'','20','20',array()).' '.$key.'</strong></a>';
+					html_image('ic/'.$img.'','20','20').' '.$key.'</strong></a>';
 				?>&nbsp;<a href="javascript:help_window('/help/tracker.php?helpname=monitor')"><strong>(?)</strong></a>
 			</td>
 			<td><?php
 				if ($group->usesPM()) {
 					echo '
 				<a href="'.getStringFromServer('PHP_SELF').'?func=taskmgr&amp;group_id='.$group_id.'&amp;atid='.$atid.'&amp;aid='.$aid.'">'.
-					html_image('ic/taskman20w.png','20','20',array()).'<strong>'._('Build Task Relation').'</strong></a>';
+					html_image('ic/taskman20w.png','20','20').'<strong>'._('Build Task Relation').'</strong></a>';
 				}
 				?>
 			</td>
@@ -119,7 +132,6 @@ if (session_loggedin()) {
 	</tr>
 	<?php
 		$ath->renderRelatedTasks($group, $ah);
-		$ath->renderFiles($group_id, $ah);
 	?>
 	<tr>
 		<td colspan="2"><strong><?php echo _('Summary')?><?php echo utils_requiredField(); ?>: <a href="javascript:help_window('/help/tracker.php?helpname=summary')"><strong>(?)</strong></a></strong><br />
@@ -162,32 +174,7 @@ if (session_loggedin()) {
 		//
 		//  print a list of files attached to this Artifact
 		//
-		$file_list =& $ah->getFiles();
-
-		$count=count($file_list);
-
-		$title_arr=array();
-		$title_arr[]=_('Delete');
-		$title_arr[]=_('Name');
-		$title_arr[]=_('Description');
-		$title_arr[]=_('Download');
-		echo $GLOBALS['HTML']->listTableTop ($title_arr);
-
-		if ($count > 0) {
-
-			for ($i=0; $i<$count; $i++) {
-				echo '<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'>
-				<td><input type="checkbox" name="delete_file[]" value="'. $file_list[$i]->getID() .'" />'._('Delete').' </td>
-				<td>'. htmlspecialchars($file_list[$i]->getName()) .'</td>
-				<td>'.  htmlspecialchars($file_list[$i]->getDescription()) .'</td>
-				<td>'.util_make_link ('/tracker/download.php/'.$group_id.'/'. $ath->getID().'/'. $ah->getID() .'/'.$file_list[$i]->getID().'/'.$file_list[$i]->getName(),_('Download')).'</td>
-				</tr>';
-			}
-
-		} else {
-			echo '<tr '.$GLOBALS['HTML']->boxGetAltRowStyle(0).'><td colspan="4">'._('No Files Currently Attached').'</td></tr>';
-		}
-		echo $GLOBALS['HTML']->listTableBottom();
+			$ath->renderFiles($group_id, $ah);
 		?>
 	</td></tr>
 </table>

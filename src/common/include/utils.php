@@ -3,7 +3,7 @@
  * FusionForge miscellaneous utils
  *
  * Copyright 1999-2001, VA Linux Systems, Inc.
- * Copyright 2009-2010, Roland Mas, Franck Villaume
+ * Copyright 2009-2010, Roland Mas, Franck Villaume - Capgemini
  *
  * This file is part of FusionForge.
  *
@@ -360,7 +360,6 @@ function util_handle_message($id_arr,$subject,$body,$extra_emails='',$extra_jabb
 
 /**
  * util_unconvert_htmlspecialchars() - Unconverts a string converted with htmlspecialchars()
- * This function requires PHP 4.0.3 or greater
  *
  * @param		string	The string to unconvert
  * @returns The unconverted string
@@ -519,7 +518,7 @@ function util_make_links ($data='') {
 	if(empty($data)) { 
 		return $data; 
 	}
-	$lines = split("\n",$data);
+	$lines = explode("\n",$data);
 	$newText = "";
 	while ( list ($key,$line) = each ($lines)) {
 		// When we come here, we usually have form input
@@ -1070,6 +1069,26 @@ function util_make_link_u ($username, $user_id,$text) {
 }
 
 /**
+ * Display username with link to a user's profile page
+ * and icon face if possible.
+ * 
+ * @param string $username
+ * @param int $user_id
+ * @param string $text
+ * @param string $size
+ * @return string
+ */
+function util_display_user($username, $user_id,$text, $size='xs') {
+	$params = array('user_id' => $user_id, 'size' => $size, 'content' => '');
+	plugin_hook_by_reference('user_logo', $params);
+	$url = '<a href="' . util_make_url_u ($username, $user_id) . '">' . $text . '</a>';
+	if ($params['content']) {
+		return $params['content'].$url.'<div class="new_line"></div>';
+	}
+	return $url;
+}
+
+/**
  * Create URL for user's profile page
  * 
  * @param string $username
@@ -1230,6 +1249,24 @@ function get_cvs_binary_version () {
 	} else {
 		return '' ;
 	}
+}
+
+/* get a backtrace as string */
+function debug_string_backtrace() {
+	ob_start();
+	debug_print_backtrace();
+	$trace = ob_get_contents();
+	ob_end_clean();
+
+	// Remove first item from backtrace as it's this function
+	// which is redundant.
+	$trace = preg_replace('/^#0\s+' . __FUNCTION__ . "[^\n]*\n/", '',
+	    $trace, 1);
+
+	// Renumber backtrace items.
+	$trace = preg_replace('/^#(\d+)/me', '\'#\' . ($1 - 1)', $trace);
+
+	return $trace;
 }
 
 // Local Variables:

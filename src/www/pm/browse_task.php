@@ -1,20 +1,30 @@
 <?php
 /**
- * GForge Project Management Facility
+ * FusionForge : Project Management Facility
  *
- * Copyright 2002 GForge, LLC
- * http://gforge.org/
+ * Copyright 1999-2001 (c) VA Linux Systems, Tim Perdue
+ * Copyright 2002 GForge, LLC, Tim Perdue
+ * Copyright 2010, FusionForge Team
+ * http://fusionforge.org
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-/*
 
-	Tasks
-	By Tim Perdue, Sourceforge, 11/99
-	Heavy rewrite by Tim Perdue April 2000
-
-	Total rewrite in OO and GForge coding guidelines 12/2002 by Tim Perdue
-*/
-
+require_once $gfcommon.'include/UserManager.class.php';
 require_once $gfcommon.'pm/ProjectTaskFactory.class.php';
 //build page title to make bookmarking easier
 //if a user was selected, add the user_name to the title
@@ -23,6 +33,9 @@ require_once $gfcommon.'pm/ProjectTaskFactory.class.php';
 $pagename = "pm_browse_custom";
 
 $offset = getIntFromRequest('offset');
+if ($offset < 0) {
+	$offset = 0 ;
+}
 $max_rows = getIntFromRequest('max_rows');
 
 $ptf = new ProjectTaskFactory($pg);
@@ -40,7 +53,25 @@ $_status = getStringFromRequest('_status');
 $_category_id = getIntFromRequest('_category_id');
 $_view = getStringFromRequest('_view');
 
-$ptf->setup($offset,$_order,$max_rows,$set,$_assigned_to,$_status,$_category_id,$_view);
+$paging = 0;
+if (session_loggedin()) {
+    $u = UserManager::instance()->getCurrentUser();
+	if (getStringFromRequest('setpaging')) {
+		/* store paging preferences */
+		$paging = getIntFromRequest('nres');
+		if (!$paging) {
+			$paging = 25;
+		}
+		$u->setPreference("paging", $paging);
+	} else
+		$paging = $u->getPreference("paging");
+}
+if (!$paging) {
+	$paging = 25;
+}
+
+
+$ptf->setup($offset,$_order,$paging,$set,$_assigned_to,$_status,$_category_id,$_view);
 if ($ptf->isError()) {
 	exit_error('Error',$ptf->getErrorMessage());
 }
@@ -137,11 +168,27 @@ $rows=count($pt_arr);
 if ($rows < 1) {
 
 	echo '
-		<span class="feedback">'._('No Matching Tasks found').'</span>
+		<div class="feedback">'._('No Matching Tasks found').'</div>
 		<p />
-		<span class="important">'._('Add tasks using the link above').'</span>';
+		<div class="warning">'._('Add tasks using the link above').'</div>';
 	echo db_error();
 } else {
+	if (session_loggedin()) {
+		/* logged in users get configurable paging */
+		echo '<form action="'. getStringFromServer('PHP_SELF') .'?group_id='.$group_id.'&amp;group_project_id='.$pg->getID().'&amp;offset='.$offset.'" method="post">'."\n";
+
+	}
+	printf('<p>' . _('Displaying results %1$d‒%2$d.'), $offset + 1, $offset + $rows);
+
+	if (session_loggedin()) {
+		printf(' ' . _('Displaying %2$s results.') . "\n\t<input " .
+		       'type="submit" name="setpaging" value="%1$s" />' .
+		       "\n</p>\n</form>\n", _('Change'),
+		       html_build_select_box_from_array(array(
+								'10', '25', '50', '100', '1000'), 'nres', $paging, 1));
+	} else {
+		echo "</p>\n";
+	}	
 
 	//create a new $set string to be used for next/prev button
 	if ($set=='custom') {
@@ -297,14 +344,14 @@ if ($rows < 1) {
 	*/
 	echo '<tr><td colspan="2">';
 	if ($offset > 0) {
-		echo util_make_link ('/pm/task.php?func=browse&amp;group_project_id='.$group_project_id.'&amp;group_id='.$group_id.'&amp;offset='.($offset-50),'<strong>'._('previous 50').'<--</strong>');
+		echo util_make_link ('/pm/task.php?func=browse&amp;group_project_id='.$group_project_id.'&amp;group_id='.$group_id.'&amp;offset='.($offset-50),'<strong>← '._('previous').'</strong>');
 	} else {
 		echo '&nbsp;';
 	}
 	echo '</td><td>&nbsp;</td><td colspan="2">';
 
 	if ($rows==50) {
-		echo util_make_link ('/pm/task.php?func=browse&amp;group_project_id='.$group_project_id.'&amp;group_id='.$group_id.'&amp;offset='.($offset+50),'<strong>'._('next 50').' --></strong></a>');
+		echo util_make_link ('/pm/task.php?func=browse&amp;group_project_id='.$group_project_id.'&amp;group_id='.$group_id.'&amp;offset='.($offset+50),'<strong>'._('next').' →</strong></a>');
 	} else {
 		echo '&nbsp;';
 	}
@@ -356,7 +403,7 @@ if ($rows < 1) {
    <a href="javascript:checkAll(0)">'._('Clear &nbsp;all').'</a>
 
 <p>
-<span class="important">'._('<strong>Admin:</strong> If you wish to apply changes to all items selected above, use these controls to change their properties and click once on "Mass Update".').'
+<div class="warning">'._('<strong>Admin:</strong> If you wish to apply changes to all items selected above, use these controls to change their properties and click once on "Mass Update".').'</div></p>
 			</td></tr>
 
 			<tr>

@@ -1,20 +1,26 @@
 <?php
 /**
- * GForge Forums Facility
+ * Forums Facility
  *
- * Copyright 2002 GForge, LLC
- * http://gforge.org/
+ * Copyright 1999-2001, Tim Perdue - Sourceforge
+ * Copyright 2002, Tim Perdue - GForge, LLC
+ * Copyright 2010 (c) Franck Villaume - Capgemini
+ * http://fusionforge.org
  *
- */
-
-
-/*
- Message Forums
- By Tim Perdue, Sourceforge, 11/99
-
- Massive rewrite by Tim Perdue 7/2000 (nested/views/save)
-
- Complete OO rewrite by Tim Perdue 12/2002
+ * This file is part of FusionForge. FusionForge is free software;
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the Licence, or (at your option)
+ * any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with FusionForge; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 require_once $gfcommon.'include/pre.php';
@@ -63,7 +69,7 @@ function forum_header($params) {
 				if (!$group || !is_object($group) || $group->isError()) {
 					exit_no_group();
 				}
-				echo '
+				echo '<p>
 				<strong>'._('Posted by').':</strong> '.$user->getRealName().'<br />
 				<strong>'._('Date').':</strong> '. date(_('Y-m-d H:i'),db_result($result,0,'post_date')).'<br />
 				<strong>'._('Summary').':</strong>'.
@@ -71,19 +77,16 @@ function forum_header($params) {
 							db_result($result,0,'summary')).'<br/>
 				<strong>'._('Project').':</strong>'.
 					util_make_link_g ($group->getUnixName(),db_result($result,0,'group_id'),$group->getPublicName()).'<br />
-				<p>
+				</p>
 				';
 				$body = db_result($result,0,'details');
-				$sanitizer = new TextSanitizer();
-				$body = $sanitizer->purify($body);
+				$body = TextSanitizer::purify($body);
 				if (!strstr($body,'<')) {
 					//backwards compatibility for non html messages
 					echo util_make_links(nl2br($body)); 
 				} else {
 					echo util_make_links($body);
 				}
-
-				echo '</p>';
 
 				// display classification
 				if ($params['group'] == forge_get_config('news_group')) { 
@@ -138,17 +141,17 @@ function forum_header($params) {
 		if ($f) {
 			if ($f->isMonitoring()) {
 				echo util_make_link ('/forum/monitor.php?forum_id='.$forum_id.'&amp;group_id='.$group_id.'&amp;stop=1',
-						     html_image('ic/xmail16w.png','20','20',array()).' '._('Stop Monitoring')).' | ';
+						     html_image('ic/xmail16w.png','20','20').' '._('Stop Monitoring')).' | ';
 			} else {
 				echo util_make_link ('/forum/monitor.php?forum_id='.$forum_id.'&amp;group_id='.$group_id.'&amp;start=1',
-						     html_image('ic/mail16w.png','20','20',array()).' '._('Monitor Forum')).' | ';
+						     html_image('ic/mail16w.png','20','20').' '._('Monitor Forum')).' | ';
 			}
 			echo util_make_link ('/forum/save.php?forum_id='.$forum_id.'&amp;group_id='.$group_id,
-					     html_image('ic/save.png','24','24',array()) .' '._('Save Place')).' | ';
+					     html_image('ic/save.png','24','24') .' '._('Save Place')).' | ';
 		}
 	} elseif ($f) {
 		echo '<a href="/forum/monitor.php?forum_id='.$forum_id.'&amp;group_id='.$group_id.'&amp;start=1">' .
-			html_image('ic/mail16w.png','20','20',array()).' '._('Monitor Forum').'</a> | ';		
+			html_image('ic/mail16w.png','20','20').' '._('Monitor Forum').'</a> | ';		
 	}
 
 	if ($f && $forum_id) {
@@ -215,7 +218,7 @@ class ForumHTML extends Error {
 		$ret_val .= $am->PrintAttachLink($msg,$group_id,$msgforum->getID()) . '
 					<br />
 					'.
-		html_image('ic/msg.png',"10","12",array("border"=>"0")) .
+		html_image('ic/msg.png',"10","12") .
 		$bold_begin. $msg->getSubject() . $bold_end .'&nbsp; '.
 		'<br />'. date(_('Y-m-d H:i'),$msg->getPostDate()) .'
 				</td>
@@ -434,7 +437,7 @@ class ForumHTML extends Error {
 				}
 
 				$ret_val .= $ah_begin .
-					html_image('ic/msg.png',"10","12",array("border"=>"0")).' ';
+					html_image('ic/msg.png',"10","12").' ';
 				/*
 					See if this message is new or not
 				*/
@@ -548,7 +551,7 @@ function showPostForm($thread_id=0, $is_followup_to=0, $subject="") {
 	if (forge_check_perm ('forum', $this->Forum->getID(), 'post')) {
 		if ($subject) {
 			//if this is a followup, put a RE: before it if needed
-			if (!eregi('RE:',$subject,$test)) {
+			if (!preg_match('/RE:/i',$subject,$test)) {
 				$subject ='RE: '.$subject;
 			}
 		}

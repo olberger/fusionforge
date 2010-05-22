@@ -96,39 +96,6 @@ class hudsonPlugin extends Plugin {
 			} else {
 				$group->setPluginUse ( $this->name, false );
 			}
-		} elseif ($hookname == "userisactivecheckbox") {
-			//check if user is active
-			// this code creates the checkbox in the user account manteinance page to activate/deactivate the plugin
-			$user = $params['user'];
-			echo "<tr>";
-			echo "<td>";
-			echo '<input type="checkbox" name="use_hudsonplugin" value="1" ';
-			// checked or unchecked?
-			if ( $user->usesPlugin ( $this->name ) ) {
-				echo 'checked="checked"';
-			}
-			echo " />Use ".$this->text." Plugin";
-			echo "</td>";
-			echo "</tr>";
-		} elseif ($hookname == "userisactivecheckboxpost") {
-			// this code actually activates/deactivates the plugin after the form was submitted in the user account maintenance page
-			$user = $params['user'];
-			$use_hudsonplugin = getStringFromRequest('use_hudsonplugin');
-			if ( $use_hudsonplugin == 1 ) {
-				$user->setPluginUse ( $this->name );
-			} else {
-				$user->setPluginUse ( $this->name, false );
-			}
-			echo "<tr>";
-			echo "<td>";
-			echo '<input type="checkbox" name="use_hudsonplugin" value="1" ';
-			// checked or unchecked?
-			if ( $user->usesPlugin ( $this->name ) ) {
-				echo 'checked="checked"';
-			}
-			echo " />Use ".$this->text." Plugin";
-			echo "</td>";
-			echo "</tr>";
 		} elseif ($hookname == "cssfile") {
 			$this->cssFile($params);
 		} elseif ($hookname == "javascript_file") {
@@ -167,11 +134,6 @@ class hudsonPlugin extends Plugin {
 	}
 
 	function jsFile($params) {
-		use_javascript('/scripts/prototype/prototype.js');
-		use_javascript('/scripts/scriptaculous/scriptaculous.js');
-		use_javascript('/scripts/codendi/Tooltip.js');
-		use_javascript('/scripts/codendi/LayoutManager.js');
-		use_javascript('/scripts/codendi/ReorderColumns.js');
 		use_javascript('/plugins/hudson/hudson_tab.js');
 	}
 
@@ -245,6 +207,11 @@ class hudsonPlugin extends Plugin {
 		}
 	}
 	function widgets($params) {
+		$group = &group_get_object($GLOBALS['group_id']);
+		if ( !$group || !$group->usesPlugin ( $this->name ) ) {
+			return false;
+		}
+
 		require_once('common/widget/WidgetLayoutManager.class.php');
 		if ($params['owner_type'] == WidgetLayoutManager::OWNER_TYPE_USER) {
 			$params['codendi_widgets'][] = 'plugin_hudson_my_jobs';

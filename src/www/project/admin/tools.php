@@ -4,22 +4,22 @@
  *
  * Portions Copyright 1999-2001 (c) VA Linux Systems
  * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -32,9 +32,9 @@ session_require_perm ('project_admin', $group_id) ;
 
 $group =& group_get_object($group_id);
 if (!$group || !is_object($group)) {
-	exit_error(_('Error'), _('Error creating group object'));
+	exit_error(_('Error creating group object'),'admin');
 } else if ($group->isError()) {
-	exit_error(_('Error'), $group->getErrorMessage());
+	exit_error($group->getErrorMessage(),'admin');
 }
 
 // If this was a submission, make updates
@@ -85,9 +85,9 @@ if (getStringFromRequest('submit')) {
 	//100 $logo_image_id
 
 	if (!$res) {
-		$feedback .= $group->getErrorMessage();
+		$error_msg = $group->getErrorMessage();
 	} else {
-		$feedback .= _('Project information updated');
+		$feedback = _('Project information updated');
 	}
 
 	// This is done so plugins can enable/disable themselves from the project
@@ -95,13 +95,13 @@ if (getStringFromRequest('submit')) {
 	plugin_hook("groupisactivecheckboxpost",$hookParams);
 }
 
-project_admin_header(array('title'=>_('Edit Project Info'),'group'=>$group->getID()));
+project_admin_header(array('title'=>_('Tools'),'group'=>$group->getID()));
 
 echo '<table width="100%">';
 echo '<tr valign="top">';
 echo '<td width="50%">';
 
-echo $HTML->boxTop(_('Active Features').'');
+echo $HTML->boxTop(_('Active Tools').'');
 ?>
 
 <form action="<?php echo getStringFromServer('PHP_SELF'); ?>" method="post">

@@ -28,7 +28,6 @@
 /* global variables used */
 global $g; //group object
 global $group_id; // id of group
-global $sys_engine_path; // path to the docman search engine
 
 $upload_dir = forge_get_config('ftp_upload_dir') . "/" . $g->getUnixName();
 
@@ -47,13 +46,18 @@ if (!$doc_group || $doc_group == 100) {
     session_redirect('/docman/?group_id='.$group_id.'&error_msg='.urlencode($return_msg));
 }
 	
-if (!$title || !$description || (!$uploaded_data && !$file_url && (!$editor && !$name ) ))
-	exit_missing_param();
+if (!$title || !$description || (!$uploaded_data && !$file_url && (!$editor && !$name ) )) {
+    $missing_params = array();
+    if (!$title)
+        $missing_params[] = 'title';
 
-if (!isset($sys_engine_path))
-	$sys_engine_path = dirname(__FILE__).'/../engine/';
+    if (!$description)
+        $missing_params[] = 'description';
 
-$d = new Document($g, false, false,$sys_engine_path);
+	exit_missing_param($_SERVER['HTTP_REFERER'],$missing_params,'docman');
+}
+
+$d = new Document($g, false, false,$gfcommon.'docman/engine/');
 if (!$d || !is_object($d)) {		
     $return_msg= _('Error getting blank document.');
     session_redirect('/docman/?group_id='.$group_id.'&error_msg='.urlencode($return_msg));

@@ -1,21 +1,23 @@
 <?php
 /**
  * Copyright 2005 (c) GForge Group, LLC; Anthony J. Pugliese,
+ * Copyright 2010 (c) Fusionforge Team
+ * http://fusionforge.org
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  US
  */
 if (!defined('BASE')) require('illegal_access.inc.php');
@@ -36,12 +38,12 @@ if (getStringFromRequest('submit')) {
 		
 	if ($query_action == 1) {
 		if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-			exit_form_double_submit();
+			exit_form_double_submit('tracker');
 		}
 		
 		$aq = new ArtifactQuery($ath);
 		if (!$aq || !is_object($aq)) {
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		}
 		$query_name = trim(getStringFromRequest('query_name'));
 		$query_type = getStringFromRequest('query_type',0);
@@ -60,14 +62,13 @@ if (getStringFromRequest('submit')) {
 		if (!$aq->create($query_name,$_status,$_assigned_to,$_moddaterange,$_sort_col,$_sort_ord,$extra_fields,$_opendaterange,$_closedaterange,
 			$_summary,$_description,$_followups,$query_type, $query_options)) {
 			form_release_key(getStringFromRequest('form_key'));
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		} else {
-			$feedback .= 'Successfully Created';
+			$feedback .= _('Query Successfully Created');
 		}
 		$aq->makeDefault();
 		$query_id=$aq->getID();
-		header('Location: /tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse');
-		exit;
+		session_redirect('/tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse&feedback='.urlencode($feedback));
 	//	
 /*
 	// Make the displayed query the default
@@ -87,11 +88,11 @@ if (getStringFromRequest('submit')) {
 	//
 	} elseif ($query_action == 3) {
 		if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-			exit_form_double_submit();
+			exit_form_double_submit('tracker');
 		}
 		$aq = new ArtifactQuery($ath,$query_id);
 		if (!$aq || !is_object($aq)) {
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		}
 		$query_name = getStringFromRequest('query_name');
 		$query_type = getStringFromRequest('query_type',0);
@@ -109,21 +110,20 @@ if (getStringFromRequest('submit')) {
 		$query_options = array_keys(getArrayFromRequest('query_options'));
 		if (!$aq->update($query_name,$_status,$_assigned_to,$_moddaterange,$_sort_col,$_sort_ord,$extra_fields,$_opendaterange,$_closedaterange,
 			$_summary,$_description,$_followups,$query_type, $query_options)) {
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		} else {
-			$feedback .= 'Query Updated';
+			$feedback .= _('Query Updated');
 		}
 		$aq->makeDefault();
 		$query_id=$aq->getID();
-		header('Location: /tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse');
-		exit;
+		session_redirect('/tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse&feedback='.urlencode($feedback));
 	//
 	//	Just load the query
 	//
 	} elseif ($query_action == 4) {
 		$aq = new ArtifactQuery($ath,$query_id);
 		if (!$aq || !is_object($aq)) {
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		}
 		$aq->makeDefault();
 	//
@@ -131,29 +131,31 @@ if (getStringFromRequest('submit')) {
 	//
 	} elseif ($query_action == 5) {
 		if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-			exit_form_double_submit();
+			exit_form_double_submit('tracker');
 		}
 		$aq = new ArtifactQuery($ath,$query_id);
 		if (!$aq || !is_object($aq)) {
-			exit_error('Error',$aq->getErrorMessage());
+			exit_error($aq->getErrorMessage(),'tracker');
 		}
 		if (!$aq->delete()) {
-			$feedback .= $aq->getErrorMessage();
+			$error_msg .= $aq->getErrorMessage();
+            $ret_msg = '&error_msg='.urlencode($error_msg);
 		} else {
-			$feedback .= 'Query Deleted';
+			$feedback .= _('Query Deleted');;
+            $ret_msg = '&feedback='.urlencode($feedback);
 		}
 		$query_id=0;
-		header('Location: /tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse');
+		session_redirect('/tracker/?atid='.$atid.'&group_id='.$group_id.'&func=browse'.$ret_msg);
 		exit;
 	} else {
-		exit_error('Error', 'Missing Build Query Action');
+		exit_error(_('Missing Build Query Action'),'tracker');
 	}
 } else {
 	$user=session_get_user();
 	$query_id=$user->getPreference('art_query'.$ath->getID());
 	$aq = new ArtifactQuery($ath,$query_id);
 	if (!$aq || !is_object($aq)) {
-		exit_error('Error',$aq->getErrorMessage());
+		exit_error($aq->getErrorMessage(),'tracker');
 	}
 	$aq->makeDefault();
 }
@@ -163,7 +165,7 @@ if (getStringFromRequest('submit')) {
 //
 $_assigned_to=$aq->getAssignee();
 $_status=$aq->getStatus();
-$extra_fields =& $aq->getExtraFields();
+$extra_fields=$aq->getExtraFields();
 $_sort_col=$aq->getSortCol();
 $_sort_ord=$aq->getSortOrd();
 $_moddaterange=$aq->getModDateRange();

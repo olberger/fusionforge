@@ -2,23 +2,23 @@
 /**
  * Project Membership Request
  *
- * The rest Copyright 2005 (c) GForge, L.L.C.
- * http://gforge.org/
+ * Copyright 2005 (c) GForge, L.L.C.
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -45,15 +45,17 @@ if ($submit) {
 	$gjr=new GroupJoinRequest($group);
 	$usr=&session_get_user();
 	if (!$gjr->create($usr->getId(),$comments)) {
-		exit_error('Error',$gjr->getErrorMessage());
+		exit_error($gjr->getErrorMessage(),'summary');
 	} else {
 		$feedback = _('Your request has been submitted.');
 	}
 }
 
-site_project_header(array('title'=>_('Request to join project'),'group'=>$group_id,'toptab'=>'summary'));
+$title = _('Request to join project') . ' '.$group->getPublicName();
 
-echo '<h1>' . _('Request to join project') . '</h1>';
+site_project_header(array('title'=>$title,'group'=>$group_id,'toptab'=>'summary'));
+
+echo '<h1>'. $title.'</h1>';
 
 plugin_hook ("blocks", "request_join");
 
@@ -63,7 +65,7 @@ $nbadmins = count($group->getAdmins());
 echo ngettext('You can request to join a project by clicking the submit button. The administrator will be emailed to approve or deny your request.', 'You can request to join a project by clicking the submit button. The administrators will be emailed to approve or deny your request.', $nbadmins); ?></p>
 <form action="<?php echo getStringFromServer('PHP_SELF')."?group_id=$group_id"; ?>" method="post">
 <p>
-<?php echo ngettext('You must send a comment to the administrator:', 'You must send a comment to the administrators:',$nbadmins); echo utils_requiredField(); ?><br>
+<?php echo ngettext('You must send a comment to the administrator:', 'You must send a comment to the administrators:',$nbadmins); echo utils_requiredField(); ?>
 </p>
 <textarea name="comments" rows="15" cols="60"><?php echo $comments ?></textarea>
 <p>

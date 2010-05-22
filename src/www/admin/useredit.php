@@ -4,20 +4,20 @@
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -38,18 +38,15 @@ $unix_status2str = array(
 $user_id = getIntFromRequest('user_id');
 $u =& user_get_object($user_id);
 if (!$u || !is_object($u)) {
-	exit_error('Error','Could Not Get User');
+	exit_error(_('Could Not Get User'),'admin');
 } elseif ($u->isError()) {
-	exit_error('Error',$u->getErrorMessage());
+	exit_error($u->getErrorMessage(),'admin');
 }
 
 if (getStringFromRequest('delete_user') != '' && getStringFromRequest('confirm_delete') == '1') {
 	// delete user
 	if (!$u->delete(true)) {
-		exit_error(
-			_('Could Not Complete Operation'),
-			$u->getErrorMessage()
-		);
+		exit_error( _('Could Not Complete Operation: ').$u->getErrorMessage(),'admin');
 	} else {
 		$feedback = _('Deleted (D)').'<br />';
 	}
@@ -63,10 +60,7 @@ if (getStringFromRequest('delete_user') != '' && getStringFromRequest('confirm_d
 	if (!$u->setEmail($email)
 		|| (forge_get_config('use_shell') && !$u->setShell($shell))
 		|| !$u->setStatus($status)) {
-		exit_error(
-			_('Could Not Complete Operation'),
-			$u->getErrorMessage()
-		);
+		exit_error( _('Could Not Complete Operation: ').$u->getErrorMessage(),'admin');
 	}
 
 	if ($u->getUnixStatus() != 'N') {
@@ -81,9 +75,9 @@ if (getStringFromRequest('delete_user') != '' && getStringFromRequest('confirm_d
 	}
 	
 	if ($u->isError()) {
-		$feedback = $u->getErrorMessage();
+		$error_msg = $u->getErrorMessage();
 	} else {
-		$feedback = _('Updated').'<br />';
+		$feedback = _('Updated');
 	}
 
 }
@@ -225,22 +219,13 @@ if ($u->getStatus() == 'D') {
 
 <hr />
 
-<h3><?php echo _('Groups Membership'); ?></h3>
+<h3><?php echo _('Projects Membership'); ?></h3>
 
 <?php
 /*
-	Iterate and show groups this user is in
+	Iterate and show projects this user is in
 */
-$res_cat = db_query_params ('
-	SELECT groups.unix_group_name, groups.group_name AS group_name, 
-		groups.group_id AS group_id, 
-		user_group.admin_flags AS admin_flags
-	FROM groups,user_group
-	WHERE user_group.user_id=$1
-	AND groups.group_id=user_group.group_id
-',
-			array($user_id)) ;
-
+$projects = $u->getGroups() ;
 
 $title=array();
 $title[]=_('Name');
@@ -249,14 +234,12 @@ $title[]=_('Operations');
 echo $GLOBALS['HTML']->listTableTop($title);
 
 $i = 0 ;
-while ($row_cat = db_fetch_array($res_cat)) {
-
-	$row_cat['group_name'] = htmlspecialchars($row_cat['group_name']);
+foreach ($projects as $p) {
 	print '
 		<tr '.$GLOBALS['HTML']->boxGetAltRowStyle($i++).'>
-		<td>'.util_unconvert_htmlspecialchars($row_cat['group_name']).'</td>
-		<td>'.$row_cat['unix_group_name'].'</td>
-		<td width="40%">'.util_make_link ('/project/admin/?group_id='.$row_cat['group_id'],_('[Project Admin]')).'</td>
+		<td>'.util_unconvert_htmlspecialchars(htmlspecialchars($p->getPublicName())).'</td>
+		<td>'.$p->getUnixName().'</td>
+		<td width="40%">'.util_make_link ('/project/admin/?group_id='.$p->getID(),_('[Project Admin]')).'</td>
 		</tr>
 	';
 

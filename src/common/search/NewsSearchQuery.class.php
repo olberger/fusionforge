@@ -3,6 +3,7 @@
  * FusionForge search engine
  *
  * Copyright 2004, Dominik Haas
+ * http://fusionforge.org
  *
  * This file is part of FusionForge.
  *

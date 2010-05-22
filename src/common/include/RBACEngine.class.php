@@ -28,6 +28,8 @@ class RBACEngine extends Error implements PFO_RBACEngine {
 	private static $_instance ;
 	private $_cached_roles = array () ;
 	private $_cached_available_roles = NULL ;
+	private $_cached_global_roles = NULL ;
+	private $_cached_public_roles = NULL ;
 
 	public static function getInstance() {
 		if (!isset(self::$_instance)) {
@@ -54,7 +56,7 @@ class RBACEngine extends Error implements PFO_RBACEngine {
 			if (USE_PFO_RBAC) {
 				$res = db_query_params ('SELECT role_id FROM pfo_user_role WHERE user_id=$1',
 						array ($user->getID()));
-				while ($arr =& db_fetch_array($res)) {
+				while ($arr = db_fetch_array($res)) {
 					$this->_cached_available_roles[] = $this->getRoleById ($arr['role_id']) ;
 				}
 			} else {
@@ -68,8 +70,46 @@ class RBACEngine extends Error implements PFO_RBACEngine {
 		return $this->_cached_available_roles ;
 	}
 
+	public function getGlobalRoles() {
+		if ($this->_cached_global_roles != NULL) {
+			return $this->_cached_global_roles ;
+		}
+
+		$this->_cached_global_roles = array () ;
+
+		if (USE_PFO_RBAC) {
+			$res = db_query_params ('SELECT role_id FROM pfo_role WHERE home_group_id IS NULL',
+						array ());
+			while ($arr = db_fetch_array($res)) {
+				$this->_cached_global_roles[] = $this->getRoleById ($arr['role_id']) ;
+			}
+		}
+		
+		return $this->_cached_global_roles ;
+	}
+
+	public function getPublicRoles() {
+		if ($this->_cached_public_roles != NULL) {
+			return $this->_cached_public_roles ;
+		}
+
+		$this->_cached_public_roles = array () ;
+
+		if (USE_PFO_RBAC) {
+			$res = db_query_params ('SELECT role_id FROM pfo_role WHERE is_public=$1',
+						array ('true'));
+			while ($arr = db_fetch_array($res)) {
+				$this->_cached_public_roles[] = $this->getRoleById ($arr['role_id']) ;
+			}
+		}
+		
+		return $this->_cached_public_roles ;
+	}
+
 	public function invalidateRoleCaches () {
 		$this->_cached_available_roles = NULL ;
+		$this->_cached_global_roles = NULL ;
+		$this->_cached_public_roles = NULL ;
 	}
 
 	public function getAvailableRolesForUser($user) {
@@ -81,13 +121,14 @@ class RBACEngine extends Error implements PFO_RBACEngine {
 		if (USE_PFO_RBAC) {
 			$res = db_query_params ('SELECT role_id FROM pfo_user_role WHERE user_id=$1',
 						array ($user->getID()));
-			while ($arr =& db_fetch_array($res)) {
+			while ($arr = db_fetch_array($res)) {
 				$result[] = $this->getRoleById ($arr['role_id']) ;
 			}
 		} else {
-			$groups = $user->getGroups() ;
-			foreach ($groups as $g) {
-				$result[] = $user->getRole($g) ;
+			$res = db_query_params ('SELECT role_id FROM user_group WHERE user_id=$1',
+						array ($user->getID()));
+			while ($arr = db_fetch_array($res)) {
+				$result[] = $this->getRoleById ($arr['role_id']) ;
 			}
 		}
 		
@@ -297,10 +338,10 @@ class RBACEngine extends Error implements PFO_RBACEngine {
 				$qpa = db_construct_qpa ($qpa, 'AND (perm_val & 1) = 1') ;
 				break ;
 			case 'tech':
-				$qpa = db_construct_qpa ($qpa, 'AND (perm_val & 1) = 2') ;
+				$qpa = db_construct_qpa ($qpa, 'AND (perm_val & 2) = 2') ;
 				break ;
 			case 'manager':
-				$qpa = db_construct_qpa ($qpa, 'AND (perm_val & 1) = 4') ;
+				$qpa = db_construct_qpa ($qpa, 'AND (perm_val & 4) = 4') ;
 				break ;
 			}
 			break ;

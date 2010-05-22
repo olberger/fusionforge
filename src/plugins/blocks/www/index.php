@@ -144,9 +144,14 @@ function blocks_Project_Header($params) {
 
 $user = session_get_user(); // get the session user
 
-if (!$user || !is_object($user) || $user->isError() || !$user->isActive()) {
-	exit_error("Invalid User", "Cannot Process your request for this user.");
+if (!$user || !is_object($user) ) {
+	exit_error(_('Invalid User'),'home');
+} else if ( $user->isError() ) {
+	exit_error($user->getErrorMessage(),'home');
+} else if ( !$user->isActive()) {
+	exit_error(_('Invalid User : Not active'), 'home');
 }
+
 
 $type = getStringFromRequest('type');
 $id = getStringFromRequest('id');
@@ -154,6 +159,7 @@ $pluginname = getStringFromRequest('pluginname');
 $name = getStringFromRequest('name');
 $body = getStringFromRequest('body');
 $activate = getArrayFromRequest('activate');
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
 
 $blocks_text = array(
 	'forum' => _('Forums'),
@@ -168,17 +174,17 @@ $blocks_text = array(
 );
 
 if (!$type) {
-	exit_error("Cannot Process your request","No TYPE specified");
+	exit_error(_('Cannot Process your request : No TYPE specified'),'home'); // you can create items in Base.tab and customize this messages
 } elseif (!$id) {
-	exit_error("Cannot Process your request","No ID specified");
+	exit_error(_('Cannot Process your request : No ID specified'),'home');
 } else {
 	if ($type == 'group') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');
 		}
 
 		session_require_perm ('project_admin', $id) ;
@@ -190,10 +196,10 @@ if (!$type) {
 	} elseif ($type == 'admin') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interfacer'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -231,7 +237,7 @@ if (!$type) {
 		$class = 'even';
 		foreach ($blocks as $b => $help) {
 
-			$class = ($class == 'even') ? "odd" : "even";
+			$class = (! isset($class) || $class == 'even') ? "odd" : "even";
 
 			$match = '';
 			if (preg_match('/(.*) index$/', $b, $match)) {
@@ -254,10 +260,10 @@ if (!$type) {
 	} elseif ($type == 'admin_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -297,21 +303,22 @@ if (!$type) {
 				array($activate[$b], $id, $b));
 			}
 		}
-		header("Location: /plugins/blocks/index.php?id=$id&type=admin&pluginname=blocks");
-		exit;
+        $msg = _('Block Saved');
+		session_redirect('/plugins/blocks/index.php?id='.$id.'&type=admin&pluginname=blocks&feedback='.urlencode($msg));
 	} elseif ($type == 'configure') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginnname),'home');
 		}
 		session_require_perm ('project_admin', $id) ;
 
 		blocks_Project_Header(array('title'=>$pluginname . ' Project Plugin!','pagename'=>"$pluginname",'sectionvals'=>array(group_getname($id))));
 		// DO THE STUFF FOR THE PROJECT ADMINISTRATION PART HERE
 
+		$blocks = getAvailableBlocks($group);
 		$res = db_query_params('SELECT content FROM plugin_blocks WHERE group_id=$1 AND name=$2',
 		array($id, $name));
 		$body = db_result($res,0,"content");
@@ -361,10 +368,10 @@ if (!$type) {
 	} elseif ($type == 'configure_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -379,8 +386,8 @@ if (!$type) {
 					WHERE group_id=$2 AND name=$3',
 			array($body, $id, $name));
 		}
-		header("Location: /plugins/blocks/index.php?id=$id&type=admin&pluginname=blocks");
-		exit;
+        $msg = $name .' : '. _('Block configuration saved');
+		session_redirect('/plugins/blocks/index.php?id='.$id.'&type=admin&pluginname=blocks&feedback='.urlencode($msg));
 	}
 }
 

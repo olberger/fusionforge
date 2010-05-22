@@ -4,6 +4,7 @@
  *
  * Copyright 2004, Dominik Haas
  * Copyright 2009, Roland Mas
+ * http://fusionforge.org
  *
  * This file is part of FusionForge.
  *
@@ -182,7 +183,7 @@ class DocsSearchQuery extends SearchQuery {
 	 * @param $groupId int group id
 	 * @param $showNonPublic boolean if we should consider non public sections
 	 */
-	function getSections($groupId, $showNonPublic=false) {
+	static function getSections($groupId, $showNonPublic=false) {
 		$sql = 'SELECT doc_groups.doc_group, doc_groups.groupname FROM doc_groups, doc_data'
 			.' WHERE doc_groups.doc_group = doc_data.doc_group AND doc_groups.group_id=$1';
 		if ($showNonPublic) {

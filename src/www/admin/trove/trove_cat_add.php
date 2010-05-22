@@ -35,14 +35,14 @@ if (getStringFromRequest('submit')) {
 		exit_form_double_submit();
 	}
 	
-	$form_parent = getStringFromRequest('form_parent');
+	$form_parent = getIntFromRequest('form_parent');
 	$form_shortname = getStringFromRequest('form_shortname');
 	$form_fullname = getStringFromRequest('form_fullname');
 	$form_description = getStringFromRequest('form_description');
 
 	$newroot = trove_getrootcat($form_parent);
 
-	if ($form_shortname) {
+	if ($form_shortname && $form_fullname) {
 		$res = db_query_params ('
 			INSERT INTO trove_cat 
 				(shortname,fullname,description,parent,version,root_parent)
@@ -69,12 +69,14 @@ if (getStringFromRequest('submit')) {
 				db_error()
 			);
 		}
-	} 
 
-	// update full paths now
-	trove_genfullpaths($newroot,trove_getfullname($newroot),$newroot);
+		// update full paths now
+		trove_genfullpaths($newroot,trove_getfullname($newroot),$newroot);
 
-	session_redirect("/admin/trove/trove_cat_list.php");
+		session_redirect("/admin/trove/trove_cat_list.php");
+	} else {
+		$error_msg = 'Missing category short name or full name';
+	}
 } 
 
 site_admin_header(array('title'=>_('Site Admin: Trove - Add Node')));
@@ -95,22 +97,22 @@ site_admin_header(array('title'=>_('Site Admin: Trove - Add Node')));
 $parent_trove_cat_id = getIntFromRequest("parent_trove_cat_id", -1);
 if ($parent_trove_cat_id != -1) {
 	if ($parent_trove_cat_id == 0) {
-		print ('<option value="0">root</option>\n');
+		print ('<option value="0">root</option>');
 	} else {
 		$res_cat = db_query_params ('SELECT shortname,fullname,trove_cat_id FROM trove_cat WHERE trove_cat_id=$1',
 			array($parent_trove_cat_id)) ;
 
 		while ($row_cat = db_fetch_array($res_cat)) {
-			print ('<option value="'.$row_cat["trove_cat_id"].'">'.$row_cat["fullname"]."</option>\n");
+			print ('<option value="'.$row_cat["trove_cat_id"].'">'.$row_cat["fullname"]."</option>");
 		}
 	}
 } else {
-	print ('<option value="0">root</option>\n');
+	print ('<option value="0">root</option>');
 	$res_cat = db_query_params ('SELECT shortname,fullname,trove_cat_id FROM trove_cat',
 			array()) ;
 
 	while ($row_cat = db_fetch_array($res_cat)) {
-		print ('<option value="'.$row_cat["trove_cat_id"].'">'.$row_cat["fullname"]."</option>\n");
+		print ('<option value="'.$row_cat["trove_cat_id"].'">'.$row_cat["fullname"]."</option>");
 	}
 }
 
@@ -122,8 +124,8 @@ if ($parent_trove_cat_id != -1) {
 <p><?php echo _('New category full name (Maximum length is 80 chars)'); ?>:<?php echo utils_requiredField(); ?>
 <br /><input type="text" name="form_fullname" /></p>
 <p><?php echo _('New category description (Maximum length is 255 chars)'); ?>:
-<br /><input type="text" size="80" name="form_description" />
-<br /><input type="submit" name="submit" value="<?php echo _('Add'); ?>" /></p>
+<br /><input type="text" size="80" name="form_description" /></p>
+<p><input type="submit" name="submit" value="<?php echo _('Add'); ?>" /></p>
 </form>
 
 <?php

@@ -93,10 +93,10 @@ class GroupJoinRequest extends Error {
 	 *
 	 *	@param	int4 user_id.
 	 *	@param	text comments.
-	 *	@param	int4 request_date.
+	 *	@param	bool whether to send an email to the admin(s)
 	 * @return boolean Success.
 	 */
-	function create($user_id,$comments) {
+	function create($user_id,$comments,$send_email=true) {
 		$v = new Validator();
 		$v->check($user_id, "user_id");
 		$v->check(trim($comments), "comments");
@@ -106,10 +106,8 @@ class GroupJoinRequest extends Error {
 		}
 
 		// Check if user is already a member of the project
-		$result = db_query_params ('SELECT * FROM user_group WHERE group_id=$1 AND user_id=$2',
-					   array ($this->Group->getID(),
-						  $user_id)) ;
-		if (db_numrows($result)) {
+		$user = user_get_object ($user_id) ;
+		if ($user->isMember($this->Group)) {
 			$this->setError(_('You are already a member of this project.'));
 			return false;
 		}
@@ -135,16 +133,17 @@ class GroupJoinRequest extends Error {
 			$this->setError('GroupJoinRequest::create() Posting Failed '.db_error());
 			db_rollback();
 			return false;
-		} else {
-			if (!$this->fetchData($this->Group->getID(),$user_id)) {
-				db_rollback();
-				return false;
-			} else {
-				$this->sendJoinNotice();
-				db_commit();
-				return true;
-			}
 		}
+		
+		if (!$this->fetchData($this->Group->getID(),$user_id)) {
+			db_rollback();
+			return false;
+		}
+		if ($send_email) {
+			$this->sendJoinNotice();
+		}
+		db_commit();
+		return true;
 	}
 
     /**
@@ -162,7 +161,7 @@ class GroupJoinRequest extends Error {
 	                $this->setError('GroupJoinRequest::fetchData() Invalid ID '.db_error());
 	                return false;
 			}
-	        $this->data_array =& db_fetch_array($res);
+	        $this->data_array = db_fetch_array($res);
 	        db_free_result($res);
 	        return true;
 	}

@@ -1,5 +1,5 @@
 <?php //-*-php-*-
-//rcs_id('$Id: WikiUserNew.php 7506 2010-06-09 10:06:37Z vargenau $');
+//rcs_id('$Id: WikiUserNew.php 7702 2010-09-21 06:08:32Z rurban $');
 /* Copyright (C) 2004,2005,2006,2007,2009,2010 $ThePhpWikiProgrammingTeam
 * Copyright (C) 2009-2010 Marc-Etienne Vargenau, Alcatel-Lucent
 * Copyright (C) 2009-2010 Roger Guignard, Alcatel-Lucent
@@ -563,7 +563,7 @@ class _WikiUser
     function isValidName ($userid = false) {
         if (!$userid) $userid = $this->_userid;
         if (!$userid) return false;
-        if (GFORGE) {
+        if (FUSIONFORGE) {
             return true;
         }
         return preg_match("/^[\-\w\.@ ]+$/U", $userid) and strlen($userid) < 32;
@@ -1180,33 +1180,15 @@ extends _AnonUser
                 // FIXME: strange why this should be needed...
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/AdoDb.php");
-                if (check_php_version(5)) {
-                    $user = new _AdoDbPassUser($this->_userid, $this->_prefs);
-                    return $user->getPreferences();
-                } else {
-                    _AdoDbPassUser::_AdoDbPassUser($this->_userid, $this->_prefs);
-                    return _AdoDbPassUser::getPreferences();
-                }
+                return _AdoDbPassUser::getPreferences();
             } elseif ($this->_prefs->_method == 'SQL') {
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/PearDb.php");
-                if (check_php_version(5)) {
-                    $user = new _PearDbPassUser($this->_userid, $this->_prefs);
-                    return $user->getPreferences();
-                } else {
-                    _PearDbPassUser::_PearDbPassUser($this->_userid, $this->_prefs);
-                    return _PearDbPassUser::getPreferences();
-                }
+                return _PearDbPassUser::getPreferences();
             } elseif ($this->_prefs->_method == 'PDO') {
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/PdoDb.php");
-                if (check_php_version(5)) {
-                    $user = new _PdoDbPassUser($this->_userid, $this->_prefs);
-                    return $user->getPreferences();
-                } else {
-                    _PdoDbPassUser::_PdoDbPassUser($this->_userid, $this->_prefs);
-                    return _PdoDbPassUser::getPreferences();
-                }
+                return _PdoDbPassUser::getPreferences();
             }
         }
 
@@ -1233,35 +1215,17 @@ extends _AnonUser
                 // FIXME: strange why this should be needed...
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/AdoDb.php");
-                if (check_php_version(5)) {
-                    $user = new _AdoDbPassUser($this->_userid, $prefs);
-                    return $user->setPreferences($prefs, $id_only);
-                } else {
-                    _AdoDbPassUser::_AdoDbPassUser($this->_userid, $prefs);
-                    return _AdoDbPassUser::setPreferences($prefs, $id_only);
-                }
+                return _AdoDbPassUser::setPreferences($prefs, $id_only);
             }
             elseif ($this->_prefs->_method == 'SQL') {
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/PearDb.php");
-                if (check_php_version(5)) {
-                    $user = new _PearDbPassUser($this->_userid, $prefs);
-                    return $user->setPreferences($prefs, $id_only);
-                } else {
-                    _PearDbPassUser::_PearDbPassUser($this->_userid, $prefs);
-                    return _PearDbPassUser::setPreferences($prefs, $id_only);
-                }
+                return _PearDbPassUser::setPreferences($prefs, $id_only);
             }
             elseif ($this->_prefs->_method == 'PDO') {
                 include_once("lib/WikiUser/Db.php");
                 include_once("lib/WikiUser/PdoDb.php");
-                if (check_php_version(5)) {
-                    $user = new _PdoDbPassUser($this->_userid, $prefs);
-                    return $user->setPreferences($prefs, $id_only);
-                } else {
-                    _PdoDbPassUser::_PdoDbPassUser($this->_userid, $prefs);
-                    return _PdoDbPassUser::setPreferences($prefs, $id_only);
-                }
+                return _PdoDbPassUser::setPreferences($prefs, $id_only);
             }
         }
         if ($updated = _AnonUser::setPreferences($prefs, $id_only)) {
@@ -1294,19 +1258,19 @@ extends _AnonUser
         } else {
             $user = $this;
         }
-        $UserName = $this->_userid;
         /* new user => false does not return false, but the _userid is empty then */
-        if ($user and $user->_userid) {
+        while ($user and $user->_userid) {
             if (!check_php_version(5))
                 eval("\$this = \$user;");
             $user = UpgradeUser($this, $user);
-            if ($user->userExists())
+            if ($user->userExists()) {
+                $user = UpgradeUser($this, $user);
                 return true;
-        }
-        while (!$this->_tryNextUser($UserName)) {
+            }
             // prevent endless loop. does this work on all PHP's?
             // it just has to set the classname, what it correctly does.
-            if ($this->nextClass() == "_ForbiddenPassUser")
+            $class = $user->nextClass();
+            if ($class == "_ForbiddenPassUser")
                 return false;
         }
         return false;
@@ -1430,7 +1394,7 @@ extends _AnonUser
         }
         if (USER_AUTH_POLICY === 'strict') {
             $class = $this->nextClass();
-            if ($user = new $class($this->_userid, $this->_prefs)) {
+            if ($user = new $class($this->_userid,$this->_prefs)) {
                 if ($user->userExists()) {
                     return $user->checkPass($submitted_password);
                 }
@@ -1438,29 +1402,27 @@ extends _AnonUser
         }
         if (USER_AUTH_POLICY === 'stacked' or USER_AUTH_POLICY === 'old') {
             $class = $this->nextClass();
-            if ($user = new $class($this->_userid, $this->_prefs))
+            if ($user = new $class($this->_userid,$this->_prefs))
                 return $user->checkPass($submitted_password);
         }
         return $this->_level;
     }
 
-    function _tryNextUser($username = false) {
+    function _tryNextUser() {
         if (DEBUG & _DEBUG_LOGIN) {
             $class = strtolower(get_class($this));
             if (substr($class,-10) == "dbpassuser") $class = "_dbpassuser";
             $GLOBALS['USER_AUTH_ERROR'][$class] = 'nosuchuser';
         }
-        if (!$username) $username = $this->_userid;
         if (USER_AUTH_POLICY === 'strict'
-	    or USER_AUTH_POLICY === 'stacked') 
-	{
+	    or USER_AUTH_POLICY === 'stacked') {
             $class = $this->nextClass();
-            while ($user = new $class($username, $this->_prefs)) {
+            while ($user = new $class($this->_userid, $this->_prefs)) {
                 if (!check_php_version(5))
                     eval("\$this = \$user;");
 	        $user = UpgradeUser($this, $user);
                 if ($user->userExists()) {
-                    //$user = UpgradeUser($this, $user);
+                    $user = UpgradeUser($this, $user);
                     return true;
                 }
                 if ($class == "_ForbiddenPassUser") return false;
@@ -1775,8 +1737,8 @@ class _UserPreference_email
 extends _UserPreference
 {
     function get($name) {
-        // get email address from Gforge
-        if (GFORGE && session_loggedin()) {
+        // get e-mail address from FusionForge
+        if (FUSIONFORGE && session_loggedin()) {
             $user = session_get_user();
             return $user->getEmail();
         } else {
@@ -1785,8 +1747,8 @@ extends _UserPreference
     }
 
     function sanify($value) {
-        // email address is already checked by Gforge
-        if (GFORGE) return $value;
+        // e-mail address is already checked by FusionForge
+        if (FUSIONFORGE) return $value;
         // check for valid email address
         if ($this->get('email') == $value and $this->getraw('emailVerified'))
             return $value;
@@ -1807,8 +1769,8 @@ extends _UserPreference
      * For true verification (value = 2), we'd need a mailserver hook.
      */
     function update($value) {
-        // email address is already checked by Gforge
-        if (GFORGE) return $value;
+        // e-mail address is already checked by FusionForge
+        if (FUSIONFORGE) return $value;
     	if (!empty($this->_init)) return;
         $verified = $this->getraw('emailVerified');
         // hack!
@@ -1982,9 +1944,9 @@ class UserPreferences
                     );
 
         // This should be probably be done with $customUserPreferenceColumns
-        // For now, we use GFORGE define
-        if (GFORGE) {
-            $gforgeprefs = array(
+        // For now, we use FUSIONFORGE define
+        if (FUSIONFORGE) {
+            $fusionforgeprefs = array(
                     'pageTrail'     => new _UserPreference_bool(),
                     'diffMenuItem' => new _UserPreference_bool(),
                     'pageInfoMenuItem' => new _UserPreference_bool(),
@@ -2002,7 +1964,7 @@ class UserPreferences
                     'likePagesMenuItem' => new _UserPreference_bool(),
                     'specialPagesMenuItem' => new _UserPreference_bool(),
                     );
-            $this->_prefs = array_merge($this->_prefs, $gforgeprefs);
+            $this->_prefs = array_merge($this->_prefs, $fusionforgeprefs);
         }
 
         // add custom theme-specific pref types:
@@ -2161,7 +2123,7 @@ class UserPreferences
             }
         }
 
-        if (GFORGE) {
+        if (FUSIONFORGE) {
             // Merge current notifyPages with notifyPagesAll
             // notifyPages are pages to notify in the current project
             // while $notifyPagesAll is used to store all the monitored pages.
@@ -2210,7 +2172,7 @@ class UserPreferences
             }
         }
         
-        if (GFORGE) {
+        if (FUSIONFORGE) {
             // Restore notifyPages from notifyPagesAll
             // notifyPages are pages to notify in the current project
             // while $notifyPagesAll is used to store all the monitored pages.

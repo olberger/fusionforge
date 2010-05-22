@@ -57,7 +57,7 @@ $config = getenv('CONFIG_PHP') ? getenv('CONFIG_PHP'): dirname(__FILE__).'/confi
 require_once $config;
 
 if ( !CONFIGURED ) {
-	print "File 'config.php' is not correctly configured, aborting.\n";
+	print "ERROR: File 'config.php' is not correctly configured, aborting.\n";
 	exit(1);
 }
 
@@ -66,15 +66,25 @@ if (isset($argv[1]) && $argv[1] == '-no-restart') {
 	$opt_restart = false;
 }
 
+// Search location of fusionforge main directory (gforge).
+$forge_root = dirname(dirname(dirname(__FILE__))).'/src';
+if (!file_exists($forge_root)) {
+	$forge_root = dirname(dirname(dirname(__FILE__))).'/gforge';
+	if (!file_exists($forge_root)) {
+		print "ERROR: Unable to guess location of fusionforge main directory (gforge), aborting.\n";
+		exit(1);
+	}
+}
+
 if ( DB_TYPE == 'mysql') {
 	// Reload a fresh database before running this test suite.
 	system("mysqladmin -f -u".DB_USER." -p".DB_PASSWORD." drop ".DB_NAME." &>/dev/null");
 	system("mysqladmin -u".DB_USER." -p".DB_PASSWORD." create ".DB_NAME);
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(__FILE__))."/src/db/gforge-struct-mysql.sql");
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(__FILE__))."/src/db/gforge-data-mysql.sql");
+	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-struct-mysql.sql");
+	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-data-mysql.sql");
 } elseif ( DB_TYPE == 'pgsql') {
 	if (!function_exists('pg_connect')) {
-		print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL.\n";
+		print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
 		exit;
 	}
 	// Drop & create a fresh database before running this test suite.
@@ -84,10 +94,10 @@ if ( DB_TYPE == 'mysql') {
 	system("service postgresql restart 2>&1 >/dev/null");
 	system("su - postgres -c 'dropdb -q ".DB_NAME."'");
 	system("su - postgres -c 'createdb -q --encoding UNICODE ".DB_NAME."'");
-	system("psql -q -U".DB_USER." ".DB_NAME." -f /opt/gforge/db/gforge.sql >> /var/log/gforge-import.log 2>&1");
-	system("php /opt/gforge/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
+	system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/gforge-import.log 2>&1");
+	system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
 } else {
-	print "Unsupported database type: ".DB_TYPE. "\n";
+	print "ERROR: Unsupported database type: ".DB_TYPE.", aborting.\n";
 	exit;
 }
 
@@ -97,18 +107,10 @@ $adminEmail = 'nobody@nowhere.com';
 
 $session_hash = '000TESTSUITE000';
 
-// Temporary.
-$sys_default_theme_id = 5;
-
 //set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
 
 require_once '../../gforge/www/env.inc.php';
 require_once $gfwww.'include/pre.php';
-
-// Add alcatel theme to the database.
-db_query_params ('INSERT INTO themes (theme_id, dirname, fullname, enabled) VALUES (5, $1, $2, true)',
-		 array ('alcatel-lucent',
-			'Alcatel-Lucent Theme'));
 
 // Install tsearch2 for phpwiki & patch it for safe backups.
 //system("psql -q -Upostgres ".DB_NAME." < /usr/share/pgsql/contrib/tsearch2.sql >/dev/null 2>&1");
@@ -131,17 +133,17 @@ system("rm -f ".forge_get_config ('data_path')."/logs/email-*.log");
 //
 $user = new GFUser();
 $user_id = $user->create('admin', $sitename, 'Admin', $adminPassword, $adminPassword,
-	$adminEmail, 1, 1, 1,'GMT','',0,$GLOBALS['sys_default_theme_id'],'', '','','','','','US',false, 'admin');
+	$adminEmail, 1, 1, 1,'GMT','',0,1,'', '','','','','','US',false, 'admin');
 
 if (!$user_id) {
-	print "ERROR:creating user: ".$user->getErrorMessage()."\n";
+	print "ERROR: Creating user: ".$user->getErrorMessage()."\n";
 	exit(1);
 }
 
 $user->setStatus('A');
 
 if (!$user_id) {
-	print "ERROR: Error creating admin account, no id returned";
+	print "ERROR: Error creating admin account, no id returned, aborting.\n";
 } else {
 	// Register the user in master group to get full admin rights.
 	$res = db_query_params ('INSERT INTO user_group (user_id,group_id,admin_flags, role_id) VALUES ($1,1,$2,17)',

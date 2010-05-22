@@ -4,6 +4,7 @@
  *
  * Copyright 1999-2001, VA Linux Systems, Inc
  * Copyright 2004, Guillaume Smet/Open Wide
+ * http://fusionforge.org
  *
  * This file is part of FusionForge.
  *

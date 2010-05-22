@@ -20,7 +20,7 @@
 
 require_once('common/widget/WidgetLayout.class.php');
 require_once('common/widget/Widget.class.php');
-require_once('preplugins.php');
+require_once $gfcommon.'include/preplugins.php';
 /**
  * WidgetLayoutManager
  * 
@@ -63,7 +63,7 @@ class WidgetLayoutManager {
 			if ($data = db_fetch_array($req)) {
 				$readonly = !$this->_currentUserCanUpdateLayout($owner_id, $owner_type);
 				if (!$readonly) {
-					echo '<a href="/widgets/widgets.php?owner='. $owner_type.$owner_id .'&amp;layout_id='. $data['id'] .'">['. _("Customize") .']</a>';
+					echo '<p class="customize"><a href="/widgets/widgets.php?owner='. $owner_type.$owner_id .'&amp;layout_id='. $data['id'] .'">'. _("Customize") .'</a></p>';
 				} else if ($owner_type === self::OWNER_TYPE_GROUP) {
 					echo '<br />';
 				}
@@ -146,12 +146,17 @@ class WidgetLayoutManager {
 		if (db_query_params($sql,array($owner_id,$owner_type))) {
 
 			$sql = "INSERT INTO layouts_contents(owner_id, owner_type, layout_id, column_id, name, rank) VALUES ";
-			$sql .= "($1, $2, 1, 1, 'myprojects', 0)";
-			$sql .= ",($1, $2, 1, 1, 'mybookmarks', 1)";
-			$sql .= ",($1, $2, 1, 1, 'mymonitoredforums', 2)";
-			$sql .= ",($1, $2, 1, 1, 'mysurveys', 4)";
-			$sql .= ",($1, $2, 1, 2, 'myartifacts', 0)";
-			$sql .= ",($1, $2, 1, 2, 'mymonitoredfp', 1)";
+
+			$args[] = "($1, $2, 1, 1, 'myprojects', 0)";
+			$args[] = "($1, $2, 1, 1, 'mybookmarks', 1)";
+			$args[] = "($1, $2, 1, 1, 'mymonitoredforums', 2)";
+			$args[] = "($1, $2, 1, 1, 'mysurveys', 4)";
+			$args[] = "($1, $2, 1, 2, 'myartifacts', 0)";
+			$args[] = "($1, $2, 1, 2, 'mymonitoredfp', 1)";
+
+			foreach($args as $a) {
+				db_query_params($sql.$a,array($owner_id,$owner_type));
+			}
 
 			/*  $em =& EventManager::instance();
 			    $widgets = array();
@@ -159,7 +164,6 @@ class WidgetLayoutManager {
 			    foreach($widgets as $widget) {
 			    $sql .= ",($13, $14, 1, $15, $16, $17)";
 			    }*/
-			db_query_params($sql,array($owner_id,$owner_type));
 		}
 		echo db_error();
 	}
@@ -256,7 +260,7 @@ class WidgetLayoutManager {
 				echo '<input type="radio" name="layout_id" value="'. $data['id'] .'" id="layout_'. $data['id'] .'" '. $checked .'/>';
 				echo '</td><td>';
 				echo '<label for="layout_'. $data['id'] .'">';
-				echo html_image('layout/'. strtolower(preg_replace('/(\W+)/', '-', $data['name'])) .'.png');
+				echo html_image('layout/'. strtolower(preg_replace('/(\W+)/', '-', $data['name'])) .'.png', 50, 50, array('alt'=>'layout'));
 				echo '</label>';
 				echo '</td><td>';
 				echo '<label for="layout_'. $data['id'] .'"><strong>'. $data['name'] .'</strong><br />';
@@ -270,7 +274,7 @@ class WidgetLayoutManager {
 			echo '<input type="radio" name="layout_id" value="-1" id="layout_custom" '. $checked .'/>';
 			echo '</td><td>';
 			echo '<label for="layout_custom">';
-			echo html_image('layout/custom.png', array('style' => 'vertical-align:top;float:left;'));
+			echo html_image('layout/custom.png', 50, 50, array('style' => 'vertical-align:top;float:left;'));
 			echo '</label>';
 			echo '</td><td>';
 			echo '<label for="layout_custom"><strong>'. 'Custom' .'</strong><br />';

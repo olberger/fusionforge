@@ -218,13 +218,13 @@ class ForumMessage extends Error {
 		} else {
 			$msg_id=db_insertid($result,'forum','msg_id');
 			if (!$this->fetchData($msg_id)) {
-				db_rollback();
 				$this->setError(_('ForumMessage::create() Posting Failed').' '.db_error());
+				db_rollback();
 				return false;
 			}
 			if (!$msg_id) {
-				db_rollback();
 				$this->setError(_('ForumMessage::create() Unable to get new message id'));
+				db_rollback();
 				return false;
 			} else {
 				if (!$this->sendNotice()) {
@@ -409,7 +409,7 @@ class ForumMessage extends Error {
 			$this->setError(_('ForumMessage::fetchData() Invalid MessageID').db_error());
 			return false;
 		}
-		$this->data_array =& db_fetch_array($res);
+		$this->data_array = db_fetch_array($res);
 		db_free_result($res);
 		return true;
 	}
@@ -560,7 +560,7 @@ class ForumMessage extends Error {
 		$msg_id=$this->getID();
 		if (!$msg_id) {
 			$this->setError(_('Invalid Message ID'));
-			return 0;
+			return false;
 		}
 		
 		if (!forge_check_perm ('forum_admin', $this->Forum->Group->getID())) {
@@ -568,8 +568,6 @@ class ForumMessage extends Error {
 			return false;
 		}
 		
-		return forge_check_perm ('forum', $this->Forum->getID(), 'moderate') ;
-
 		$result = db_query_params ('SELECT msg_id FROM forum 
 			WHERE is_followup_to=$1
 			AND group_forum_id=$2',
@@ -587,11 +585,11 @@ class ForumMessage extends Error {
 			AND group_forum_id=$2',
 					 array ($msg_id,
 						$this->Forum->getID())) ;
+
 		$res = db_query_params ('DELETE FROM forum_attachment where msg_id=$1',
 					array ($msg_id));
 
 		return $count;
-
 	}
 
 	/**
@@ -613,7 +611,7 @@ class ForumMessage extends Error {
 	 *	@return boolean success.
 	 */
 	function sendNotice($has_attach=false) {
-		$ids =& $this->Forum->getMonitoringIDs();
+		$ids = $this->Forum->getMonitoringIDs();
 
 		$recipients = array ();
 		foreach ($ids as $id) {

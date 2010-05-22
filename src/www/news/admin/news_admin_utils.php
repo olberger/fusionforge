@@ -1,25 +1,25 @@
 <?php
 /**
- * GForge News Facility
+ * News Facility
  *
  * Copyright 1999-2001 (c) VA Linux Systems
- * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 2002-2004 (c) GForge Team
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -67,9 +67,9 @@ function show_news_approve_form($qpa_pending, $qpa_rejected, $qpa_approved) {
 
        	if ($rows < 1) {
        		echo '
-       			<h4>'._('No Queued Items Found').'</h4>';
+       			<h2>'._('No Queued Items Found').'</h2>';
        	} else {
-       		echo '<h4>'.sprintf(_('These items need to be approved (total: %1$s)'), $rows).'</h4>';
+       		echo '<h2>'.sprintf(_('These items need to be approved (total: %1$s)'), $rows).'</h2>';
        		echo $GLOBALS['HTML']->listTableTop($title_arr);
        		for ($i=0; $i<$rows; $i++) {
        			show_news_item($result,$i,false,true);
@@ -89,7 +89,7 @@ function show_news_approve_form($qpa_pending, $qpa_rejected, $qpa_approved) {
        		echo '
        			<h2>'._('No rejected items found for this week').'</h2>';
        	} else {
-       		echo '<h2>'.sprintf(_('These items were rejected this past week (total: %1$s)'), $rows).'</h2>';
+       		echo '<h2>'.sprintf(_('These items were rejected this past week or were not intended for front page (total: %1$s)'), $rows).'</h2>';
        		echo $GLOBALS['HTML']->listTableTop($title_arr);
        		for ($i=0; $i<$rows; $i++) {
        			show_news_item($result,$i,false,false);

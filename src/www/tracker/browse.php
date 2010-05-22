@@ -6,6 +6,21 @@
  * Copyright 2010 Roland Mas
  * Copyright 2010 Alain Peyrat, Alcatel-Lucent
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 if (!defined('BASE')) require('illegal_access.inc.php');
 
@@ -18,8 +33,7 @@ session_require_perm ('tracker', $ath->getID(), 'read') ;
 
 $query_id = getIntFromRequest('query_id');
 $start = getIntFromRequest('start');
-
-$pagelength = 25 ;
+$paging = 0;
 
 //
 //	The browse page can be powered by a pre-saved query
@@ -31,19 +45,27 @@ $pagelength = 25 ;
 //	If the query_id = -1, unset the pref and use regular browse boxes
 //
 if (session_loggedin()) {
+	$u =& session_get_user();
+	if (getStringFromRequest('setpaging')) {
+		/* store paging preferences */
+		$paging = getIntFromRequest('nres');
+		if (!$paging) {
+			$paging = 25;
+		}
+		$u->setPreference("paging", $paging);
+	}
+	
 	if($query_id) {
 		if ($query_id == '-1') {
-			$u =& session_get_user();
 			$u->setPreference('art_query'.$ath->getID(),'');
 		} else {
 			$aq = new ArtifactQuery($ath,$query_id);
 			if (!$aq || !is_object($aq)) {
-				exit_error('Error',$aq->getErrorMessage());
+				exit_error($aq->getErrorMessage(),'tracker');
 			}
 			$aq->makeDefault();
 		}
 	} else {
-		$u =& session_get_user();
 		$query_id=$u->getPreference('art_query'.$ath->getID(),'');
 	}
 } elseif ($query_id) {
@@ -65,9 +87,9 @@ if (session_loggedin()) {
 $af = new ArtifactFactory($ath);
 
 if (!$af || !is_object($af)) {
-	exit_error('Error','Could Not Get Factory');
+	exit_error(_('Could Not Get Factory'),'tracker');
 } elseif ($af->isError()) {
-	exit_error('Error',$af->getErrorMessage());
+	exit_error($af->getErrorMessage(),'tracker');
 }
 
 if (!isset($_sort_col)) {
@@ -110,7 +132,7 @@ if (is_array($_extra_fields)){
 	}
 }
 
-$af->setup($offset,$_sort_col,$_sort_ord,$pagelength,$set,$_assigned_to,$_status,$aux_extra_fields);
+$af->setup($offset,$_sort_col,$_sort_ord,$paging,$set,$_assigned_to,$_status,$aux_extra_fields);
 //
 //	These vals are sanitized and/or retrieved from ArtifactFactory stored settings
 //
@@ -123,7 +145,7 @@ $_extra_fields=$af->extra_fields;
 $art_arr =& $af->getArtifacts();
 
 if (!$art_arr && $af->isError()) {
-	exit_error('Error',$af->getErrorMessage());
+	exit_error($af->getErrorMessage(),'tracker');
 }
 
 //build page title to make bookmarking easier
@@ -209,6 +231,48 @@ $changed_arr[]= 3600 * 24 * 7; // 1 week
 $changed_arr[]= 3600 * 24 * 14;// 2 week
 $changed_arr[]= 3600 * 24 * 30;// 1 month
 
+if ($art_arr && ($art_cnt = count($art_arr)) > 0) {
+	$focus = getIntFromRequest('focus');
+} else {
+	$art_cnt = 0;
+	$start = 0;
+	$focus = 0;
+}
+$paging = 0;
+if (session_loggedin()) {
+	/* logged in users get configurable paging */
+	$paging = $u->getPreference("paging");
+	echo '<form action="'. getStringFromServer('PHP_SELF') .'?group_id='.$group_id.'&amp;atid='.$ath->getID().'&amp;start='.
+		$start.'" method="post">'."\n";
+}
+if (!$paging) {
+	$paging = 25;
+}
+if ($art_cnt) {
+	if ($focus) {
+		for ($i = 0; $i < $art_cnt; ++$i)
+			if ($art_arr[$i]->getID() == $focus) {
+				$start = $i;
+				break;
+			}
+	}
+	$max = ($art_cnt > ($start + $paging)) ? ($start + $paging) : $art_cnt;
+} else {
+	$max = 0;
+}
+
+printf('<p>' . _('Displaying results %1$d‒%2$d out of %3$d total.'),
+       $start + 1, $max, $art_cnt);
+if (session_loggedin()) {
+	printf(' ' . _('Displaying %2$s results.') . "\n\t<input " .
+	       'type="submit" name="setpaging" value="%1$s" />' .
+	       "\n</p>\n</form>\n", _('Change'),
+	       html_build_select_box_from_array(array(
+							'10', '25', '50', '100', '1000'), 'nres', $paging, 1));
+} else {
+	echo "</p>\n";
+}
+
 /**
  *
  *	Show the free-form text submitted by the project admin
@@ -273,13 +337,13 @@ if (session_loggedin()) {
 
 if (db_numrows($res)>0) {
 	echo '<form action="'. getStringFromServer('PHP_SELF') .'" method="get">';
+	echo '<input type="hidden" name="group_id" value="'.$group_id.'" />';
+	echo '<input type="hidden" name="atid" value="'.$ath->getID().'" />';
+	echo '<input type="hidden" name="power_query" value="1" />';
 	echo '	<table width="100%" cellspacing="0">
 	<tr>
 	<td>
 	';
-	echo '<input type="hidden" name="group_id" value="'.$group_id.'" />';
-	echo '<input type="hidden" name="atid" value="'.$ath->getID().'" />';
-	echo '<input type="hidden" name="power_query" value="1" />';
 	$optgroup['key'] = 'type';
 	$optgroup['values'][0] = 'Private queries';
 	$optgroup['values'][1] = 'Project queries';
@@ -318,11 +382,11 @@ echo '
 	</div>
 	<div class="tabbertab'.($af->query_type == 'custom' ? ' tabbertabdefault' : '').'" title="'._('Simple Filtering and Sorting').'">
 	<form action="'. getStringFromServer('PHP_SELF') .'?group_id='.$group_id.'&amp;atid='.$ath->getID().'" method="post">
+	<input type="hidden" name="query_id" value="-1" />
+	<input type="hidden" name="set" value="custom" />
 	<table width="100%" cellspacing="0">
 	<tr>
 	<td>
-	<input type="hidden" name="query_id" value="-1" />
-	<input type="hidden" name="set" value="custom" />
 	'._('Assignee').':&nbsp;'. $tech_box .'
 	</td>
 	<td align="center">
@@ -361,7 +425,7 @@ if ($af->query_type == 'default') {
 echo '
 </div>';
 
-if ($art_arr && count($art_arr) > 0) {
+if ($art_cnt > 0) {
 
 	if ($query_id) {
 		$aq = new ArtifactQuery($ath,$query_id);
@@ -389,7 +453,7 @@ if ($art_arr && count($art_arr) > 0) {
 		}
 		
 		$i=0;
-		$efarr =& $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
+		$efarr = $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
 		$keys=array_keys($efarr);
 		$field_id = $keys[0];
 		$states = $ath->getExtraFieldElements($field_id);
@@ -472,8 +536,6 @@ if ($art_arr && count($art_arr) > 0) {
 
 	$then=(time()-$ath->getDuePeriod());
 
-	$max = ((count($art_arr) > ($start + $pagelength)) ? ($start+$pagelength) : count($art_arr) );
-//echo "max: $max";
 	for ($i=$start; $i<$max; $i++) {
  		$extra_data = $art_arr[$i]->getExtraFieldDataText();
 		echo '
@@ -546,35 +608,10 @@ if ($art_arr && count($art_arr) > 0) {
 		echo '</tr>';
 	}
 
-	/*
-		Show extra rows for <-- Prev / Next -->
-	* /
-	//only show this if we're not using a power query
-	if ($af->max_rows > 0) {
-		if (($offset > 0) || ($rows >= 50)) {
-			echo '
-				<tr><td colspan="2">';
-			if ($offset > 0) {
-				echo '<a href="'.getStringFromServer('PHP_SELF').'?func=browse&amp;group_id='.$group_id.'&amp;atid='.$ath->getID().'&amp;set='.
-				$set.'&offset='.($offset-50).'"><strong><-- '._('Previous 50').'</strong></a>';
-			} else {
-				echo '&nbsp;';
-			}
-			echo '</td><td>&nbsp;</td><td colspan="2">';
-			if ($rows >= 50) {
-				echo '<a href="'.getStringFromServer('PHP_SELF').'?func=browse&amp;group_id='.$group_id.'&amp;atid='.$ath->getID().'&amp;set='.
-				$set.'&offset='.($offset+50).'"><strong>'._('Next 50').' --></strong></a>';
-			} else {
-				echo '&nbsp;';
-			}
-			echo '</td></tr>';
-		}
-	}
-	*/
 	echo $GLOBALS['HTML']->listTableBottom();
-	$pages = count($art_arr) / $pagelength;
-	$currentpage = intval($start / $pagelength);
-//echo "Item Count: ".count($arr)."Pages: $pages";
+	$pages = $art_cnt / $paging;
+	$currentpage = intval($start / $paging);
+
 	if ($pages >= 1) {
 		$skipped_pages=false;
 		for ($j=0; $j<$pages; $j++) {
@@ -589,10 +626,10 @@ if ($art_arr && count($art_arr) > 0) {
 					$skipped_pages=false;
 				}
 			}
-			if ($j == $currentpage) {
+			if ($j * $paging == $start) {
 				echo '<strong>'.($j+1).'</strong>&nbsp;&nbsp;';
 			} else {
-				echo '<a href="'.getStringFromServer('PHP_SELF')."?func=browse&amp;group_id=".$group_id.'&amp;atid='.$ath->getID().'&amp;set='. $set.'&amp;start='.($j*$pagelength).'"><strong>'.($j+1).'</strong></a>&nbsp;&nbsp;';
+				echo '<a href="'.getStringFromServer('PHP_SELF')."?func=browse&amp;group_id=".$group_id.'&amp;atid='.$ath->getID().'&amp;set='. $set.'&amp;start='.($j*$paging).'"><strong>'.($j+1).'</strong></a>&nbsp;&nbsp;';
 			}
 		}
 	}
@@ -627,11 +664,10 @@ if ($art_arr && count($art_arr) > 0) {
 <span class="important">'._('<strong>Admin:</strong> If you wish to apply changes to all items selected above, use these controls to change their properties and click once on "Mass Update".').'</span></p>
 			</td></tr>';
 
-
 		//
 		//	build custom fields
 		//
-	$ef =& $ath->getExtraFields(ARTIFACT_EXTRAFIELD_FILTER_INT);
+	$ef = $ath->getExtraFields(ARTIFACT_EXTRAFIELD_FILTER_INT);
 	$keys=array_keys($ef);
 
 	$sel=array();
@@ -678,7 +714,7 @@ if ($art_arr && count($art_arr) > 0) {
 		show_priority_colors_key();
 	}
 } else {
-	echo '<div class="warning_msg">'._('No items found').'</div>';
+	echo '<p class="warning_msg">'._('No items found').'</p>';
 	echo db_error();
 }
 

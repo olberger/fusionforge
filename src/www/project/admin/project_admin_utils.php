@@ -2,32 +2,30 @@
 /**
  * Project Admin: Module of common functions
  *
- * Portions Copyright 1999-2001 (c) VA Linux Systems
- * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2002-2004 (c) GForge Team
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 
 /*
-
 	Standard header to be used on all /project/admin/* pages
-
 */
 
 function project_admin_header($params) {
@@ -163,7 +161,7 @@ function show_grouphistory ($group_id) {
 			<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'><td>'.$field.'</td><td>';
 			
 			if (is_numeric(db_result($result, $i, 'old_value'))) {
-				if (ereg("user|User", $field)) {
+				if (preg_match("/[Uu]ser/i", $field)) {
 					echo user_getname(db_result($result, $i, 'old_value'));
 				} else {
 					echo db_result($result, $i, 'old_value');
@@ -210,7 +208,7 @@ function prdb_namespace_seek($namecheck) {
 
 		// if we reached 20, then the namespace is depleted - eject eject
 		if ($curr_num == 20) {
-			exit_error("Namespace Failure","Failed to find namespace for database");
+			exit_error(_('Failed to find namespace for database'),'home');
 		}
 
 	}

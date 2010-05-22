@@ -1,16 +1,28 @@
 <?php
 /**
- * GForge Survey HTML Facility
+ * FusionForge Survey HTML Facility
  *
- * Copyright 2004 GForge, LLC
- * http://gforge.org/
+ * Portions Copyright 1999-2001 (c) VA Linux Systems
+ * The rest Copyright 2002-2004 (c) GForge Team - Sung Kim
+ * Copyright 2008-2010 (c) FusionForge Team
+ * http://fusionforge.org/
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-/*
-	Survey related HTML
-	By Sung Kim, GForge, 02/2004
-*/
 
 require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'include/note.php';
@@ -27,7 +39,7 @@ class SurveyHTML extends Error {
 		return true;
 	}
 
-        /**
+	/**
 	 * Show survey header 
 	 */
 	function header($params) {
@@ -42,12 +54,12 @@ class SurveyHTML extends Error {
 		
 		if ($project =& group_get_object($group_id)){
 			if (!$project->usesSurvey()) {
-				exit_error(_('Error'), _('This Group Has Turned Off Surveys.'));
+			exit_disabled();
 			}
 			
 			site_project_header($params);
 			
-			if ($is_admin_page) {
+			if ($is_admin_page && $group_id) {
 				echo ($HTML->subMenu(
 					array(
 						_('Surveys'),
@@ -101,22 +113,22 @@ class SurveyHTML extends Error {
 		/* If we have a question object, it is a Modify */
 		if ($q && is_object($q) && !$q->isError() && $q->getID()) {
 			$title = _('Edit A Question');
-			$warning = '<span class="warning">'. 
+			$warning_msg = '<div class="warning">'. 
 				_('WARNING! It is a bad idea to change a question after responses to it have been submitted').
-				'</span>';
+				'</div>';
 			$question_id = $q->getID();
 			$question = $q->getQuestion();
 			$question_type = $q->getQuestionType();
 			$question_button = _('Submit Changes');
 		} else {
-			$warning = '';
+			$warning_msg = '';
 			$question = '';
 			$question_id = '';
 			$question_type = '';
 		}
 
 		$ret = '<h1>'. $title. '</h1>';
-		$ret.= $warning;
+		$ret.= $warning_msg;
 		$ret.='<form action="'.getStringFromServer('PHP_SELF').'" method="post">';
 		$ret.='<p><input type="hidden" name="post" value="Y" />';
 		$ret.='<input type="hidden" name="group_id" value="'.$group_id.'" />';
@@ -163,8 +175,8 @@ class SurveyHTML extends Error {
 		/* If we have a survey object, it is a Modify */
 		if ($s && is_object($s) && !$s->isError() && $s->getID()) {
 			$title = _('Edit A Survey');
-			$warning = '<span class="warning">'. 
-				_('WARNING! It is a bad idea to edit a survey after responses have been posted').'</span>';
+			$warning_msg = '<div class="warning">'. 
+				_('WARNING! It is a bad idea to edit a survey after responses have been posted').'</div>';
 			$survey_id = $s->getID();
 			$survey_title = $s->getTitle();
 			$survey_questions = $s->getQuestionString();
@@ -174,13 +186,13 @@ class SurveyHTML extends Error {
 				$active ='';
 			}
 		} else {
-			$warning = '';
+			$warning_msg = '';
 			$survey_questions = ''; 
 			$survey_title = ''; 
 		}
 
-		$ret = '<h2>'. $title. '</h2>';
-		$ret.= $warning;
+		$ret = '<h1>'. $title. '</h1>';
+		$ret.= $warning_msg;
 		$ret.='<form action="'.getStringFromServer('PHP_SELF').'" method="post">';
 		$ret.='<input type="hidden" name="post" value="Y" />';
 		$ret.='<input type="hidden" name="group_id" value="'.$group_id.'" />';
@@ -216,7 +228,7 @@ class SurveyHTML extends Error {
 				$ret.= "<tr ". $GLOBALS['HTML']->boxGetAltRowStyle($i) .">\n";
 			}
 			
-			$ret.= '<td><input type="checkbox" name="to_add[]" value="'.$arr_to_add[$i]->getID().'">'.
+			$ret.= '<td><input type="checkbox" name="to_add[]" value="'.$arr_to_add[$i]->getID().'" />'.
 				$arr_to_add[$i]->getQuestion().' ('.
 				$arr_to_add[$i]->getQuestionStringType().')</td>';
 			
@@ -258,7 +270,7 @@ class SurveyHTML extends Error {
 			$ret.= '<td><center>['.util_make_link ('/survey/admin/survey.php?group_id='.$group_id.'&amp;survey_id='. $survey_id.'&amp;is_up=1&amp;updown=Y'.'&amp;question_id='.$arr_to_del[$i]->getID(),_('Up')).'] ';
 			$ret.= '['.util_make_link ('/survey/admin/survey.php?group_id='.$group_id.'&amp;survey_id='. $survey_id.'&amp;is_up=0&amp;updown=Y'.'&amp;question_id='.$arr_to_del[$i]->getID(),_('Down')).']</center></td>';
 			
-			$ret.= '<td><center><input type="checkbox" name="to_del[]" value="'.$arr_to_del[$i]->getID().'"></center></td>';
+			$ret.= '<td><center><input type="checkbox" name="to_del[]" value="'.$arr_to_del[$i]->getID().'" /></center></td>';
 			$ret.= '</tr>';
 			
 		}
@@ -449,14 +461,14 @@ class SurveyHTML extends Error {
 		global $survey_id;
 		
 		if (!$s->isActive()) {
-			return '<span class="error">'. _('Error - you can\'t vote for inactive survey').'</span>';
+			return '<div class="error">'. _('Error - you can\'t vote for inactive survey').'</div>';
 		}
 		/* Get questions of this survey */
 		$questions = & $s->getQuestionInstances();
 		
 		$ret="";
 		if ($s->isUserVote(user_getid())) {
-			$ret.= '<div class="error">'. _('Warning - you are about to vote a second time on this survey.').'</div>';
+			$ret.= '<div class="warning">'. _('Warning - you are about to vote a second time on this survey.').'</div>';
 		} 
 		$ret.= '<form action="/survey/survey_resp.php" method="post">'.
 			'<input type="hidden" name="group_id" value="'.$group_id.'" />'.
@@ -569,7 +581,7 @@ class SurveyHTML extends Error {
 			echo ($sr->getErrorMessage());
 		}
 		
-		$totalCount = $sr->getNumberOfSurveyResponsess();
+		$totalCount = $sr->getNumberOfSurveyResponses();
 		$votes = $Survey->getNumberOfVotes();
 		
 		/* No votes, no result to show */

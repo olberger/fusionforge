@@ -62,12 +62,12 @@ if($offset > $totalCount) {
 }
 
 if ($which==100) {
-	$res = db_query_params ('SELECT * FROM cron_history ORDER BY rundate',
+	$res = db_query_params ('SELECT * FROM cron_history ORDER BY rundate DESC',
 				array (),
 				ADMIN_CRONMAN_ROWS,
 				$offset);
 } else {
-	$res = db_query_params ('SELECT * FROM cron_history WHERE job=$1 ORDER BY rundate',
+	$res = db_query_params ('SELECT * FROM cron_history WHERE job=$1 ORDER BY rundate DESC',
 				array ($which),
 				ADMIN_CRONMAN_ROWS,
 				$offset);
@@ -93,7 +93,7 @@ if($totalCount > ADMIN_CRONMAN_ROWS) {
 		if ($offset != 0) {
 			$previousUrl = 'cronman.php?which='.$which.'&amp;offset='.($offset - ADMIN_CRONMAN_ROWS);
 			echo '<a href="'.$previousUrl.'" class="prev">'
-				. html_image('t2.png', '15', '15', array('border'=>'0','align'=>'middle'))
+				. html_image('t2.png', '15', '15')
 				. ' '._('Previous').'</a>';
 		} else {
 			echo '&nbsp;';
@@ -103,7 +103,7 @@ if($totalCount > ADMIN_CRONMAN_ROWS) {
 			$nextUrl = 'cronman.php?which='.$which.'&amp;offset='.($offset + ADMIN_CRONMAN_ROWS);
 			echo '<a href="'.$nextUrl.'" class="next">'
 				._('Next').' '
-				. html_image('t.png', '15', '15', array('border'=>'0','align'=>'middle')) . '</a>';
+				. html_image('t.png', '15', '15') . '</a>';
 		} else {
 			echo '&nbsp;';
 		}

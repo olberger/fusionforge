@@ -1,12 +1,27 @@
 <?php
 /**
-  * SourceForge Generic Tracker facility
-  *
-  * SourceForge: Breaking Down the Barriers to Open Source Development
-  * Copyright 1999-2001 (c) VA Linux Systems
-  * http://sourceforge.net
-  *
-  */
+ * Tracker Facility
+ *
+ * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2010 (c) Franck Villaume - Capgemini
+ * http://fusionforge.org/
+ *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 if (!defined('BASE')) require('illegal_access.inc.php');
 
 $ath->header(array 
@@ -42,19 +57,19 @@ if (session_loggedin()) {
 				}
 				echo '
 				<a href="index.php?group_id='.$group_id.'&amp;artifact_id='.$ah->getID().'&amp;atid='.$ath->getID().'&amp;func=monitor"><strong>'.
-					html_image('ic/'.$img.'','20','20',array()).' '.$text.'</strong></a>';
+					html_image('ic/'.$img.'','20','20').' '.$text.'</strong></a>';
 				?>
 			</td>
 			<td><?php
 				if ($group->usesPM()) {
 					echo '
 				<a href="'.getStringFromServer('PHP_SELF').'?func=taskmgr&amp;group_id='.$group_id.'&amp;atid='.$atid.'&amp;aid='.$aid.'">'.
-					html_image('ic/taskman20w.png','20','20',array()).'<strong>'._('Build Task Relation').'</strong></a>';
+					html_image('ic/taskman20w.png','20','20').'<strong>'._('Build Task Relation').'</strong></a>';
 				}
 				?>
 			</td>
 			<td>
-				<a href="<?php echo getStringFromServer('PHP_SELF')."?func=deleteartifact&amp;aid=$aid&amp;group_id=$group_id&amp;atid=$atid"; ?>"><strong><?php echo html_image('ic/trash.png','16','16',array()) . _('Delete'); ?></strong></a>
+				<a href="<?php echo getStringFromServer('PHP_SELF')."?func=deleteartifact&amp;aid=$aid&amp;group_id=$group_id&amp;atid=$atid"; ?>"><strong><?php echo html_image('ic/trash.png','16','16') . _('Delete'); ?></strong></a>
 			</td>
 			<td>
 				<input type="submit" name="submit" value="<?php echo _('Save Changes') ?>" />
@@ -147,10 +162,6 @@ echo html_build_select_box ($res,'new_artifact_type_id',$ath->getID(),false);
 		<td>
 		</td>
 	</tr>
-	<?php
-		$ath->renderRelatedTasks($group, $ah);
-		$ath->renderFiles($group_id, $ah);
-	?>
 	<tr>
 		<td><strong><?php echo _('Summary')?><?php echo utils_requiredField(); ?>: <a href="javascript:help_window('/help/tracker.php?helpname=summary')"><strong>(?)</strong></a></strong><br />
 		<input type="text" name="summary" size="70" value="<?php
@@ -199,36 +210,9 @@ if ($group->usesPM()) {
 <div class="tabbertab" title="<?php echo _('Related Tasks'); ?>">
 		<h3><?php echo _('Related Tasks'); ?>:</h3>
 <table border="0" width="80%">
-		<?php
-		$result = $ah->getRelatedTasks();
-		$taskcount = db_numrows($ah->relatedtasks);
-		if ($taskcount > 0) {
-			echo '<tr><td colspan="2">';
-			$titles[] = _('Task Id');
-			$titles[] = _('Task Summary');
-			$titles[] = _('Start Date');
-			$titles[] = _('End Date');
-			echo $GLOBALS['HTML']->listTableTop($titles);
-			for ($i = 0; $i < $taskcount; $i++) {
-				$taskinfo  = db_fetch_array($ah->relatedtasks, $i);
-				$taskid    = $taskinfo['project_task_id'];
-				$projectid = $taskinfo['group_project_id'];
-				$groupid   = $taskinfo['group_id'];
-				$summary   = util_unconvert_htmlspecialchars($taskinfo['summary']);
-				$startdate = date(_('Y-m-d H:i'), $taskinfo['start_date']);
-				$enddate   = date(_('Y-m-d H:i'), $taskinfo['end_date']);
-				echo '<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'>
-					<td>'.$taskid.'</td>
-						<td>'.util_make_link ('/pm/task.php?func=detailtask&amp;project_task_id='.$taskid.'&amp;group_id='.$groupid.'&amp;group_project_id='.$projectid,$summary).'</td>
-						<td>'.$startdate.'</td>
-						<td>'.$enddate.'</td>
-				</tr>';
-			}
-			echo $GLOBALS['HTML']->listTableBottom();
-		} else {
-			echo '<tr><td colspan="3">'._('No Related Tasks').'</td></tr>';
-		}
-      ?>
+	<?php
+		$ath->renderRelatedTasks($group, $ah);
+	?>
 </table>
 </div>
 <?php } ?>
@@ -246,31 +230,7 @@ if ($group->usesPM()) {
 		//
 		//	print a list of files attached to this Artifact
 		//
-		$file_list =& $ah->getFiles();
-		
-		$count=count($file_list);
-		$title_arr=array();
-		$title_arr[]=_('Delete');
-		$title_arr[]=_('Name');
-		$title_arr[]=_('Download');
-		echo $GLOBALS['HTML']->listTableTop ($title_arr);
-
-		if ($count > 0) {
-
-			for ($i=0; $i<$count; $i++) {
-				echo '
-				<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'>
-				<td><input type="checkbox" name="delete_file[]" value="'. $file_list[$i]->getID() .'" />'._('Delete').' </td>'.
-				'<td>'. htmlspecialchars($file_list[$i]->getName()) .'</td>
-				<td>'.util_make_link ('/tracker/download.php/'.$group_id.'/'. $ath->getID().'/'. $ah->getID() .'/'.$file_list[$i]->getID().'/'.$file_list[$i]->getName(),_('Download')).'</td>
-				</tr>';
-			}
-
-		} else {
-			echo '<tr '.$GLOBALS['HTML']->boxGetAltRowStyle(0).'><td colspan="4">'._('No Files Currently Attached').'</td></tr>';
-		}
-
-		echo $GLOBALS['HTML']->listTableBottom();
+		$ath->renderFiles($group_id, $ah);
 		?>
 	</td></tr>
 </table>

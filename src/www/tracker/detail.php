@@ -1,11 +1,25 @@
 <?php
 /**
- * SourceForge Generic Tracker facility
+ * Tracker Detail
  *
- * SourceForge: Breaking Down the Barriers to Open Source Development
  * Copyright 1999-2001 (c) VA Linux Systems
- * http://sourceforge.net
+ * http://fusionforge.org/
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 if (!defined('BASE')) require('illegal_access.inc.php');
 
@@ -35,7 +49,7 @@ echo notepad_func();
 					}
 					echo '
 					<a href="index.php?group_id='.$group_id.'&amp;artifact_id='.$ah->getID().'&amp;atid='.$ath->getID().'&amp;func=monitor"><strong>'.
-						html_image('ic/'.$img.'','20','20',array()).' '.$key.'</strong></a>';
+						html_image('ic/'.$img.'','20','20').' '.$key.'</strong></a>';
 					?>&nbsp;<a href="javascript:help_window('<?php echo util_make_url ('/help/tracker.php?helpname=monitor'); ?>')"><strong>(?)</strong></a>
 			</td>
 			<td>
@@ -72,7 +86,6 @@ echo notepad_func();
 		<?php
 			$ath->renderExtraFields($ah->getExtraFieldData(),true,'none',false,'Any','',false,'DISPLAY');
 			$ath->renderRelatedTasks($group, $ah);
-			$ath->renderFiles($group_id, $ah);
 		?>
 
 		<tr><td colspan="2"><strong><?php echo _('Summary') ?>:</strong><br /><?php echo $ah->getSummary(); ?></td></tr>
@@ -125,28 +138,8 @@ echo notepad_func();
 	//
 	//  print a list of files attached to this Artifact
 	//
-	$file_list =& $ah->getFiles();
-
-	$count=count($file_list);
-
-	if ($count > 0) {
-
-		$title_arr=array();
-		$title_arr[]=_('Name');
-		$title_arr[]=_('Download');
-		echo $GLOBALS['HTML']->listTableTop ($title_arr);
-		for ($i=0; $i<$count; $i++) {
-			echo '<tr '. $GLOBALS['HTML']->boxGetAltRowStyle($i) .'>
-			<td>'. htmlspecialchars($file_list[$i]->getName()) .'</td>
-			<td>'.util_make_link ('/tracker/download.php/'.$group_id.'/'.$ath->getID().'/'.$ah->getID().'/'.$file_list[$i]->getID().'/'.$file_list[$i]->getName(),_('Download')).'</td>
-			</tr>';
-		}
-		echo $GLOBALS['HTML']->listTableBottom();
-
-	} else {
-		echo _('No Files Currently Attached');
-	}
-?>
+		$ath->renderFiles($group_id, $ah);
+	?>
 	</td></tr>
 </table>
 </div>

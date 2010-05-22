@@ -1,27 +1,25 @@
 <?php
 /**
- * GForge Plugin Activate / Deactivate Page
+ * FusionForge Plugin Activate / Deactivate Page
  *
- * @version 
- * @author 
  * Copyright 2005 GForge, LLC
- * http://gforge.org/
+ * Copyright 2010 FusionForge Team
+ * http://fusionforge.org/
  *
+ * This file is part of FusionForge.
  *
- * This file is part of GForge.
- *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -31,28 +29,6 @@ require_once $gfwww.'admin/admin_utils.php';
 
 // Skip non compatible plugins.
 $plugins_disabled = array('webcalendar', 'scmccase');
-
-site_admin_header(array('title'=>_('Plugin Manager')));
-echo '<h1>' . _('Plugin Manager') . '</h1>';
-
-?>
-
-<script type="text/javascript">
-
-	function change(url,plugin)
-	{
-		field = document.theform.elements[plugin];
-		if (field.checked) {
-			window.location=(url + "&init=yes");
-		} else {
-			window.location=(url);
-		}
-	}
-
-</script>
-
-<form name="theform" action="<?php echo getStringFromServer('PHP_SELF'); ?>" method="get">
-<?php
 
 $pm = plugin_manager_get_object();
 
@@ -65,7 +41,7 @@ if (getStringFromRequest('update')) {
 			$res = db_query_params ('DELETE FROM user_plugin WHERE plugin_id = (SELECT plugin_id FROM plugins WHERE plugin_name = $1)',
 			array($pluginname));
 			if (!$res) {
-				exit_error("SQL ERROR",db_error());
+				exit_error(db_error(),'admin');
 			} else {
 				$feedback .= sprintf(ngettext('%d user detached from plugin.', '%d users detached from plugin.', db_affected_rows($res)), db_affected_rows($res));
 			}
@@ -75,14 +51,14 @@ if (getStringFromRequest('update')) {
 			$res = db_query_params ('DELETE FROM group_plugin WHERE plugin_id = (SELECT plugin_id FROM plugins WHERE plugin_name = $1)',
 			array($pluginname));
 			if (!$res) {
-				exit_error("SQL ERROR",db_error());
+				exit_error(db_error(),'admin');
 			} else {
 				$feedback .= sprintf(ngettext('%d project detached from plugin.', '%d projects detached from plugin.', db_affected_rows($res)), db_affected_rows($res));
 			}
 		}
 		$res = $pm->deactivate($pluginname);
 		if (!$res) {
-			exit_error("SQL ERROR",db_error());
+			exit_error(db_error(),'admin');
 		} else {
 			$feedback = sprintf(_('Plugin %1$s updated Successfully'), $pluginname);
 			
@@ -112,7 +88,7 @@ if (getStringFromRequest('update')) {
 
 		$res = $pm->activate($pluginname);
 		if (!$res) {
-			exit_error("SQL ERROR",db_error());
+			exit_error(db_error(),'admin');
 		} else {
 			$feedback = sprintf(_('Plugin %1$s updated Successfully'), $pluginname);
 
@@ -139,8 +115,8 @@ if (getStringFromRequest('update')) {
 				// The apache group or user should have write perms in /etc/gforge/plugins folder...
 				$code = symlink(forge_get_config('plugins_path') . '/' . $pluginname . '/etc/plugins/' . $pluginname, forge_get_config('config_path'). '/plugins/'.$pluginname); 
 				if (!$code) {
-					$feedback .= '<br />['.forge_get_config('config_path'). '/plugins/'.$pluginname.'->'.forge_get_config('plugins_path') . '/' . $pluginname . '/etc/plugins/' . $pluginname . ']';
-					$feedback .= sprintf(_('<br />Config file could not be linked to etc/gforge/plugins/%1$s. Check the write permissions for apache in /etc/gforge/plugins or create the link manually.'), $pluginname);
+					$warning_msg .= '<br />['.forge_get_config('config_path'). '/plugins/'.$pluginname.'->'.forge_get_config('plugins_path') . '/' . $pluginname . '/etc/plugins/' . $pluginname . ']';
+					$warning_msg .= sprintf(_('<br />Config file could not be linked to etc/gforge/plugins/%1$s. Check the write permissions for apache in /etc/gforge/plugins or create the link manually.'), $pluginname);
 				}
 			}
 
@@ -163,7 +139,7 @@ if (getStringFromRequest('update')) {
 							$res = db_next_result();
 						}
 					} else {
-						$feedback .= _('Initialisation error<br />Database said: ').db_error();
+						$error_msg .= _('Initialisation error<br />Database said: ').db_error();
 					}
 				}	
 				//we check for a php script	
@@ -177,8 +153,28 @@ if (getStringFromRequest('update')) {
 	}
 }
 
-if (isset($feedback)) echo '<div class="feedback">' . $feedback . '</div>';
-echo _('Here you can activate / deactivate site-wide plugins which are in the plugins/ folder. Then, you should activate them also per project, per user or whatever the plugin specifically applies to.<br /><span class="important">Be careful because some groups/users can be using the plugin. Deactivating it will remove the plugin from all users/groups.<br />Be <strong>extra</strong> careful not to run the init-script again when the plugin is reactivated, because some scripts have DROP TABLE statements.</span><br /><br />');
+site_admin_header(array('title'=>_('Plugin Manager')));
+?>
+<script type="text/javascript">
+
+	function change(url,plugin)
+	{
+		field = document.theform.elements[plugin];
+		if (field.checked) {
+			window.location=(url + "&init=yes");
+		} else {
+			window.location=(url);
+		}
+	}
+
+</script>
+<?php
+echo '<h1>' . _('Plugin Manager') . '</h1>';
+echo '<p>';
+echo _('Here you can activate / deactivate site-wide plugins which are in the plugins/ folder. Then, you should activate them also per project, per user or whatever the plugin specifically applies to.');
+echo '</p>';
+echo '<div class="warning">'._('Be careful because some groups/users can be using the plugin. Deactivating it will remove the plugin from all users/groups. Be <strong>extra</strong> careful not to run the init-script again when the plugin is reactivated, because some scripts have DROP TABLE statements.').'</div>';
+echo '<form name="theform" action="'.getStringFromServer('PHP_SELF').'" method="post">';
 $title_arr = array( _('Plugin Name'),
 		    _('Status'),
 		    _('Action'),
@@ -202,18 +198,18 @@ if (!$pm->PluginIsInstalled('scmcvs')) {
 
 //get the directories from the plugins dir
 
-$handle = opendir(forge_get_config('plugins_path'));
 $filelist = array();
-while (($filename = readdir($handle)) !== false) {
-	if ($filename!='..' && $filename!='.' && $filename!=".svn" && $filename!="CVS" &&
-		is_dir(forge_get_config('plugins_path').'/'.$filename) &&
-		!in_array($filename, $plugins_disabled)) {
+if($handle = opendir(forge_get_config('plugins_path'))) {
+	while (($filename = readdir($handle)) !== false) {
+		if ($filename!='..' && $filename!='.' && $filename!=".svn" && $filename!="CVS" &&
+		    is_dir(forge_get_config('plugins_path').'/'.$filename) &&
+		    !in_array($filename, $plugins_disabled)) {
 
-		$filelist[] = $filename;
+			$filelist[] = $filename;
+		}
 	}
+	closedir($handle);
 }
-closedir($handle);
-
 sort($filelist);
 
 $j = 0;
@@ -256,7 +252,7 @@ foreach ($filelist as $filename) {
 			}
 		}
 		$link .= "','$filename');" . '">' . _('Deactivate') . "</a>";
-		$init = '<input id="'.$filename.'" type="checkbox" disabled name="script[]" value="'.$filename.'" />';
+		$init = '<input id="'.$filename.'" type="checkbox" disabled="disabled" name="script[]" value="'.$filename.'" />';
 	} else {
 		$msg = _('Inactive');
 		$status = "inactive";
@@ -269,10 +265,10 @@ foreach ($filelist as $filename) {
 	echo '<tr '. $HTML->boxGetAltRowStyle($j+1) .'>'.
 		'<td>'. $filename.'</td>'.
 		'<td class="'.$status.'" style="text-align:center">'. $msg .'</td>'.
-		'<td><div align="center">'. $link .'</div></td>'.
-		'<td><div align="center">'. $init .'</div></td>'.
-		'<td><div align="left">'. $users .'</div></td>'.
-		'<td><div align="left">'. $groups .'</div></td></tr>'."\n";
+		'<td style="text-align:center;">'. $link .'</td>'.
+		'<td style="text-align:center;">'. $init .'</td>'.
+		'<td style="text-align:left;">'. $users .'</td>'.
+		'<td style="text-align:left;">'. $groups .'</td></tr>'."\n";
 
 	$j++;
 }
@@ -284,7 +280,6 @@ echo $HTML->listTableBottom();
 </form>
 
 <?php
-
 
 site_admin_footer(array());
 

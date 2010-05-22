@@ -9,8 +9,8 @@ export HOST=centos52.local
 export DB_NAME=gforge
 export CONFIGURED=true
 
-rm -fr build/ reports/
-mkdir -p build/packages reports/coverage
+rm -fr $WORKSPACE/build $WORKSPACE/reports
+mkdir -p $WORKSPACE/build/packages $WORKSPACE/reports/coverage
 
 make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all
 

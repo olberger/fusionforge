@@ -2,10 +2,25 @@
 /**
  * Misc HTML functions
  *
- * SourceForge: Breaking Down the Barriers to Open Source Development
  * Copyright 1999-2001 (c) VA Linux Systems
- * http://sourceforge.net
+ * Copyright 2010 (c) FusionForge Team
  *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
+ * 
+ * FusionForge is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
  */
 
 /**
@@ -110,7 +125,7 @@ function html_abs_image($url, $width, $height, $args) {
  * @param		array	Any IMG tag parameters associated with this image (i.e. 'border', 'alt', etc...)
  * @param		bool	DEPRECATED
  */
-function html_image($src,$width,$height,$args,$display=1) {
+function html_image($src,$width='',$height='',$args=array(),$display=1) {
 	global $HTML;
 	$s = ((session_issecure()) ? forge_get_config('images_secure_url') : forge_get_config('images_url') );
 	return html_abs_image($s.$HTML->imgroot.$src, $width, $height, $args);
@@ -646,26 +661,28 @@ function site_project_header($params) {
 	if (!$project || !is_object($project)) {
 		exit_no_group();
 	} else if ($project->isError()) {
-		if ($project->isPermissionDeniedError() && !session_get_user()) {
- 			$next = '/account/login.php?feedback='.urlencode($project->getErrorMessage());
+		if ($project->isPermissionDeniedError()) {
+			if (!session_get_user()) {
+ 			$next = '/account/login.php?error_msg='.urlencode($project->getErrorMessage());
  			if (getStringFromServer('REQUEST_METHOD') != 'POST') {
 				$next .= '&return_to='.urlencode(getStringFromServer('REQUEST_URI'));
  			}
-			// @alu: change url.
- 			header("Location: $next");
- 			exit;
+			session_redirect($next);
 		}
-		exit_error("Group Problem",$project->getErrorMessage());
+			else
+				exit_error(sprintf(_('Project access problem: %s'),$project->getErrorMessage()),'home');
+		}
+		exit_error(sprintf(_('Project Problem: %s'),$project->getErrorMessage()),'home');
 	}
 
 	//group is private
 	if (!$project->isPublic()) {
-		session_require_perm ('project_read', $group_id) ;
+		session_require_perm ('project_read', $group_id);
 	}
 
 	//for dead projects must be member of admin project
 	if (!$project->isActive()) {
-		session_require_global_perm ('forge_admin') ;
+		session_require_global_perm ('forge_admin');
 	}
 
 	if (isset($params['title'])){
@@ -673,17 +690,9 @@ function site_project_header($params) {
 	} else {
 		$params['title']=$project->getPublicName();
 	}
-	echo $HTML->header($params);
 	
-	if(isset($GLOBALS['error_msg']) && $GLOBALS['error_msg']) {
-		echo html_error_top($GLOBALS['error_msg']);
-	}
-	if(isset($GLOBALS['warning_msg']) && $GLOBALS['warning_msg']) {
-		echo html_warning_top($GLOBALS['warning_msg']);
-	}
-	if(isset($GLOBALS['feedback']) && $GLOBALS['feedback']) {
-		echo html_feedback_top($GLOBALS['feedback']);
-	}
+	site_header($params);
+	
 //	echo $HTML->project_tabs($params['toptab'],$params['group'],$params['tabtext']);
 }
 
@@ -713,7 +722,15 @@ function site_user_header($params) {
 	*/
 	echo $HTML->header($params);
 	echo "<h1>" . _('My Personal Page') . "</h1>\n";
-	echo html_feedback_top((isset($GLOBALS['feedback']) ? $GLOBALS['feedback'] : ''));
+	if (isset($GLOBALS['error_msg'])) {
+		echo html_feedback_top($GLOBALS['error_msg']);
+	}
+	if (isset($GLOBALS['warning_msg'])) {
+		echo html_feedback_top($GLOBALS['warning_msg']);
+	}
+	if (isset($GLOBALS['feedback'])) {
+		echo html_feedback_top($GLOBALS['feedback']);
+	}
 	echo ($HTML->beginSubMenu());
 	if ($GLOBALS['sys_use_diary']) {
 		echo ($HTML->printSubMenu(

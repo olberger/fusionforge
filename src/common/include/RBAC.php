@@ -237,13 +237,7 @@ abstract class BaseRole extends Error {
 	public function setSettings($data) {
 		throw new Exception ("Not implemented") ;
 	}
-	public function linkProject ($project) {
-		throw new Exception ("Not implemented") ;
-	}
-	public function unlinkProject ($project) {
-		throw new Exception ("Not implemented") ;
-	}
-	public function normalizeData () {
+	public function delete () {
 		throw new Exception ("Not implemented") ;
 	}
 
@@ -262,7 +256,7 @@ abstract class BaseRole extends Error {
 			$ids[] = $hp->getID() ;
 		}
 
-		$res = db_query_params ('SELECT group_id FROM pfo_role_project_refs WHERE role_id=$1',
+		$res = db_query_params ('SELECT group_id FROM role_project_refs WHERE role_id=$1',
 					array ($this->getID())) ;
 		if ($res) {
 			while ($arr = db_fetch_array ($res)) {
@@ -271,6 +265,51 @@ abstract class BaseRole extends Error {
 		}
 
 		return group_get_objects (array_unique ($ids)) ;
+	}
+
+	function linkProject ($project) { // From the PFO spec
+		$hp = $this->getHomeProject () ;
+		if ($hp != NULL && $hp->getID() == $project->getID()) {
+			$this->setError ("Can't link to home project") ;
+			return false ;
+		}
+
+		$res = db_query_params('SELECT group_id FROM role_project_refs WHERE role_id=$1 AND group_id=$2',
+				       array ($this->getID(),
+					      $project->getID()));
+
+		if (db_numrows($res)) {
+			return true ;
+		}
+		$res = db_query_params('INSERT INTO role_project_refs (role_id, group_id) VALUES ($1, $2)',
+				       array ($this->getID(),
+					      $project->getID()));
+		if (!$res || db_affected_rows($res) < 1) {
+			$this->setError('linkProject('.$project->getID().') '.db_error());
+			return false;
+		}
+
+		return true ;
+	}
+
+	function unlinkProject ($project) { // From the PFO spec
+		$hp = $this->getHomeProject () ;
+		if ($hp != NULL && $hp->getID() == $project->getID()) {
+			$this->setError ("Can't unlink from home project") ;
+			return false ;
+		}
+
+		$res = db_query_params('DELETE FROM role_project_refs WHERE role_id=$1 AND group_id=$2',
+				       array ($this->getID(),
+					      $project->getID()));
+		if (!$res) {
+			$this->setError('unlinkProject('.$project->getID().') '.db_error());
+			return false;
+		}
+
+		$this->removeObsoleteSettings () ;
+
+		return true ;
 	}
 
 	/**
@@ -292,8 +331,12 @@ abstract class BaseRole extends Error {
 				$this->setError('BaseRole::fetchData()::'.db_error());
 				return false;
 			}
-			$this->data_array =& db_fetch_array($res);
-			
+			$this->data_array = db_fetch_array($res);
+			if ($this->data_array['is_public'] == 't') {
+				$this->data_array['is_public'] = true ;
+			} else {
+				$this->data_array['is_public'] = false ;
+			}
 			$res = db_query_params ('SELECT section_name, ref_id, perm_val FROM pfo_role_setting WHERE role_id=$1',
 						array ($role_id)) ;
 			if (!$res) {
@@ -301,7 +344,7 @@ abstract class BaseRole extends Error {
 				return false;
 			}
 			$this->perms_array=array();
-			while ($arr =& db_fetch_array($res)) {
+			while ($arr = db_fetch_array($res)) {
 				$this->perms_array[$arr['section_name']][$arr['ref_id']] = $arr['perm_val'];
 			}
 		} else {
@@ -507,14 +550,50 @@ abstract class BaseRole extends Error {
 		$pgf = new ProjectGroupFactory ($project) ;
 		$pgids = $pgf->getAllProjectGroupIds () ;
 		foreach ($pgids as $pgid) {
-			$result['tracker'][$pgid] = $this->getVal ('pm', $pgid) ;
+			$result['pm'][$pgid] = $this->getVal ('pm', $pgid) ;
+		}
+
+
+		if (USE_PFO_RBAC) {
+			// Add settings not yet listed so far (probably plugins)
+			// Currently handled:
+			// - global settings (ignored here)
+			// - project-wide settings (core and plugins)
+			// - settings for multiple-instance tools coming from the core (trackers/pm/forums)
+			// TODO:
+			// - settings for multiple-instance tools from plugins
+			foreach (array_keys ($this->perms_array) as $section) {
+				if (!in_array ($section, $sections)) {
+					if (!in_array ($section, $this->global_settings)) {
+						$result[$section][$group_id] = $this->getVal ($section, $group_id) ;
+					}
+				}
+			}
+		}
+
+		return $result ;
+	}
+
+	function getGlobalSettings () {
+		$result = array () ;
+
+		$sections = array ('forge_admin', 'forge_stats', 'approve_projects', 'approve_news') ;
+		foreach ($sections as $section) {
+			$result[$section][-1] = $this->getVal ($section, -1) ;
+		}
+		// Add settings not yet listed so far (probably plugins)
+		foreach (array_keys ($this->perms_array) as $section) {
+			if (!in_array ($section, $sections)) {
+				if (in_array ($section, $this->global_settings)) {
+					$result[$section][-1] = $this->getVal ($section, -1) ;
+				}
+			}
 		}
 
 		return $result ;
 	}
 
         function getSetting($section, $reference) {
-		$result = 0 ;
                 if (isset ($this->perms_array[$section][$reference])) {
 			$value = $this->perms_array[$section][$reference] ;
 		} else {
@@ -810,14 +889,24 @@ abstract class BaseRole extends Error {
 		//
 		//	Cannot update role_id=1
 		//
-		if ($this->getID() == 1 && !USE_PFO_RBAC) {
-			$this->setError('Cannot Update Default Role');
-			return false;
-		}
-		if (!USE_PFO_RBAC) {
+		if (USE_PFO_RBAC) {
+			if ($this->Group == NULL) {
+				if (!forge_check_global_perm ('forge_admin')) {
+					$this->setPermissionDeniedError();
+					return false;
+				}
+			} elseif (!forge_check_perm ('project_admin', $this->Group->getID())) {
+				$this->setPermissionDeniedError();
+				return false;
+			}
+		} else {
 			$perm =& $this->Group->getPermission ();
 			if (!$perm || !is_object($perm) || $perm->isError() || !$perm->isAdmin()) {
 				$this->setPermissionDeniedError();
+				return false;
+			}
+			if ($this->getID() == 1) {
+				$this->setError('Cannot Update Default Role');
 				return false;
 			}
 		}
@@ -833,6 +922,15 @@ abstract class BaseRole extends Error {
 			foreach ($data as $sect => $refs) {
 				foreach ($refs as $refid => $value) {
 					$this->setSetting ($sect, $refid, $value) ;
+				}
+				if ($sect == 'scm') {
+					foreach ($this->getUsers() as $u) {
+						if (!$SYS->sysGroupCheckUser($refid,$u->getID())) {
+							$this->setError($SYS->getErrorMessage());
+							db_rollback();
+							return false;
+						}
+					}
 				}
 			}
 		} else {
@@ -1023,12 +1121,199 @@ abstract class BaseRole extends Error {
 		return true;
 	}
 
+	function getDisplayableName($group = NULL) {
+		if ($this->getHomeProject() == NULL) {
+			return sprintf (_('%s (global role)'),
+					$this->getName ()) ;
+		} elseif ($group == NULL
+			  || $this->getHomeProject()->getID() != $group->getID()) {
+			return sprintf (_('%s (in project %s)'),
+					$this->getName (),
+					$this->getHomeProject()->getPublicName()) ;
+		} else {
+			return $this->getName () ;
+		}
+	}
+
+	function removeObsoleteSettings () {
+		db_begin () ;
+
+		// Remove obsolete project-wide settings
+		$sections = array ('project_read', 'project_admin', 'frs', 'scm', 'docman', 'tracker_admin', 'new_tracker', 'forum_admin', 'new_forum', 'pm_admin', 'new_pm', 'webcal') ;
+		db_query_params ('DELETE FROM pfo_role_setting where role_id=$1 AND section_name=ANY($2) and ref_id NOT IN (SELECT home_group_id FROM pfo_role WHERE role_id=$1 UNION SELECT group_id from role_project_refs WHERE role_id=$1)',
+				 array ($this->getID(),
+					db_string_array_to_any_clause($sections))) ;
+
+
+		// Remove obsolete settings for multiple-instance tools
+		db_query_params ('DELETE FROM pfo_role_setting where role_id=$1 AND section_name=$2 and ref_id NOT IN (SELECT group_artifact_id FROM artifact_group_list WHERE group_id IN (SELECT home_group_id FROM pfo_role WHERE role_id=$1 UNION SELECT group_id from role_project_refs WHERE role_id=$1))',
+				 array ($this->getID(),
+					'tracker')) ;
+		db_query_params ('DELETE FROM pfo_role_setting where role_id=$1 AND section_name=$2 and ref_id NOT IN (SELECT group_project_id FROM project_group_list WHERE group_id IN (SELECT home_group_id FROM pfo_role WHERE role_id=$1 UNION SELECT group_id from role_project_refs WHERE role_id=$1))',
+				 array ($this->getID(),
+					'pm')) ;
+		db_query_params ('DELETE FROM pfo_role_setting where role_id=$1 AND section_name=$2 and ref_id NOT IN (SELECT group_forum_id FROM forum_group_list WHERE group_id IN (SELECT home_group_id FROM pfo_role WHERE role_id=$1 UNION SELECT group_id from role_project_refs WHERE role_id=$1))',
+				 array ($this->getID(),
+					'forum')) ;
+
+		db_commit () ;
+		return true ;
+	}
+
+	function normalizeDataForSection (&$new_sa, $section) {
+		if (array_key_exists ($section, $this->setting_array)) {
+			$new_sa[$section][0] = $this->setting_array[$section][0] ;
+		} elseif (array_key_exists ($this->data_array['role_name'], $this->defaults)
+			  && array_key_exists ($section, $this->defaults[$this->data_array['role_name']])) {
+			$new_sa[$section][0] = $this->defaults[$this->data_array['role_name']][$section] ;
+		} else {
+			$new_sa[$section][0] = 0 ;
+		}
+		return $new_sa ;
+	}
+
+	function normalizePermsForSection (&$new_pa, $section, $refid) {
+		if (array_key_exists ($section, $this->perms_array)
+		    && array_key_exists ($refid, $this->perms_array[$section])) {
+			$new_pa[$section][$refid] = $this->perms_array[$section][$refid] ;
+		} elseif (array_key_exists ($this->data_array['role_name'], $this->defaults)
+			  && array_key_exists ($section, $this->defaults[$this->data_array['role_name']])) {
+			$new_pa[$section][$refid] = $this->defaults[$this->data_array['role_name']][$section] ;
+		} else {
+			$new_pa[$section][$refid] = 0 ;
+		}
+		return $new_pa ;
+	}
+
+	function normalizeData () { // From the PFO spec
+		$this->removeObsoleteSettings () ;
+
+		$this->fetchData ($this->getID()) ;
+
+		$projects = $this->getLinkedProjects() ;		
+		$new_sa = array () ;
+		$new_pa = array () ;
+		
+		// Add missing settings
+		// ...project-wide settings
+		if (USE_PFO_RBAC) {
+			$arr = array ('project_read', 'project_admin', 'frs', 'scm', 'docman', 'tracker_admin', 'new_tracker', 'forum_admin', 'new_forum', 'pm_admin', 'new_pm', 'webcal') ;
+			foreach ($projects as $p) {
+				foreach ($arr as $section) {
+					$this->normalizePermsForSection ($new_pa, $section, $p->getID()) ;
+				}
+			}
+			$this->normalizePermsForSection ($new_pa, 'forge_admin', -1) ;
+			$this->normalizePermsForSection ($new_pa, 'approve_projects', -1) ;
+			$this->normalizePermsForSection ($new_pa, 'approve_news', -1) ;
+			$this->normalizePermsForSection ($new_pa, 'forge_stats', -1) ;
+		} else {
+			$arr = array ('projectadmin', 'frs', 'scm', 'docman', 'forumadmin', 'trackeradmin', 'newtracker', 'pmadmin', 'newpm', 'webcal') ;
+			foreach ($arr as $section) {
+				$this->normalizeDataForSection ($new_sa, $section) ;
+			}
+		}
+
+		$hook_params = array ();
+		$hook_params['role'] =& $this;
+		$hook_params['new_sa'] =& $new_sa ; 
+		$hook_params['new_pa'] =& $new_pa ; 
+		plugin_hook ("role_normalize", $hook_params);
+
+		// ...tracker-related settings
+		$new_sa['tracker'] = array () ;
+		$new_pa['tracker'] = array () ;
+		foreach ($projects as $p) {
+			$atf = new ArtifactTypeFactory ($p) ;
+			$trackers = $atf->getArtifactTypes () ;
+			foreach ($trackers as $t) {
+				if (USE_PFO_RBAC) {
+					if (array_key_exists ('tracker', $this->perms_array)
+					    && array_key_exists ($t->getID(), $this->perms_array['tracker']) ) {
+						$new_pa['tracker'][$t->getID()] = $this->perms_array['tracker'][$t->getID()] ;
+					} elseif (array_key_exists ('new_tracker', $this->perms_array)
+					    && array_key_exists ($p->getID(), $this->perms_array['new_tracker']) ) {
+						$new_pa['tracker'][$t->getID()] = $new_pa['new_tracker'][$p->getID()] ;
+					}
+				} else {
+					if (array_key_exists ('tracker', $this->setting_array)
+					    && array_key_exists ($t->getID(), $this->setting_array['tracker']) ) {
+						$new_sa['tracker'][$t->getID()] = $this->setting_array['tracker'][$t->getID()] ;
+					} else {
+						$new_sa['tracker'][$t->getID()] = $new_sa['newtracker'][0] ;
+					}
+				}
+			}
+		}
+		
+		// ...forum-related settings
+		$new_sa['forum'] = array () ;
+		$new_pa['forum'] = array () ;
+		foreach ($projects as $p) {
+			$ff = new ForumFactory ($p) ;
+			$forums = $ff->getForums () ;
+			foreach ($forums as $f) {
+				if (USE_PFO_RBAC) {
+					if (array_key_exists ('forum', $this->perms_array)
+					    && array_key_exists ($f->getID(), $this->perms_array['forum']) ) {
+						$new_pa['forum'][$f->getID()] = $this->perms_array['forum'][$f->getID()] ;
+					} elseif (array_key_exists ('new_forum', $this->perms_array)
+					    && array_key_exists ($p->getID(), $this->perms_array['new_forum']) ) {
+						$new_pa['forum'][$f->getID()] = $new_pa['new_forum'][$p->getID()] ;
+					}
+				} else {
+					if (array_key_exists ('forum', $this->setting_array)
+					    && array_key_exists ($f->getID(), $this->setting_array['forum']) ) {
+						$new_sa['forum'][$f->getID()] = $this->setting_array['forum'][$f->getID()] ;
+					} else {
+						$new_sa['forum'][$f->getID()] = $new_sa['newforum'][0] ;
+					}
+				}
+			}
+		}
+		
+		// ...pm-related settings
+		$new_sa['pm'] = array () ;
+		$new_pa['pm'] = array () ;
+		foreach ($projects as $p) {
+			$pgf = new ProjectGroupFactory ($p) ;
+			$pgs = $pgf->getProjectGroups () ;
+			foreach ($pgs as $g) {
+				if (USE_PFO_RBAC) {
+					if (array_key_exists ('pm', $this->perms_array)
+					    && array_key_exists ($g->getID(), $this->perms_array['pm']) ) {
+						$new_pa['pm'][$g->getID()] = $this->perms_array['pm'][$g->getID()] ;
+					} elseif (array_key_exists ('new_pm', $this->perms_array)
+					    && array_key_exists ($p->getID(), $this->perms_array['new_pm']) ) {
+						$new_pa['pm'][$g->getID()] = $new_pa['new_pm'][$p->getID()] ;
+					}
+				} else {
+					if (array_key_exists ('pm', $this->setting_array)
+					    && array_key_exists ($g->getID(), $this->setting_array['pm']) ) {
+						$new_sa['pm'][$g->getID()] = $this->setting_array['pm'][$g->getID()] ;
+					} else {
+						$new_sa['pm'][$g->getID()] = $new_sa['newpm'][0] ;
+					}
+				}
+			}
+		}
+		
+		// Save
+		if (USE_PFO_RBAC) {
+			$this->update ($this->getName(), $new_pa) ;
+		} else {
+			$this->update ($this->getName(), $new_sa) ;
+		}
+		return true;
+	}
 }
 
 // Actual classes
 
 abstract class RoleExplicit extends BaseRole implements PFO_RoleExplicit {
 	public function addUsers ($users) {
+		global $SYS;
+
 		$ids = array () ;
 		foreach ($users as $user) {
 			$ids[] = $user->getID() ;
@@ -1048,6 +1333,12 @@ abstract class RoleExplicit extends BaseRole implements PFO_RoleExplicit {
 						$this->getID())) ;
 			}
 		}	
+
+		foreach ($this->getLinkedProjects() as $p) {
+			foreach ($ids as $uid) {
+				$SYS->sysGroupCheckUser($p->getID(),$uid) ;
+			}
+		}
 	}
 
 	public function addUser ($user) {
@@ -1055,6 +1346,8 @@ abstract class RoleExplicit extends BaseRole implements PFO_RoleExplicit {
 	}
 
 	public function removeUsers($users) {
+		global $SYS;
+
 		$ids = array () ;
 		foreach ($users as $user) {
 			$ids[] = $user->getID() ;
@@ -1063,6 +1356,14 @@ abstract class RoleExplicit extends BaseRole implements PFO_RoleExplicit {
 		$already_there = array () ;
 		$res = db_query_params ('DELETE FROM pfo_user_role WHERE user_id=ANY($1) AND role_id=$2',
 					array (db_int_array_to_any_clause($ids), $this->getID())) ;
+
+		foreach ($this->getLinkedProjects() as $p) {
+			foreach ($ids as $uid) {
+				$SYS->sysGroupCheckUser($p->getID(),$uid) ;
+			}
+		}
+
+		return true ;
 	}
 
 	public function removeUser ($user) {
@@ -1192,6 +1493,73 @@ abstract class RoleUnion extends BaseRole implements PFO_RoleUnion {
 	public function removeRole ($role) {
 		throw new Exception ("Not implemented") ;
 	}
+}
+
+class RoleComparator {
+	var $criterion = 'composite' ;
+	var $reference_project = NULL ;
+
+	function Compare ($a, $b) {
+		switch ($this->criterion) {
+		case 'name':
+			return strcoll ($a->getName(), $b->getName()) ;
+			break ;
+		case 'id':
+			$aid = $a->getID() ;
+			$bid = $b->getID() ;
+			if ($a == $b) {
+				return 0;
+			}
+			return ($a < $b) ? -1 : 1;
+			break ;
+		case 'composite':
+		default:
+			if ($this->reference_project == NULL) {
+				return $this->CompareNoRef ($a, $b) ;
+			}
+			$rpid = $this->reference_project->getID () ;
+			$ap = $a->getHomeProject() ;
+			$bp = $b->getHomeProject() ;
+			$a_is_local = ($ap != NULL && $ap->getID() == $rpid) ; // Local
+			$b_is_local = ($bp != NULL && $bp->getID() == $rpid) ;
+
+			if ($a_is_local && !$b_is_local) {
+				return -1 ;
+			} elseif (!$a_is_local && $b_is_local) {
+				return 1 ;
+			}
+			return $this->CompareNoRef ($a, $b) ;
+		}
+	}
+
+	function CompareNoRef ($a, $b) {
+		$ap = $a->getHomeProject() ;
+		$bp = $b->getHomeProject() ;
+		if ($ap == NULL && $bp != NULL) {
+			return 1 ;
+		} elseif ($ap != NULL && $bp == NULL) {
+			return -1 ;
+		} elseif ($ap == NULL && $bp == NULL) {
+			$tmp = strcoll ($a->getName(), $b->getName()) ;
+			return $tmp ;
+		} else {
+			$projcmp = new ProjectComparator () ;
+			$projcmp->criterion = 'name' ;
+			$tmp = $projcmp->Compare ($ap, $bp) ;
+			if ($tmp) { /* Different projects, sort accordingly */
+				return $tmp ;
+			} 
+			return strcoll ($a->getName(), $b->getName()) ;
+		}
+	}
+}
+
+function sortRoleList (&$list, $relative_to = NULL, $criterion='composite') {
+	$cmp = new RoleComparator () ;
+	$cmp->criterion = $criterion ;
+	$cmp->reference_project = $relative_to ;
+
+	return usort ($list, array ($cmp, 'Compare')) ;
 }
 
 // Local Variables:

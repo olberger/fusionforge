@@ -181,8 +181,8 @@ class FRSFile extends Error {
 						  $file_size,
 						  time ())) ;
 		if (!$result) {
-			db_rollback();
 			$this->setError('FRSFile::create() Error Adding Release: '.db_error());
+			db_rollback();
 			return false;
 		}
 		$this->file_id=db_insertid($result,'frs_file','file_id');
@@ -208,7 +208,7 @@ class FRSFile extends Error {
 			$this->setError('FRSFile::fetchData()  Invalid file_id');
 			return false;
 		}
-		$this->data_array =& db_fetch_array($res);
+		$this->data_array = db_fetch_array($res);
 		db_free_result($res);
 		return true;
 	}
@@ -246,7 +246,7 @@ class FRSFile extends Error {
 	 *  @return int	The size.
 	 */
 	function getSize() {
-		return $this->data_array['size'];
+		return $this->data_array['file_size'];
 	}
 
 	/**
@@ -304,12 +304,12 @@ class FRSFile extends Error {
 	}
 
 	/**
-	 *  getPostDate - get the post time of this file.
+	 *  getPostDate - get the post date of this file.
 	 *
-	 *  @return int	The post time in unix time.
+	 *  @return int	The post date in unix time.
 	 */
 	function getPostDate() {
-		return $this->data_array['post_time'];
+		return $this->data_array['post_date'];
 	}
 
 	/**
@@ -404,15 +404,15 @@ class FRSFile extends Error {
 				$FRSRelease->getFileName().'/'.
 				$this->data_array['filename'];
 			if (file_exists($new_file_location)) {
-				db_rollback();
 				$this->setError(_('That filename already exists in this project space'));
+				db_rollback();
 				return false;
 			}
 			$cmd="/bin/mv $old_file_location $new_file_location";
 			exec($cmd,$out);
 			if (!file_exists($new_file_location)) {
-				db_rollback();
 				$this->setError(_('File cannot be moved to the permanent location').': '.$new_file_location);
+				db_rollback();
 				return false;
 			}
 		}

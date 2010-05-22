@@ -24,37 +24,39 @@
  */
 
 require_once('../env.inc.php');
-require_once ('include/pre.php');
-require_once ('docman/Document.class.php');
-require_once ('docman/DocumentFactory.class.php');
-require_once ('docman/DocumentGroup.class.php');
-require_once ('docman/DocumentGroupFactory.class.php');
-require_once ('docman/include/DocumentGroupHTML.class.php');
-require_once ('docman/include/utils.php');
-require_once ('include/TextSanitizer.class.php'); // to make the HTML input by the user safe to store
+require_once $gfcommon.'include/pre.php';
+require_once $gfcommon.'docman/Document.class.php';
+require_once $gfcommon.'docman/DocumentFactory.class.php';
+require_once $gfcommon.'docman/DocumentGroup.class.php';
+require_once $gfcommon.'docman/DocumentGroupFactory.class.php';
+require_once $gfcommon.'docman/include/DocumentGroupHTML.class.php';
+require_once $gfcommon.'docman/include/utils.php';
+require_once $gfcommon.'include/TextSanitizer.class.php'; // to make the HTML input by the user safe to store
 
 /* are we using docman ? */
 if (!forge_get_config('use_docman'))
-	exit_disabled();
+	exit_disabled('home');
 
 /* get informations from request or $_POST */
 $group_id = getIntFromRequest('group_id');
-$feedback = getStringFromRequest('feedback');
-$error_msg = getStringFromRequest('error_msg');
-$warning_msg = getStringFromRequest('warning_msg');
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
+$error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
+$warning_msg = htmlspecialchars(getStringFromRequest('warning_msg'));
 
 /* validate group */
-if (!$group_id) {
+if (!$group_id)
 	exit_no_group();
-}
+
 $g =& group_get_object($group_id);
-if (!$g || !is_object($g) || $g->isError()) {
+if (!$g || !is_object($g))
 	exit_no_group();
-}
 
 /* is this group using docman ? */
 if (!$g->usesDocman())
-	exit_error(_('Error'),_('This project has turned off the Doc Manager.'));
+	exit_disabled();
+
+if ($g->isError())
+	exit_error($g->getErrorMessage(),'docman');
 
 $dirid = getIntFromRequest('dirid');
 if (empty($dirid))
@@ -62,18 +64,19 @@ if (empty($dirid))
 
 $df = new DocumentFactory($g);
 if ($df->isError())
-	exit_error(_('Error'),$df->getErrorMessage());
+	exit_error($df->getErrorMessage(),'docman');
 
 $dgf = new DocumentGroupFactory($g);
 if ($dgf->isError())
-	exit_error(_('Error'),$dgf->getErrorMessage());
+	exit_error($dgf->getErrorMessage(),'docman');
 
-$nested_groups =& $dgf->getNested();
+$nested_groups = $dgf->getNested();
+if ($dgf->isError())
+    exit_error($dgf->getErrorMessage(),'docman');
 
 $dgh = new DocumentGroupHTML($g);
-
 if ($dgh->isError())
-	exit_error('Error',$dgh->getErrorMessage());
+	exit_error($dgh->getErrorMessage(),'docman');
 
 $d_arr =& $df->getDocuments();
 if (!$d_arr || count($d_arr) <1)

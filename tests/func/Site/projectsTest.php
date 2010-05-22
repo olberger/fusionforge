@@ -74,7 +74,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->assertTrue($this->isTextPresent("you will receive notification of their decision and further instructions"));
 		$this->click("link=Site Admin");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Pending (P) (New Project Approval)");
+		$this->click("link=Pending projects (new project approval)");
 		$this->waitForPageToLoad("30000");
 		$this->click("document.forms['approve.projecta'].submit");
 		$this->waitForPageToLoad("30000");
@@ -111,7 +111,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->assertTrue($this->isTextPresent("you will receive notification of their decision and further instructions"));
 		$this->click("link=Site Admin");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Pending (P) (New Project Approval)");
+		$this->click("link=Pending projects (new project approval)");
 		$this->waitForPageToLoad("30000");
 		$this->click("document.forms['approve.projectb'].submit");
 		$this->waitForPageToLoad("30000");
@@ -131,7 +131,6 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->assertTrue($this->isTextPresent("Project ' & B - This is & été the public description for project B."));
 		$this->click("link=My Page");
 		$this->waitForPageToLoad("30000");
-		$this->click("//div[@id='tabber']/ul/li[5]/a");
 		$this->assertFalse($this->isTextPresent("Project ' &amp; B"));
 	}
 

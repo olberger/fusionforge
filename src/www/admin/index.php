@@ -1,6 +1,6 @@
 <?php
 /**
- * GForge Site Admin main page
+ * Site Admin main page
  *
  * This pages lists all global administration facilities for the
  * site, including user/group properties editing, maintanance of
@@ -8,21 +8,23 @@
  * etc.
  *
  * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2010 (c) FusionForge Team
+ * http://fusionforge.org
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -30,6 +32,11 @@
 require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'admin/admin_utils.php';
+require_once $gfwww.'include/role_utils.php';
+
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
+$error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
+$warning_msg = htmlspecialchars(getStringFromRequest('warning_msg'));
 
 site_admin_header(array('title'=>_('Site Admin')));
 echo '<h1>' . _('Site Admin') . '</h1>';
@@ -69,7 +76,27 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
     echo _('Register a New User');
     ?></a>
     </li>
+	<li><a href="userlist.php?status=P"><?php echo _('Pending users'); ?></a></li>
 </ul>
+<?php if (USE_PFO_RBAC) { ?>
+<h2><?php echo _('Global roles and permissions'); ?></h2>
+	<ul>
+	<li><?php
+
+		echo '<form action="globalroleedit.php" method="post"><p>';
+		echo global_role_box('role_id');
+		echo '&nbsp;<input type="submit" name="edit" value="'._("Edit Role").'" /></p></form>';
+?>
+</li>
+<li>
+<?
+
+		echo '<form action="globalroleedit.php" method="post"><p>';
+		echo '<input type="text" name="role_name" size="10" value="" />';
+		echo '&nbsp;<input type="submit" name="add" value="'._("Create Role").'" /></p></form>';
+	?></li>
+</ul>
+<?php } ?>
 <h2><?php echo _('Project Maintenance'); ?></h2>
 <ul>
 	<li><?php
@@ -104,7 +131,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 ?>
 	<br />
 		<form name="gpsrch" action="search.php" method="post">
-		<?php echo _('Search <em>(groupid, group unix name, full name)</em>'); ?>:
+		<?php echo _('Search <em>(groupid, project Unix name, project full name)</em>'); ?>:
 		<input type="text" name="search" />
 		<input type="hidden" name="substr" value="1" />
 		<input type="hidden" name="groupsearch" value="1" />
@@ -114,7 +141,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 </ul>
 <ul>
 	<li><?php echo util_make_link ('/register/',_('Register New Project')); ?></li>
-	<li><?php echo _('Projects with status'); ?> <a href="approve-pending.php"><?php echo _('Pending (P)'); ?> <em><?php echo _('(New Project Approval)'); ?></em></a></li>
+	<li><a href="approve-pending.php"><?php echo _('Pending projects (new project approval)'); ?></a></li>
 	<li><form name="projectsearch" action="search.php">
 	<?php echo _('Projects with status'); ?>
 	<select name="status">
@@ -153,7 +180,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 	<li><a href="edit_frs_processor.php"><?php echo _('Add, Delete, or Edit Processors'); ?></a></li>
 	<li><a href="edit_theme.php"><?php echo _('Add, Delete, or Edit Themes'); ?></a></li>
 	<li><a href="edit_licenses.php"><?php echo _('Add, Delete, or Edit Licenses'); ?></a></li>
-	<li><a href="<?php echo util_make_url ('/stats/lastlogins.php'); ?>"><?php echo _('Recent logins'); ?></a></li>
+	<li><a href="<?php echo util_make_url ('/stats/lastlogins.php'); ?>"><?php echo _('Last Logins'); ?></a></li>
 	<li><a href="cronman.php"><?php echo _('Cron Manager'); ?></a></li>
 	<li><a href="pluginman.php"><?php echo _('Plugin Manager'); ?></a></li>
 	<li><a href="configman.php"><?php echo _('Config Manager'); ?></a></li>
@@ -161,7 +188,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 	<?php plugin_hook("site_admin_option_hook", false); ?>
 </ul>
 
-<?php if(forge_get_config('use_project_database') || forge_get_config('use_project_vhost')) { ?>
+<?php if(forge_get_config('use_project_database') || forge_get_config('use_project_vhost') || forge_get_config('use_people')) { ?>
 <ul>
 	<?php if(forge_get_config('use_project_vhost')) { ?>
 		<li><a href="vhost.php"><?php echo _('Virtual Host Admin Tool'); ?></a></li>
@@ -169,6 +196,9 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 	}
 	if(forge_get_config('use_project_database')) { ?>
 		<li><a href="database.php"><?php echo _('Project Database Administration'); ?></a></li>
+	<?php } 
+	if(forge_get_config('use_people')) { ?>
+        <li><a href="<?php echo util_make_url ('/people/admin/'); ?>"><?php echo _('Job / Categories Administration'); ?></a></li>
 	<?php } ?>
 </ul>
 <?php }

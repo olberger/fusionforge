@@ -42,9 +42,15 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 	 */
 	function Role ($Group,$role_id=false) {
 		$this->BaseRole();
-		if (!$Group || !is_object($Group) || $Group->isError()) {
-			$this->setError('Role::'.$Group->getErrorMessage());
-			return false;
+		if (USE_PFO_RBAC) {
+			if (!$Group || !is_object($Group) || $Group->isError()) {
+				$Group = NULL ;
+			}
+		} else {
+			if (!$Group || !is_object($Group) || $Group->isError()) {
+				$this->setError('Role::'.$Group->getErrorMessage());
+				return false;
+			}
 		}
 		$this->Group =& $Group;
 
@@ -81,22 +87,55 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 	 *      @return boolean True if updated OK
 	 */
 	function setName ($role_name) { // From the PFO spec
+		if ($role_name == '') {
+			$this->setError('Cannot set a role name to empty');
+			return false;
+		}
 		if ($this->getName() != stripslashes($role_name)) {
-			// Check if role_name is not already used.
-			$res = db_query_params('SELECT role_name FROM role WHERE group_id=$1 AND role_name=$2',
-				array ($this->Group->getID(), htmlspecialchars($role_name)));
-			if (db_numrows($res)) {
-				$this->setError('Cannot create a role with this name (already used)');
-				return false;
-			}
-
-			$res = db_query_params ('UPDATE role SET role_name=$1 WHERE group_id=$2 AND role_id=$3',
-						array (htmlspecialchars($role_name),
-						       $this->Group->getID(),
-						       $this->getID())) ;
-			if (!$res || db_affected_rows($res) < 1) {
-				$this->setError('update::name::'.db_error());
-				return false;
+			if (USE_PFO_RBAC) {
+				db_begin();
+				if ($this->Group == NULL) {
+					$res = db_query_params('SELECT role_name FROM pfo_role WHERE home_group_id IS NULL AND role_name=$1',
+							       array (htmlspecialchars($role_name)));
+					if (db_numrows($res)) {
+						$this->setError('Cannot create a role with this name (already used)');
+						db_rollback () ;
+						return false;
+					}
+				} else {
+					$res = db_query_params('SELECT role_name FROM pfo_role WHERE home_group_id=$1 AND role_name=$2',
+							       array ($this->Group->getID(), htmlspecialchars($role_name)));
+					if (db_numrows($res)) {
+						$this->setError('Cannot create a role with this name (already used)');
+						db_rollback () ;
+						return false;
+					}
+				}
+				$res = db_query_params ('UPDATE pfo_role SET role_name=$1 WHERE role_id=$2',
+							array (htmlspecialchars($role_name),
+							       $this->getID())) ;
+				if (!$res || db_affected_rows($res) < 1) {
+					$this->setError('update::name::'.db_error());
+					return false;
+				}
+				db_commit();
+			} else {
+				// Check if role_name is not already used.
+				$res = db_query_params('SELECT role_name FROM role WHERE group_id=$1 AND role_name=$2',
+						       array ($this->Group->getID(), htmlspecialchars($role_name)));
+				if (db_numrows($res)) {
+					$this->setError('Cannot create a role with this name (already used)');
+					return false;
+				}
+				
+				$res = db_query_params ('UPDATE role SET role_name=$1 WHERE group_id=$2 AND role_id=$3',
+							array (htmlspecialchars($role_name),
+							       $this->Group->getID(),
+							       $this->getID())) ;
+				if (!$res || db_affected_rows($res) < 1) {
+					$this->setError('update::name::'.db_error());
+					return false;
+				}
 			}
 		}
 		return true ;
@@ -119,8 +158,8 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 	 *      @return boolean True if updated OK
 	 */
 	function setPublic ($flag) { // From the PFO spec
-		$res = db_query_params ('UPDATE role SET is_public=$1 WHERE role_id=$1',
-					array ($flag,
+		$res = db_query_params ('UPDATE pfo_role SET is_public=$1 WHERE role_id=$2',
+					array ($flag?'true':'false',
 					       $this->getID())) ;
 		if (!$res || db_affected_rows($res) < 1) {
 			$this->setError('update::is_public::'.db_error());
@@ -133,62 +172,6 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 		return $this->Group ;
 	}
 
-	function getLinkedProjects () { // From the PFO spec
-		$result = array () ;
-
-		$result[] = $this->Group ;
-
-		$res = db_query_params('SELECT group_id FROM role_project_refs WHERE role_id=$1',
-				       array ($this->getID()));
-		
-	
-		while ($arr =& db_fetch_array($res)) {
-			$result[] = group_get_object ($arr['group_id']) ;
-		}
-		return $result ;
-	}
-
-	function linkProject ($project) { // From the PFO spec
-		if ($project->getID() == $this->getHomeProject()->getID()) {
-			$this->setError ("Can't link to home project") ;
-			return false ;
-		}
-
-		$res = db_query_params('SELECT group_id FROM role_project_refs WHERE role_id=$1 AND group_id=$2',
-				       array ($this->getID(),
-					      $project->getID()));
-
-		if (db_numrows($res)) {
-			return true ;
-		}
-		$res = db_query_params('INSERT INTO role_project_refs (role_id, group_id) VALUES ($1, $2)',
-				       array ($this->getID(),
-					      $project->getID()));
-		if (!$res || db_affected_rows($res) < 1) {
-			$this->setError('linkProject('.$project->getID().') '.db_error());
-			return false;
-		}
-
-		return true ;
-	}
-
-	function unlinkProject ($project) { // From the PFO spec
-		if ($project->getID() == $this->getHomeProject()->getID()) {
-			$this->setError ("Can't unlink from home project") ;
-			return false ;
-		}
-
-		$res = db_query_params('DELETE FROM role_project_refs WHERE role_id=$1 AND group_id=$2',
-				       array ($this->getID(),
-					      $project->getID()));
-		if (!$res) {
-			$this->setError('unlinkProject('.$project->getID().') '.db_error());
-			return false;
-		}
-
-		return true ;
-	}
-
 	/**
 	 *	create - create a new role in the database.
 	 *
@@ -197,6 +180,66 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 	 *	@return integer	The id on success or false on failure.
 	 */
 	function create($role_name,$data) {
+		if (USE_PFO_RBAC) {
+			if ($this->Group == NULL) {
+				if (!forge_check_global_perm ('forge_admin')) {
+					$this->setPermissionDeniedError();
+					return false;
+				}
+			} elseif (!forge_check_perm ('project_admin', $this->Group->getID())) {
+				$this->setPermissionDeniedError();
+				return false;
+			}			
+			if ($role_name == '') {
+				$this->setError('Cannot create a role with an empty name');
+				return false;
+			}
+			
+			db_begin();
+			if ($this->Group == NULL) {
+				$res = db_query_params('SELECT role_name FROM pfo_role WHERE home_group_id IS NULL AND role_name=$1',
+						       array (htmlspecialchars($role_name)));
+				if (db_numrows($res)) {
+					$this->setError('Cannot create a role with this name (already used)');
+					db_rollback () ;
+					return false;
+				}
+			} else {
+				$res = db_query_params('SELECT role_name FROM pfo_role WHERE home_group_id=$1 AND role_name=$2',
+						       array ($this->Group->getID(), htmlspecialchars($role_name)));
+				if (db_numrows($res)) {
+					$this->setError('Cannot create a role with this name (already used)');
+					db_rollback () ;
+					return false;
+				}
+			}
+			
+			if ($this->Group == NULL) {
+				$res = db_query_params ('INSERT INTO pfo_role (role_name) VALUES ($1)',
+							array (htmlspecialchars($role_name))) ;
+			} else {
+				$res = db_query_params ('INSERT INTO pfo_role (home_group_id, role_name) VALUES ($1, $2)',
+							array ($this->Group->getID(),
+							       htmlspecialchars($role_name))) ;
+			}
+			if (!$res) {
+				$this->setError('create::'.db_error());
+				db_rollback();
+				return false;
+			}
+			$role_id=db_insertid($res,'pfo_role','role_id');
+			if (!$role_id) {
+				$this->setError('create::db_insertid::'.db_error());
+				db_rollback();
+				return false;
+			}
+			$this->data_array['role_id'] = $role_id ;
+			$this->data_array['role_name'] = $role_name ;
+
+			$this->update ($role_name, $data) ;
+			
+			$this->normalizeData () ;
+		} else {
 		$perm =& $this->Group->getPermission ();
 		if (!$perm || !is_object($perm) || $perm->isError() || !$perm->isAdmin()) {
 			$this->setPermissionDeniedError();
@@ -253,6 +296,7 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 				}
 			}
 		}
+		}
 		if (!$this->fetchData($role_id)) {
 			db_rollback();
 			return false;
@@ -262,17 +306,17 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 	}
 
 	function createDefault($name) {
-//echo '<html><body><pre>';
-//echo $name;
-//print_r($this->defaults);
-		$arr =& $this->defaults[$name];
+		if ($this->Group == NULL) {
+			return $this->create($name,array());
+		}
+		
+		if (array_key_exists ($name, $this->defaults)) {
+			$arr =& $this->defaults[$name];
+		} else {
+			$arr = array () ;
+		}
 		$keys = array_keys($arr);
 		$data = array();
-
-//print_r($keys);
-//print_r($arr);
-//db_rollback();
-//exit;
 		for ($i=0; $i<count($keys); $i++) {
 
 			if ($keys[$i] == 'forum') {
@@ -309,161 +353,129 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 				$data[$keys[$i]][0]= $arr[$keys[$i]];
 			}
 		}
-//print_r($data);
-//db_rollback();
-//exit;
+
 		return $this->create($name,$data);
 	}
-
-	function normalizeDataForSection (&$new_sa, $section) {
-		if (array_key_exists ($section, $this->setting_array)) {
-			$new_sa[$section][0] = $this->setting_array[$section][0] ;
-		} elseif (array_key_exists ($this->data_array['role_name'], $this->defaults)
-			  && array_key_exists ($section, $this->defaults[$this->data_array['role_name']])) {
-			$new_sa[$section][0] = $this->defaults[$this->data_array['role_name']][$section] ;
-		} else {
-			$new_sa[$section][0] = 0 ;
-		}
-		return $new_sa ;
-	}
-
-	function normalizePermsForSection (&$new_pa, $section, $refid) {
-		if (array_key_exists ($section, $this->perms_array)) {
-			$new_pa[$section][$refid] = $this->perms_array[$section][$refid] ;
-		} elseif (array_key_exists ($this->data_array['role_name'], $this->defaults)
-			  && array_key_exists ($section, $this->defaults[$this->data_array['role_name']])) {
-			$new_pa[$section][$refid] = $this->defaults[$this->data_array['role_name']][$section] ;
-		}
-		return $new_pa ;
-	}
-
-	function normalizeData () { // From the PFO spec
-		$this->fetchData ($this->getID()) ;
-
-		$projects = $this->getLinkedProjects() ;		
-		$new_sa = array () ;
-		$new_pa = array () ;
-		
-		// Add missing settings
-		// ...project-wide settings
+	
+	/**
+	 *	delete - delete a role in the database.
+	 *
+	 *	@return	boolean	True on success or false on failure.
+	 */
+	function delete() {
 		if (USE_PFO_RBAC) {
-			$arr = array ('project_read', 'project_admin', 'frs', 'scm', 'docman', 'tracker_admin', 'new_tracker', 'forum_admin', 'new_forum', 'pm_admin', 'new_pm', 'webcal') ;
-			foreach ($projects as $p) {
-				foreach ($arr as $section) {
-					$this->normalizePermsForSection ($new_pa, $section, $p->getID()) ;
+			if ($this->Group == NULL) {
+				if (!forge_check_global_perm ('forge_admin')) {
+					$this->setPermissionDeniedError();
+					return false;
 				}
+			} elseif (!forge_check_perm ('project_admin', $this->Group->getID())) {
+				$this->setPermissionDeniedError();
+				return false;
 			}
-			$this->normalizePermsForSection ($new_pa, 'forge_admin', -1) ;
-			$this->normalizePermsForSection ($new_pa, 'approve_projects', -1) ;
-			$this->normalizePermsForSection ($new_pa, 'approve_news', -1) ;
-			$this->normalizePermsForSection ($new_pa, 'forge_stats', -1) ;
+			
+			$res=db_query_params('SELECT user_id FROM pfo_user_role WHERE role_id=$1',
+					     array($this->getID()));
+			assert($res);
+			if (db_numrows($res) > 0) {
+				$this->setError('Cannot remove a non empty role.');
+				return false;
+			}
+
+			$res=db_query_params('DELETE FROM pfo_user_role WHERE role_id=$1',
+					     array($this->getID())) ;
+			if (!$res || db_affected_rows($res) < 1) {
+				$this->setError('delete::name::'.db_error());
+				db_rollback();
+				return false;
+			}
+			
+			$res=db_query_params('DELETE FROM role_project_refs WHERE role_id=$1',
+					     array($this->getID())) ;
+			if (!$res || db_affected_rows($res) < 1) {
+				$this->setError('delete::name::'.db_error());
+				db_rollback();
+				return false;
+			}
+			
+			$res=db_query_params('DELETE FROM pfo_role_setting WHERE role_id=$1',
+					     array($this->getID())) ;
+			if (!$res || db_affected_rows($res) < 1) {
+				$this->setError('delete::name::'.db_error());
+				db_rollback();
+				return false;
+			}
+			
+			$res=db_query_params('DELETE FROM pfo_role WHERE role_id=$1',
+					     array($this->getID())) ;
+			if (!$res || db_affected_rows($res) < 1) {
+				$this->setError('delete::name::'.db_error());
+				db_rollback();
+				return false;
+			}
 		} else {
-			$arr = array ('projectadmin', 'frs', 'scm', 'docman', 'forumadmin', 'trackeradmin', 'newtracker', 'pmadmin', 'newpm', 'webcal') ;
-			foreach ($arr as $section) {
-				$this->normalizeDataForSection ($new_sa, $section) ;
+			if (!is_numeric($this->getID())) {
+				$this->setError('Role::delete() role_id is not an integer');
+				return false;
 			}
-		}
-
-		$hook_params = array ();
-		$hook_params['role'] =& $this;
-		$hook_params['new_sa'] =& $new_sa ; 
-		$hook_params['new_pa'] =& $new_pa ; 
-		plugin_hook ("role_normalize", $hook_params);
-
-		// ...tracker-related settings
-		$new_sa['tracker'] = array () ;
-		$new_pa['tracker'] = array () ;
-		foreach ($projects as $p) {
-			$atf = new ArtifactTypeFactory ($p) ;
-			$trackers = $atf->getArtifactTypes () ;
-			foreach ($trackers as $t) {
-				if (USE_PFO_RBAC) {
-					if (array_key_exists ('tracker', $this->perms_array)
-					    && array_key_exists ($t->getID(), $this->perms_array['tracker']) ) {
-						$new_pa['tracker'][$t->getID()] = $this->perms_array['tracker'][$t->getID()] ;
-					} elseif (array_key_exists ('new_tracker', $this->perms_array)
-					    && array_key_exists ($p->getID(), $this->perms_array['new_tracker']) ) {
-						$new_pa['tracker'][$t->getID()] = $new_pa['new_tracker'][$p->getID()] ;
-					}
-				} else {
-					if (array_key_exists ('tracker', $this->setting_array)
-					    && array_key_exists ($t->getID(), $this->setting_array['tracker']) ) {
-						$new_sa['tracker'][$t->getID()] = $this->setting_array['tracker'][$t->getID()] ;
-					} else {
-						$new_sa['tracker'][$t->getID()] = $new_sa['newtracker'][0] ;
-					}
-				}
+			
+			//	Cannot delete role_id=1
+			if ($this->getID() == 1) {
+				$this->setError('Cannot Delete Default Role.');
+				return false;
 			}
-		}
+			$perm =& $this->Group->getPermission();
+			if (!$perm || !is_object($perm) || $perm->isError() || !$perm->isAdmin()) {
+				$this->setPermissionDeniedError();
+				return false;
+			}
+			
+			$res=db_query_params('SELECT user_id FROM user_group WHERE role_id=$1',
+					     array($this->getID()));
+			assert($res);
+			if (db_numrows($res) > 0) {
+				$this->setError('Cannot remove a non empty role.');
+				return false;
+			}
 		
-		// ...forum-related settings
-		$new_sa['forum'] = array () ;
-		$new_pa['forum'] = array () ;
-		foreach ($projects as $p) {
-			$ff = new ForumFactory ($p) ;
-			$forums = $ff->getForums () ;
-			foreach ($forums as $f) {
-				if (USE_PFO_RBAC) {
-					if (array_key_exists ('forum', $this->perms_array)
-					    && array_key_exists ($f->getID(), $this->perms_array['forum']) ) {
-						$new_pa['forum'][$f->getID()] = $this->perms_array['forum'][$f->getID()] ;
-					} elseif (array_key_exists ('new_forum', $this->perms_array)
-					    && array_key_exists ($p->getID(), $this->perms_array['new_forum']) ) {
-						$new_pa['forum'][$f->getID()] = $new_pa['new_forum'][$p->getID()] ;
-					}
-				} else {
-					if (array_key_exists ('forum', $this->setting_array)
-					    && array_key_exists ($f->getID(), $this->setting_array['forum']) ) {
-						$new_sa['forum'][$f->getID()] = $this->setting_array['forum'][$f->getID()] ;
-					} else {
-						$new_sa['forum'][$f->getID()] = $new_sa['newforum'][0] ;
-					}
-				}
+			db_begin();
+			
+			$res=db_query_params('DELETE FROM role WHERE group_id=$1 AND role_id=$2',
+					     array($this->Group->getID(), $this->getID())) ;
+			if (!$res || db_affected_rows($res) < 1) {
+				$this->setError('delete::name::'.db_error());
+				db_rollback();
+				return false;
 			}
+			
+			db_commit();
+			
+			return true;
 		}
-		
-		// ...pm-related settings
-		$new_sa['pm'] = array () ;
-		$new_pa['pm'] = array () ;
-		foreach ($projects as $p) {
-			$pgf = new ProjectGroupFactory ($p) ;
-			$pgs = $pgf->getProjectGroups () ;
-			foreach ($pgs as $g) {
-				if (USE_PFO_RBAC) {
-					if (array_key_exists ('pm', $this->perms_array)
-					    && array_key_exists ($g->getID(), $this->perms_array['pm']) ) {
-						$new_pa['pm'][$g->getID()] = $this->perms_array['pm'][$g->getID()] ;
-					} elseif (array_key_exists ('new_pm', $this->perms_array)
-					    && array_key_exists ($p->getID(), $this->perms_array['new_pm']) ) {
-						$new_pa['pm'][$g->getID()] = $new_pa['new_pm'][$p->getID()] ;
-					}
-				} else {
-					if (array_key_exists ('pm', $this->setting_array)
-					    && array_key_exists ($g->getID(), $this->setting_array['pm']) ) {
-						$new_sa['pm'][$g->getID()] = $this->setting_array['pm'][$g->getID()] ;
-					} else {
-						$new_sa['pm'][$g->getID()] = $new_sa['newpm'][0] ;
-					}
-				}
-			}
-		}
-		
-		// Save
-		$this->update ($this->data_array['role_name'], $new_sa) ;
-
-		return true;
 	}
 
 	function setUser($user_id) {
 		global $SYS;
-		$perm =& $this->Group->getPermission ();
-		if (!$perm || !is_object($perm) || $perm->isError() || !$perm->isAdmin()) {
-			$this->setPermissionDeniedError();
-			return false;
-		}
+		if (USE_PFO_RBAC) {
+			if ($this->Group == NULL) {
+				if (!forge_check_global_perm ('forge_admin')) {
+					$this->setPermissionDeniedError();
+					return false;
+				}
+			} elseif (!forge_check_perm ('project_admin', $this->Group->getID())) {
+				$this->setPermissionDeniedError();
+				return false;
+			}
+			
+			return $this->addUser (user_get_object($user_id)) ;
+		} else {
+			$perm =& $this->Group->getPermission ();
+			if (!$perm || !is_object($perm) || $perm->isError() || !$perm->isAdmin()) {
+				$this->setPermissionDeniedError();
+				return false;
+			}
 
 		db_begin();
-
 		//
 		//	See if role is actually changing
 		//
@@ -613,6 +625,7 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 
 		db_commit();
 		return true;
+		}
 
 	}
 

@@ -1,23 +1,23 @@
 <?php
 /**
- * GForge User's Diary Page
+ * User's Diary Page
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -27,7 +27,7 @@ require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'include/vote_function.php';
 
 if (!$sys_use_diary) {
-	exit_error (_('The diary feature is not enabled.')) ;
+	exit_disabled('my');
 }
 
 if (!session_loggedin()) {
@@ -41,16 +41,19 @@ if (!session_loggedin()) {
 
 	if (getStringFromRequest('submit')) {
 		if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-			exit_form_double_submit();
+			exit_form_double_submit('my');
 		}
 
 		$summary = getStringFromRequest('summary');
 		$details = getStringFromRequest('details');
-		// set $is_public
-		if (getStringFromRequest('is_public')) {
-			$is_public = '1';
+		$is_public = getIntFromRequest('is_public', 0);
+
+		// Secure code sent by user.
+		$summary = htmlspecialchars($summary);
+		if (getStringFromRequest('_details_content_type') == 'html') {
+			$details = TextSanitizer::purify($details);
 		} else {
-			$is_public = '0';
+			$details = htmlspecialchars($details);
 		}
 
 		//make changes to the database
@@ -58,8 +61,8 @@ if (!session_loggedin()) {
 			//updating an existing diary entry
 			$res=db_query_params ('UPDATE user_diary SET summary=$1,details=$2,is_public=$3 
 WHERE user_id=$4 AND id=$5',
-			array(htmlspecialchars($summary) ,
-				htmlspecialchars($details) ,
+			array($summary,
+				$details,
 				$is_public,
 				user_getid() ,
 				$diary_id));
@@ -78,16 +81,14 @@ WHERE user_id=$4 AND id=$5',
 ($1,$2,$3,$4,$5)',
 			array(user_getid() ,
 				time() ,
-				htmlspecialchars($summary) ,
-				htmlspecialchars($details) ,
+				$summary,
+				$details,
 				$is_public));
 			if ($res && db_affected_rows($res) > 0) {
 				$feedback .= _('Item Added');
 				if ($is_public) {
 
 					//send an email if users are monitoring
-
-
 					$result=db_query_params ('SELECT users.email from user_diary_monitor,users 
 WHERE user_diary_monitor.user_id=users.user_id 
 AND user_diary_monitor.monitored_user=$1',
@@ -102,8 +103,8 @@ AND user_diary_monitor.monitored_user=$1',
 							$subject = sprintf (_("[%s User Notes: %s] %s"),
 									    forge_get_config ('forge_name'),
 									    $u->getRealName(),
-									    stripslashes($summary)) ;
-							$body = util_line_wrap(stripslashes($details)) ;
+									    $summary) ;
+							$body = util_line_wrap($details) ;
 							$body .= _("
 
 ______________________________________________________________________
@@ -134,8 +135,7 @@ To stop monitoring this user, login to %s and visit the following link:
 				}
 			} else {
 				form_release_key(getStringFromRequest("form_key"));
-				$feedback .= _('Error Adding Item');
-				echo db_error();
+				$error_msg .= _('Error Adding Item: '). db_error();
 			}
 		}
 
@@ -168,7 +168,7 @@ To stop monitoring this user, login to %s and visit the following link:
 		$_diary_id = '';
 	}
 
-	echo site_user_header(array('title'=>_('My Diary And Notes')));
+    site_user_header(array('title'=>_('My Diary And Notes')));
 	echo '<h1>' . _('My Diary And Notes') . '</h1>';
 
 	echo '
@@ -180,7 +180,7 @@ To stop monitoring this user, login to %s and visit the following link:
 	<input type="hidden" name="diary_id" value="'. $_diary_id .'" />
 	<table>
 	<tr><td colspan="2"><strong>'._('Summary').':</strong><br />
-		<input type="text" name="summary" size="45" maxlength="60" value="'. $_summary .'" />
+		<input type="text" name="summary" size="60" maxlength="60" value="'. $_summary .'" />
 	</td></tr>
 
 	<tr><td colspan="2"><strong>'._('Details').':</strong><br />
@@ -200,8 +200,6 @@ To stop monitoring this user, login to %s and visit the following link:
 	<p />';
 
 	echo $HTML->boxTop(_('Existing Diary And Note Entries'));
-
-
 
 	$result=db_query_params ('SELECT * FROM user_diary WHERE user_id=$1 ORDER BY id DESC',
 			array(user_getid() ));
@@ -224,7 +222,7 @@ To stop monitoring this user, login to %s and visit the following link:
 
 	echo $HTML->boxBottom();
 
-	echo site_user_footer(array());
+	site_user_footer(array());
 
 }
 

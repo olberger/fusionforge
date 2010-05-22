@@ -1,25 +1,25 @@
 <?php
 /**
- * GForge Survey Facility
+ * Survey Facility
  *
- * Portions Copyright 1999-2001 (c) VA Linux Systems
- * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2002-2004 (c) GForge Team
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -52,8 +52,9 @@ if (!$g || !is_object($g) || $g->isError()) {
 $is_admin_page='y';
 $sh = new  SurveyHtml();
 
-$is_admin_page='y';
-$sh->header(array('title'=>_('Survey Results')));
+$title = _('Survey Results');
+$sh->header(array('title'=>$title));
+echo '<h1>' . $title . '</h1>';
 
 if (!session_loggedin() || !user_ismember($group_id,'A')) {
 	echo '<div class="error">'._('Permission denied').'</div>';
@@ -112,7 +113,7 @@ if ($survey_id) {
 $sf = new SurveyFactory($g);
 $ss = & $sf->getSurveys();
 if (!$ss) {
-    echo '<div class="warning_msg">' . _('No Survey Question is found') . '</div>';
+    echo '<p class="warning_msg">' . _('No Survey Question is found') . '</p>';
 } else {
     echo($sh->ShowSurveys($ss, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1));
 }

@@ -3,24 +3,22 @@
  * Role Editing Page
  *
  * Copyright 2004 (c) GForge LLC
+ * Copyright 2010, Roland Mas
  *
- * @author Tim Perdue tim@gforge.org
- * @date 2004-03-16
+ * This file is part of FusionForge.
  *
- * This file is part of GForge.
- *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -39,6 +37,10 @@ $data = getStringFromRequest('data');
 
 $group = group_get_object($group_id);
 
+if (getStringFromRequest('delete')) {
+	session_redirect('/project/admin/roledelete.php?group_id='.$group_id.'&role_id='.$role_id);
+}
+
 //
 //	The observer is a special role, which is actually
 //	just controlling the is_public/allow anon flags
@@ -48,32 +50,42 @@ $group = group_get_object($group_id);
 if ($role_id=='observer') {
 	$role = new RoleObserver($group);
 	if (!$role || !is_object($role)) {
-		exit_error('Error','Could Not Get RoleObserver');
+		exit_error(_('Could Not Get RoleObserver'),'admin');
 	} elseif ($role->isError()) {
-		exit_error('Error',$role->getErrorMessage());
+		exit_error($role->getErrorMessage(),'admin');
 	}
 
 	if (getStringFromRequest('submit')) {
 		if (!$role->update($data)) {
-			$feedback = $role->getErrorMessage();
+			$error_msg = $role->getErrorMessage();
 		} else {
 			$feedback = _('Successfully Updated Role');
 		}
 	}
 } else {
 	if (USE_PFO_RBAC) {
-		$role = RBACEngine::getInstance()->getRoleById($role_id) ;
+		if (getStringFromRequest('add')) {
+			$role_name = trim(getStringFromRequest('role_name')) ;
+			$role = new Role ($group) ;
+			$role_id=$role->createDefault($role_name) ;
+		} else {
+			$role = RBACEngine::getInstance()->getRoleById($role_id) ;
+		}
 	} else {
 		$role = new Role($group,$role_id);
 	}
 	if (!$role || !is_object($role)) {
-		exit_error('Error',_('Could Not Get Role'));
+		exit_error(_('Could Not Get Role'),'admin');
 	} elseif ($role->isError()) {
-		exit_error('Error',$role->getErrorMessage());
+		exit_error($role->getErrorMessage(),'admin');
 	}
 
 	$old_data = $role->getSettingsForProject ($group) ;
 	$new_data = array () ;
+
+	if (!is_array ($data)) {
+		$data = array () ;
+	}
 	foreach ($old_data as $section => $values) {
 		if (!array_key_exists ($section, $data)) {
 			continue ;
@@ -86,27 +98,31 @@ if ($role_id=='observer') {
 		}
 	}
 	$data = $new_data ;
-
 	if (getStringFromRequest('submit')) {
 		if (($role->getHomeProject() != NULL)
-		    && ($role->getHomeProject()->getID() != $group_id)) {
+		    && ($role->getHomeProject()->getID() == $group_id)) {
 			$role_name = trim(getStringFromRequest('role_name'));
+			$public = getIntFromRequest('public') ? true : false ;
 		} else {
 			$role_name = $role->getName() ;
+			$public = $role->isPublic() ;
 		}
 		if (!$role_name) {
-			$feedback .= ' Missing Role Name ';
+			$error_msg .= ' Missing Role Name ';
 		} else {
 			if (!$role_id) {
 				$role_id=$role->create($role_name,$data);
 				if (!$role_id) {
-					$feedback .= $role->getErrorMessage();
+					$error_msg .= $role->getErrorMessage();
 				} else {
 					$feedback = _('Successfully Created New Role');
 				}
 			} else {
+				if ($role instanceof RoleExplicit) {
+					$role->setPublic($public) ;
+				}
 				if (!$role->update($role_name,$data)) {
-					$feedback .= $role->getErrorMessage();
+					$error_msg .= $role->getErrorMessage();
 				} else {
 					$feedback = _('Successfully Updated Role');
 				}
@@ -134,9 +150,9 @@ if ($role_id=='observer') {
 		echo '<h1>'._('Edit Role').'</h1>';
 	}
 	if (USE_PFO_RBAC) {
-		echo _('Use this page to edit your project\'s Roles. Note that each member has at least as much access as the Observer. For example, if the Observer can read CVS, so can any other role in the project.');
-	} else {
 		echo _('Use this page to edit the permissions attached to each role.  Note that each role has at least as much access as the Anonymous and LoggedIn roles.  For example, if the the Anonymous role has read access to a forum, all other roles will have it too.');
+	} else {
+		echo _('Use this page to edit your project\'s Roles. Note that each member has at least as much access as the Observer. For example, if the Observer can read CVS, so can any other role in the project.');
 	}
 }
 
@@ -145,23 +161,22 @@ echo '
 <form action="'.getStringFromServer('PHP_SELF').'?group_id='.$group_id.'&amp;role_id='. $role_id .'" method="post">';
 
 if (USE_PFO_RBAC) {
-	if ($role->getHomeProject() == NULL) {
-		echo '<p><strong>'._('Role Name').'</strong><br />' ;
-		printf (_('%s (global role)'),
-			$role->getName ()) ;
-	} elseif ($role->getHomeProject()->getID() != $group_id) {
-		echo '<p><strong>'._('Role Name').'</strong><br />' ;
-		printf (_('%s (in project %s)'),
-			$role->getName (),
-			$role->getHomeProject()->getPublicName()) ;
+	if ($role->getHomeProject() == NULL
+	    || $role->getHomeProject()->getID() != $group_id) {
+		echo '<p><strong>'._('Role Name').'</strong></p>' ;
+		echo $role->getDisplayableName ($group) ;
 	} else {
-		echo '<p><strong>'._('Role Name').'</strong><br /><input type="text" name="role_name" value="'.$role->getName().'">' ;
+		echo '<p><strong>'._('Role Name').'</strong><br /><input type="text" name="role_name" value="'.$role->getName().'"><br />' ;
+		echo '<input type="checkbox" name="public" value="1"' ;
+		if ($role->isPublic()) {
+			echo ' checked' ;
+		}
+		echo '> '._('Shared role (can be referenced by other projects)').'</p>' ;
 	}
-	echo '</p>';
 } else {
 	if ($role_id != 'observer') {
 		echo '<p><strong>'._('Role Name').'</strong><br />
-	<input type="text" name="role_name" value="'.$role->getName().'">
+	<input type="text" name="role_name" value="'.$role->getName().'" />
 	</p>';
 	}
 }
@@ -180,8 +195,8 @@ echo $HTML->listTableTop($titles);
 //	Everything is built on the multi-dimensial arrays in the Role object
 //
 $j = 0;
-$keys = array_keys($role->role_values);
 if (USE_PFO_RBAC) {
+	$keys = array_keys($role->getSettingsForProject ($group)) ;
 	$keys2 = array () ;
 	foreach ($keys as $key) {
 		if (!in_array ($key, $role->global_settings)) {
@@ -189,6 +204,8 @@ if (USE_PFO_RBAC) {
 		}
 	}
 	$keys = $keys2 ;
+} else {
+	$keys = array_keys($role->role_values);
 }
 for ($i=0; $i<count($keys); $i++) {
         if ((!$group->usesForum() && preg_match("/forum/", $keys[$i])) ||
@@ -226,7 +243,7 @@ for ($i=0; $i<count($keys); $i++) {
 				} else {
 					$txt='';
 				}
-				echo '<tr '. $HTML->boxGetAltRowStyle($j++) . '>
+				echo '<tr ' . $HTML->boxGetAltRowStyle($j++) . '>
 				<td>'.$rbac_edit_section_names[$keys[$i]].'</td>
 				<td>'.db_result($res,$q,'forum_name').'</td>
 				<td>'.html_build_select_box_from_assoc(
@@ -336,5 +353,10 @@ echo '<p><input type="submit" name="submit" value="'._('Submit').'" /></p>
 </form>';
 
 project_admin_footer(array());
+
+// Local Variables:
+// mode: php
+// c-file-style: "bsd"
+// End:
 
 ?>

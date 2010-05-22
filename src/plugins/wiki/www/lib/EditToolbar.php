@@ -1,5 +1,5 @@
 <?php
-// rcs_id('$Id: EditToolbar.php 7473 2010-06-07 10:59:48Z rurban $');
+// rcs_id('$Id: EditToolbar.php 7696 2010-09-20 10:20:25Z rurban $');
 /* Copyright 2004-2010 $ThePhpWikiProgrammingTeam
  * Copyright 2008-2009 Marc-Etienne Vargenau, Alcatel-Lucent
  *
@@ -114,7 +114,7 @@ msg_repl_close     = '"._("Close")."'
 
         if (ENABLE_EDIT_TOOLBAR) {
             $username = $request->_user->UserName();
-            if (GFORGE or DISABLE_MARKUP_WIKIWORD or (!isWikiWord($username))) {
+            if (FUSIONFORGE or DISABLE_MARKUP_WIKIWORD or (!isWikiWord($username))) {
                 $username = '[['.$username.']]';
             }
 	    $signature = " ––".$username." ".CTime();
@@ -216,7 +216,6 @@ msg_repl_close     = '"._("Close")."'
 	    }
     
             foreach ($toolarray as $tool) {
-            	global $WikiTheme;
                 $image = $WikiTheme->getImageURL($tool["image"]);
                 $open  = $tool["open"];
                 $close = $tool["close"];
@@ -302,7 +301,7 @@ msg_repl_close     = '"._("Close")."'
             $categories = array();
             while ($p = $pages->next()) {
 		$page = $p->getName();
-                if (GFORGE) {
+                if (FUSIONFORGE) {
                     $categories[] = "['$page', '%0A----%0A%5B%5B".$page."%5D%5D']";
 		} else if (DISABLE_MARKUP_WIKIWORD or (!isWikiWord($page))) {
 		    $categories[] = "['$page', '%0A%5B".$page."%5D']";

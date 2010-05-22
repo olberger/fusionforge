@@ -19,7 +19,7 @@
  */
 
 require_once('Widget.class.php');
-require_once('plugins_utils.php');
+require_once $gfcommon.'include/plugins_utils.php';
 
 /**
 * Widget_MyBookmarks
@@ -65,7 +65,7 @@ class Widget_MyBookmarks extends Widget {
         return $html_my_bookmarks;
     }
     function getDescription() {
-        return _("List your favorite bookmarks (your favorite pages in Codendi or external).<br />Note that in many cases Codendi uses URL with enough embedded information to bookmark sophisticated items like Software Map browsing, typical search in your project Bug or Task database, etc. <br />Bookmarked items can be edited which means that both the title of the bookmark and its destination URL can be modified.");
+        return printf(_('List your favorite bookmarks (your favorite pages in %1$s or external).<br />Note that in many cases %1$s uses URL with enough embedded information to bookmark sophisticated items like Software Map browsing, typical search in your project Bug or Task database, etc. <br />Bookmarked items can be edited which means that both the title of the bookmark and its destination URL can be modified.'), forge_get_config('forge_name'));
     }
 }
 ?>

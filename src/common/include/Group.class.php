@@ -37,6 +37,7 @@ require_once $gfcommon.'mail/MailingListFactory.class.php';
 require_once $gfcommon.'survey/SurveyFactory.class.php';
 require_once $gfcommon.'survey/SurveyQuestionFactory.class.php';
 require_once $gfcommon.'include/gettext.php';
+require_once $gfcommon.'include/GroupJoinRequest.class.php';
 
 //the license_id of "Other/proprietary" license
 define('GROUP_LICENSE_OTHER',126);
@@ -138,6 +139,12 @@ function &group_get_objects($id_arr) {
 		}
 	}
 	return $return;
+}
+
+function &group_get_active_projects() {
+	$res=db_query_params ('SELECT group_id FROM groups WHERE status=$1',
+			      array ('A')) ;
+	return group_get_objects (util_result_column_to_array($res,0)) ;
 }
 
 function &group_get_object_by_name($groupname) {
@@ -351,7 +358,13 @@ class Group extends Error {
 				db_rollback();
 				return false;
 			}
-	
+			
+			if (USE_PFO_RBAC) {
+				$gjr = new GroupJoinRequest ($this) ;
+				$gjr->create ($user->getID(),
+					      'Fake GroupJoinRequest to store the creator of a project',
+					      false) ;
+			} else {
 			//
 			// Now, make the user an admin
 			//
@@ -369,6 +382,7 @@ class Group extends Error {
 				$this->setError(sprintf(_('ERROR: Could not add admin to newly created group: %s'),db_error()));
 				db_rollback();
 				return false;
+			}
 			}
 	
 			if (!$this->fetchData($id)) {
@@ -946,11 +960,25 @@ class Group extends Error {
 	 *	@return	array	Array of User objects.
 	 */
 	function &getAdmins() {
-		// this function gets all group admins in order to send Jabber and mail messages
-		$res = db_query_params ('SELECT user_id FROM user_group WHERE admin_flags=$1 AND group_id=$2',
-				       array ('A', $this->getID()));
-		$user_ids=util_result_column_to_array($res);
-		return user_get_objects($user_ids);
+		$roles = RBACEngine::getInstance()->getRolesByAllowedAction ('project_admin', $this->getID()) ;
+		
+		$user_ids = array () ;
+
+		foreach ($roles as $role) {
+			if (! ($role instanceof RoleExplicit)) {
+				continue ;
+			}
+			if ($role->getHomeProject() == NULL
+			    || $role->getHomeProject()->getID() != $this->getID()) {
+				continue ;
+			}
+			
+			foreach ($role->getUsers() as $u) {
+				$user_ids[] = $u->getID() ;
+			}
+		}
+			
+		return user_get_objects(array_unique($user_ids));
 	}
 		
 	/*
@@ -1413,6 +1441,9 @@ class Group extends Error {
 		for ($i=0; $i<count($members); $i++) {
 			$this->removeUser($members[$i]->getID());
 		}
+		// Failsafe until user_group table is gone
+		$res = db_query_params ('DELETE FROM user_group WHERE group_id=$1', 
+					array ($this->getID())) ;
 		//
 		//	Delete Trackers
 		//
@@ -1624,7 +1655,12 @@ class Group extends Error {
 					array ($this->getUnixName(),
 					       time(),
 					       0)) ;
-//echo 'InsertIntoDeleteQueue'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Project: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		$res = db_query_params ('DELETE FROM groups WHERE group_id=$1',
 					array ($this->getID())) ;
 		if (!$res) {
@@ -1895,6 +1931,12 @@ class Group extends Error {
 				return false;
 			}
 			$found_role->removeUser ($user) ;
+			if (!$SYS->sysGroupCheckUser($this->getID(),$user_id)) {
+				$this->setError($SYS->getErrorMessage());
+				db_rollback();
+				return false;
+			}
+
 		} else {
 			$res = db_query_params ('DELETE FROM user_group WHERE group_id=$1 AND user_id=$2', 
 						array ($this->getID(),
@@ -1959,7 +2001,6 @@ class Group extends Error {
 			//
 			//	Remove user from system
 			//
-//echo "<h2>Group::addUser SYS->sysGroupRemoveUser(".$this->getID().",$user_id)</h2>";
 			if (!$SYS->sysGroupRemoveUser($this->getID(),$user_id)) {
 				$this->setError($SYS->getErrorMessage());
 				db_rollback();
@@ -2070,39 +2111,37 @@ class Group extends Error {
 	 *	@access private
 	 */
 	function activateUsers() {
-
 		/*
 			Activate member(s) of the project
 		*/
 		
-		$member_res = db_query_params ('SELECT user_id, role_id FROM user_group	WHERE group_id=$1',
-					       array ($this->getID())) ;
-		
-		$rows = db_numrows($member_res);
+		if (USE_PFO_RBAC) {
+		$members = $this->getUsers (true) ;
 
-		if ($rows > 0) {
-
-			for ($i=0; $i<$rows; $i++) {
-
-				$member =& user_get_object(db_result($member_res,$i,'user_id'));
-				$roleId = db_result($member_res,$i,'role_id');
-
-				if (!$member || !is_object($member)) {
-					$this->setError(_('Error getting member object'));
-					return false;
-				} else if ($member->isError()) {
-					$this->setError(sprintf(_('Error getting member object: %s'),$member->getErrorMessage()));
-					return false;
+		foreach ($members as $member) {
+			$roles = array () ;
+			foreach (RBACEngine::getInstance()->getAvailableRolesForUser ($member) as $role) {
+				if ($role->getHomeProject() && $role->getHomeProject()->getID() == $this->getID()) {
+					$roles[] = $role ;
 				}
-
-				if (!$this->addUser($member->getUnixName(),$roleId)) {
-					return false;
+				if (!$this->addUser($member->getUnixName(),$role->getID())) {
+					return false ;
 				}
 			}
-
-		 }
-
-		 return true;
+			
+		}
+		} else {
+			$res_member = db_query_params ('SELECT user_id,role_id FROM user_group WHERE group_id=$1',
+						       array ($this->getID())) ;
+			while ($row_member = db_fetch_array($res_member)) {
+				$u = user_get_object($row_member['user_id']) ;
+				if (!$this->addUser($u->getUnixName(),$row_member['role_id'])) {
+					return false ;
+				}
+			}
+		}
+		
+		return true ;
 	}
 
 	/**
@@ -2111,14 +2150,7 @@ class Group extends Error {
 	 *	@return array of User objects for this group.
 	 */
 	function &getMembers() {
-		if (!isset($this->membersArr)) {
-			$res = db_query_params ('SELECT users.* FROM users INNER JOIN user_group ON users.user_id=user_group.user_id WHERE user_group.group_id=$1',
-						array ($this->getID())) ;
-			while ($arr =& db_fetch_array($res)) {
-				$this->membersArr[] = new GFUser($arr['user_id'],$arr);
-			}
-		}
-		return $this->membersArr;
+		return $this->getUsers (true) ;
 	}
 
 	/**
@@ -2151,23 +2183,25 @@ class Group extends Error {
 		//	Tracker Integration
 		//
 		//
-		$ats = new ArtifactTypes($this);
-		if (!$ats || !is_object($ats)) {
-			$this->setError(_('Error creating ArtifactTypes object'));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
-		} else if ($ats->isError()) {
-			$this->setError(sprintf (_('ATS%d: %s'), 1, $ats->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
-		}
-		if (!$ats->createTrackers()) {
-			$this->setError(sprintf (_('ATS%d: %s'), 2, $ats->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
+		if (forge_get_config ('use_tracker')) {
+			$ats = new ArtifactTypes($this);
+			if (!$ats || !is_object($ats)) {
+				$this->setError(_('Error creating ArtifactTypes object'));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			} else if ($ats->isError()) {
+				$this->setError(sprintf (_('ATS%d: %s'), 1, $ats->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
+			if (!$ats->createTrackers()) {
+				$this->setError(sprintf (_('ATS%d: %s'), 2, $ats->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
 		}
 
 		//
@@ -2175,39 +2209,43 @@ class Group extends Error {
 		//	Forum Integration
 		//
 		//
-		$f = new Forum($this);
-		if (!$f->create(_('Open-Discussion'),_('General Discussion'),1,'',1,0)) {
-			$this->setError(sprintf (_('F%d: %s'), 1, $f->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
+		if (forge_get_config ('use_forum')) {
+			$f = new Forum($this);
+			if (!$f->create(_('Open-Discussion'),_('General Discussion'),1,'',1,0)) {
+				$this->setError(sprintf (_('F%d: %s'), 1, $f->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
+			$f = new Forum($this);
+			if (!$f->create(_('Help'),_('Get Public Help'),1,'',1,0)) {
+				$this->setError(sprintf (_('F%d: %s'), 2, $f->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
+			$f = new Forum($this);
+			if (!$f->create(_('Developers-Discussion'),_('Project Developer Discussion'),0,'',1,0)) {
+				$this->setError(sprintf (_('F%d: %s'), 3, $f->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
 		}
-		$f = new Forum($this);
-		if (!$f->create(_('Help'),_('Get Public Help'),1,'',1,0)) {
-			$this->setError(sprintf (_('F%d: %s'), 2, $f->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
-		}
-		$f = new Forum($this);
-		if (!$f->create(_('Developers-Discussion'),_('Project Developer Discussion'),0,'',1,0)) {
-			$this->setError(sprintf (_('F%d: %s'), 3, $f->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
-		}
-
+		
 		//
 		//
 		//	Doc Mgr Integration
 		//
 		//
-		$dg = new DocumentGroup($this);
-		if (!$dg->create(_('Uncategorized Submissions'))) {
-			$this->setError(sprintf(_('DG: %s'),$dg->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
+		if (forge_get_config('use_docman')) {
+			$dg = new DocumentGroup($this);
+			if (!$dg->create(_('Uncategorized Submissions'))) {
+				$this->setError(sprintf(_('DG: %s'),$dg->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
 		}
 
 		//
@@ -2215,12 +2253,14 @@ class Group extends Error {
 		//	FRS integration
 		//
 		//
-		$frs = new FRSPackage($this);
-		if (!$frs->create($this->getUnixName())) {
-			$this->setError(sprintf(_('FRSP: %s'),$frs->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
+		if (forge_get_config ('use_frs')) {
+			$frs = new FRSPackage($this);
+			if (!$frs->create($this->getUnixName())) {
+				$this->setError(sprintf(_('FRSP: %s'),$frs->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
 		}
 
 		//
@@ -2228,19 +2268,21 @@ class Group extends Error {
 		//	PM Integration
 		//
 		//
-		$pg = new ProjectGroup($this);
-		if (!$pg->create(_('To Do'),_('Things We Have To Do'),1)) {
-			$this->setError(sprintf(_('PG%d: %s'),1,$pg->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
-		}
-		$pg = new ProjectGroup($this);
-		if (!$pg->create(_('Next Release'),_('Items For Our Next Release'),1)) {
-			$this->setError(sprintf(_('PG%d: %s'),2,$pg->getErrorMessage()));
-			db_rollback();
-			setup_gettext_from_context();
-			return false;
+		if (forge_get_config ('use_pm')) {
+			$pg = new ProjectGroup($this);
+			if (!$pg->create(_('To Do'),_('Things We Have To Do'),1)) {
+				$this->setError(sprintf(_('PG%d: %s'),1,$pg->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
+			$pg = new ProjectGroup($this);
+			if (!$pg->create(_('Next Release'),_('Items For Our Next Release'),1)) {
+				$this->setError(sprintf(_('PG%d: %s'),2,$pg->getErrorMessage()));
+				db_rollback();
+				setup_gettext_from_context();
+				return false;
+			}
 		}
 
 		//
@@ -2248,6 +2290,16 @@ class Group extends Error {
 		//	Set Default Roles
 		//
 		//
+		if (USE_PFO_RBAC) {
+			$idadmin_group = NULL ;
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$idadmin_group = $gjr->getUserID() ;
+				break ;
+			}
+			if ($idadmin_group == NULL) {
+				$idadmin_group = $user->getID();
+			}
+		} else {
 
 		$admin_group = db_query_params ('SELECT user_id FROM user_group WHERE group_id=$1 AND admin_flags=$2',
 						array ($this->getID(),
@@ -2260,6 +2312,7 @@ class Group extends Error {
 					 array ($idadmin_group,
 						$this->getID(),
 						'A')) ;
+		}
 		}
 
 		$role = new Role($this);
@@ -2278,6 +2331,21 @@ class Group extends Error {
 			}
 		}
 
+		if (USE_PFO_RBAC) {
+			$roles = $this->getRoles() ;
+			foreach ($roles as $r) {
+				if ($r->getSetting ('project_admin', $this->getID())) {
+					$r->addUser (user_get_object ($idadmin_group)) ;
+				}
+			}
+			if ($this->isPublic()) {
+				RoleAnonymous::getInstance()->linkProject($this) ;
+				RoleLoggedIn::getInstance()->linkProject($this) ;
+			}
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$gjr->delete (true) ;
+			}
+		}
 
 		//
 		//
@@ -2322,23 +2390,15 @@ class Group extends Error {
 	 *	@access public
 	 */
 	function sendApprovalEmail() {
-		$res_admins = db_query_params ('
-			SELECT users.user_name,users.email,users.language,users.user_id
-			FROM users,user_group
-			WHERE users.user_id=user_group.user_id
-			AND user_group.group_id=$1
-			AND user_group.admin_flags=$2',
-					       array ($this->getID(),
-						      'A')) ;
+		$admins = RBACEngine::getInstance()->getUsersByAllowedAction ('project_admin', $this->getID()) ;
 
-		if (db_numrows($res_admins) < 1) {
+		if (count($admins) < 1) {
 			$this->setError(_("Group does not have any administrators."));
 			return false;
 		}
 
 		// send one email per admin
-		while ($row_admins = db_fetch_array($res_admins)) {
-			$admin =& user_get_object($row_admins['user_id']);
+		foreach ($admins as $admin) {
 			setup_gettext_for_user ($admin) ;
 
 			$message=sprintf(_('Your project registration for %4$s has been approved.
@@ -2377,7 +2437,7 @@ if there is anything we can do to help you.
 						       util_make_url ('/project/admin/?group_id='.$this->getID()),
 						       forge_get_config ('forge_name'));
 	
-			util_send_message($row_admins['email'], sprintf(_('%1$s Project Approved'), forge_get_config ('forge_name')), $message);
+			util_send_message($admin->getEmail(), sprintf(_('%1$s Project Approved'), forge_get_config ('forge_name')), $message);
 
 			setup_gettext_from_context();
 		}
@@ -2398,19 +2458,25 @@ if there is anything we can do to help you.
 	 *	@access public
 	 */
 	function sendRejectionEmail($response_id, $message="zxcv") {
-		$res_admins = db_query_params ('
-			SELECT u.email, u.language, u.user_id
-			FROM users u, user_group ug
-			WHERE ug.group_id=$1
-			AND u.user_id=ug.user_id',
-					       array ($this->getID())) ;
-		if (db_numrows($res_admins) < 1) {
+		$submitters = array () ;
+		if (USE_PFO_RBAC) {
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$submitters[] =  user_get_object($gjr->getUserID()) ;
+			}
+		} else {
+			$res = db_query_params("SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND u.user_id=ug.user_id",
+					       $this->getID());
+			while ($arr = db_fetch_array ($res)) {
+				$submitter[] =& user_get_object($arr['user_id']);
+			}
+		}
+
+		if (count ($submitters) < 1) {
 			$this->setError(_("Group does not have any administrators."));
 			return false;
 		}
-		
-		while ($row_admins = db_fetch_array($res_admins)) {
-			$admin =& user_get_object($row_admins['user_id']);
+
+		foreach ($submitters as $admin) {
 			setup_gettext_for_user ($admin) ;
 
 			$response=sprintf(_('Your project registration for %3$s has been denied.
@@ -2432,7 +2498,7 @@ Reasons for negative decision:
 					"response_text");
 			}
 
-			util_send_message($row_admins['email'], sprintf(_('%1$s Project Denied'), forge_get_config ('forge_name')), $response);
+			util_send_message($admin->getEmail(), sprintf(_('%1$s Project Denied'), forge_get_config ('forge_name')), $response);
 			setup_gettext_from_context();
 		}
 
@@ -2451,48 +2517,58 @@ Reasons for negative decision:
 	 */
 	function sendNewProjectNotificationEmail() {
 		// Get the user who wants to register the project
-		$res = db_query_params ('SELECT user_id FROM user_group WHERE group_id=$1',
-					array ($this->getID())) ;
-
-		if (db_numrows($res) < 1) {
+		$submitters = array () ;
+		if (USE_PFO_RBAC) {
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$submitters[] =  user_get_object($gjr->getUserID()) ;
+			}
+		} else {
+			$res = db_query_params("SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND u.user_id=ug.user_id",
+					       $this->getID());
+			while ($arr = db_fetch_array ($res)) {
+				$submitter[] =& user_get_object($arr['user_id']);
+			}
+		}
+		if (count ($submitters) < 1) {
 			$this->setError(_("Could not find user who has submitted the project."));
 			return false;
 		}
 		
-		$submitter =& user_get_object(db_result($res,0,'user_id'));
+		$admins = RBACEngine::getInstance()->getUsersByAllowedAction ('project_approve', -1) ;
 
-
-		$res = db_query_params ('SELECT users.email, users.language, users.user_id
-	 			FROM users, user_group
-				WHERE group_id=1 
-				AND user_group.admin_flags=$1
-				AND users.user_id=user_group.user_id',
-					array ('A'));
-		
-		if (db_numrows($res) < 1) {
+		if (count($admins) < 1) {
 			$this->setError(_("There is no administrator to send the mail to."));
 			return false;
 		}
 
-		for ($i=0; $i<db_numrows($res) ; $i++) {
-			$admin_email = db_result($res,$i,'email') ;
-			$admin =& user_get_object(db_result($res,$i,'user_id'));
+		foreach ($admins as $admin) {
+			$admin_email = $admin->getEmail () ;
 			setup_gettext_for_user ($admin) ;
+
+			foreach ($submitters as $u) {
+				$submitter_names[] = $u->getRealName() ;
+			}
 			
-			$message=sprintf(_('New %1$s Project Submitted
+			$message = sprintf(_('New %1$s Project Submitted
 
 Project Full Name:  %2$s
 Submitted Description: %3$s
-Submitter: %5$s (%6$s)
+'),
+					   forge_get_config ('forge_name'),
+					   htmlspecialchars_decode($this->getPublicName()),
+					   htmlspecialchars_decode($this->getRegistrationPurpose()));
+			
+			foreach ($submitters as $submitter) {
+				$message .= sprintf(_('Submitter: %1$s (%2$s)
+'),
+						    $submitter->getRealName(), 
+						    $submitter->getUnixName());
+			}
 
+			$message .= sprintf (_('
 Please visit the following URL to approve or reject this project:
-%4$s'),
-						       forge_get_config ('forge_name'),
-						       htmlspecialchars_decode($this->getPublicName()),
-						       htmlspecialchars_decode($this->getRegistrationPurpose()),
-						       util_make_url ('/admin/approve-pending.php'),
-						       $submitter->getRealName(), 
-						       $submitter->getUnixName());
+%1$s'),
+					    util_make_url ('/admin/approve-pending.php')) ;
 			util_send_message($admin_email, sprintf(_('New %1$s Project Submitted'), forge_get_config ('forge_name')), $message);
 			setup_gettext_from_context();
 		}
@@ -2550,18 +2626,18 @@ The %1$s admin team will now examine your project submission.  You will be notif
 		if (USE_PFO_RBAC) {
 			$res = db_query_params ('SELECT role_id FROM pfo_role WHERE home_group_id=$1',
 						array ($this->getID()));
-			while ($arr =& db_fetch_array($res)) {
+			while ($arr = db_fetch_array($res)) {
 				$role_ids[] = $arr['role_id'] ;
 			}
 			$res = db_query_params ('SELECT role_id FROM role_project_refs WHERE group_id=$1',
 						array ($this->getID()));
-			while ($arr =& db_fetch_array($res)) {
+			while ($arr = db_fetch_array($res)) {
 				$role_ids[] = $arr['role_id'] ;
 			}
 		} else {
 			$res = db_query_params ('SELECT role_id FROM role WHERE group_id=$1',
 							    array ($this->getID()));
-			while ($arr =& db_fetch_array($res)) {
+			while ($arr = db_fetch_array($res)) {
 				$role_ids[] = $arr['role_id'] ;
 			}
 		}
@@ -2655,43 +2731,44 @@ The %1$s admin team will now examine your project submission.  You will be notif
 	 *	@return array of user's objects.
 	 */
 	function getUsers($onlylocal = true) {
-		$users = array () ;
-
-		if (USE_PFO_RBAC) {
-			$ids = array () ;
-			foreach ($this->getRoles() as $role) {
-				if ($onlylocal 
-				    && ($role->getHomeProject() == NULL || $role->getHomeProject()->getID() != $this->getID())) {
-					continue ;
-				}
-				foreach ($role->getUsers() as $user) {
-					$ids[] = $user->getID() ;
-				}
-			}
-			$ids = array_unique ($ids) ;
-			foreach ($ids as $id) {
-				$u = user_get_object ($id) ;
-				if ($u->isActive()) {
-					$users[] = $u ;
-				}
-			}
-		} else {
-		
-			$users_group_res = db_query_params ('SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND ug.user_id=u.user_id AND u.status=$2',
-							    array ($this->getID(),
-								   'A'));
-			if (!$users_group_res) {
-				$this->setError('Error: Enable to get users from group '. $this->getID() . ' ' .db_error());
-				return false;
-			}
+		if (!isset($this->membersArr)) {
+			$this->membersArr = array () ;
 			
-			for ($i=0; $i<db_numrows($users_group_res); $i++) {
-				$users[$i] = new GFUser(db_result($users_group_res,$i,'user_id'),false);
+			if (USE_PFO_RBAC) {
+				$ids = array () ;
+				foreach ($this->getRoles() as $role) {
+					if ($onlylocal 
+					    && ($role->getHomeProject() == NULL || $role->getHomeProject()->getID() != $this->getID())) {
+						continue ;
+					}
+					foreach ($role->getUsers() as $user) {
+						$ids[] = $user->getID() ;
+					}
+				}
+				$ids = array_unique ($ids) ;
+				foreach ($ids as $id) {
+					$u = user_get_object ($id) ;
+					if ($u->isActive()) {
+						$this->membersArr[] = $u ;
+					}
+				}
+			} else {
+				
+				$users_group_res = db_query_params ('SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND ug.user_id=u.user_id AND u.status=$2',
+								    array ($this->getID(),
+									   'A'));
+				if (!$users_group_res) {
+					$this->setError('Error: Enable to get users from group '. $this->getID() . ' ' .db_error());
+					return false;
+				}
+				
+				for ($i=0; $i<db_numrows($users_group_res); $i++) {
+					$this->membersArr[$i] = new GFUser(db_result($users_group_res,$i,'user_id'),false);
+				}
+				
 			}
-			
 		}
-
-		return $users;
+		return $this->membersArr;
 	}
 
 	function setDocmanSearchStatus($status) {
@@ -2779,6 +2856,41 @@ function &group_get_result($group_id=0) {
 	}
 }
 
+class ProjectComparator {
+	var $criterion = 'name' ;
+
+	function Compare ($a, $b) {
+		switch ($this->criterion) {
+		case 'name':
+		default:
+			$namecmp = strcoll ($a->getPublicName(), $b->getPublicName()) ;
+			if ($namecmp != 0) {
+				return $namecmp ;
+			}
+			/* If several projects share a same public name */
+			return strcoll ($a->getUnixName(), $b->getUnixName()) ;
+			break ;
+		case 'unixname':
+			return strcmp ($a->getUnixName(), $b->getUnixName()) ;
+			break ;
+		case 'id':
+			$aid = $a->getID() ;
+			$bid = $b->getID() ;
+			if ($a == $b) {
+				return 0;
+			}
+			return ($a < $b) ? -1 : 1;
+			break ;
+		}
+	}
+}
+
+function sortProjectList (&$list, $criterion='name') {
+	$cmp = new ProjectComparator () ;
+	$cmp->criterion = $criterion ;
+
+	return usort ($list, array ($cmp, 'Compare')) ;
+}
 
 // Local Variables:
 // mode: php

@@ -1,19 +1,34 @@
 <?php
 /**
-  *
-  * SourceForge Trove Software Map
-  *
-  * SourceForge: Breaking Down the Barriers to Open Source Development
-  * Copyright 1999-2001 (c) VA Linux Systems
-  * http://sourceforge.net
-  *
-  */
+ * FusionForge Trove Software Map
+ *
+ * Copyright 2000, Quentin Cregan/Sourceforge
+ * Copyright 2002-2003, Tim Perdue/GForge, LLC
+ * Copyright 2009, Roland Mas
+ * Copyright 2010, Franck Villaume - Capgemini
+ *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
+ * 
+ * FusionForge is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 
 session_start();
 require_once('../../env.inc.php');    
 require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'include/trove.php';
-require_once $gfwww.'docman/include/doc_utils.php';
 
 if (!forge_get_config('use_trove')) {
 	exit_disabled();
@@ -389,7 +404,7 @@ else {
 				reset($arbre);
 				//construction automatique de l'arbre format : (num_fils, num_pere,nom,nom_unix)
 				while (list($key2, $sons2) = each($arbre)) {
-					print "d.add(".$key2.",".$sons2.",'".$project_name[$key2][0]."','".util_make_link ("/projects/".$project_name[$key2][1] ."/") . "');\n";
+					echo "d.add('".$key2."','".$sons2."','".$project_name[$key2][0]."','".util_make_url( '/projects/'.$project_name[$key2][1] .'/', $project_name[$key2][1] ) ."');";
 				}
 				?>
 		
@@ -412,8 +427,6 @@ else {
 		aff_tree($tree, 0);
 
 }
-//docman_display_documents($nested_groups,$df,$is_editor);
-docman_display_documents($nested_groups,$df,'');
 
 $HTML->footer(array());
 

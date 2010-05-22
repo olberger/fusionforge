@@ -1,25 +1,26 @@
 <?php
 /**
- * GForge Survey Facility
+ * Survey Facility
  *
- * Portions Copyright 1999-2001 (c) VA Linux Systems
- * The rest Copyright 2002-2004 (c) GForge Team
- * http://gforge.org/
+ * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2002-2004 (c) GForge Team
+ * Copyright 2010 (c) FusionForge Team
+ * http://fusionforge.org/
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -47,18 +48,13 @@ if (!$survey_id) {
 	/*
 		Quit if params are not provided
 	*/
-	echo '<div class="error">'._('For some reason, the Group ID or Survey ID did not make it to this page').'</div>';
+	echo '<div class="error">'._('For some reason, the Project ID or Survey ID did not make it to this page').'</div>';
 	$sh->footer(array());
 	exit;
 }
 
 if (!session_loggedin()) {
-	/*
-		Tell them they need to be logged in
-	*/
-	echo '<div class="error">'._('You have to be logged in to participate in surveys.')."</div>";
-	$sh->footer(array());
-	exit;
+	exit_not_logged_in();
 }
 
 ?>
@@ -74,8 +70,8 @@ if (!session_loggedin()) {
 	Delete this customer's responses in case they had back-arrowed
 */
 $result = db_query_params ('DELETE FROM survey_responses WHERE survey_id=$1 AND group_id=$2 AND user_id=$3',
-			   array(addslashes($survey_id) ,
-				 addslashes($group_id) ,
+			   array($survey_id,
+				 $group_id,
 				 user_getid()));
 /*
 	Select this survey from the database

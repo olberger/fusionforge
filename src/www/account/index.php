@@ -3,21 +3,22 @@
  * User account main page - show settings with means to change them
  *
  * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2010 (c) Franck Villaume
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -25,21 +26,22 @@ require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
 require_once $gfcommon.'include/timezones.php';
 
-$feedback = '';
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
+$error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
 
 session_require_login () ;
 
 // get global users vars
 $u =& user_get_object(user_getid());
 if (!$u || !is_object($u)) {
-    exit_error('Error','Could Not Get User');
+    exit_error(_('Could Not Get User'));
 } elseif ($u->isError()) {
-    exit_error('Error',$u->getErrorMessage());
+    exit_error($u->getErrorMessage(),'my');
 }
 
 if (getStringFromRequest('submit')) {
 	if (!form_key_is_valid(getStringFromRequest('form_key'))) {
-		exit_form_double_submit();
+		exit_form_double_submit('my');
 	}
 
 
@@ -77,15 +79,16 @@ if (getStringFromRequest('submit')) {
 	if (!$u->update($firstname, $lastname, $language, $timezone, $mail_site, $mail_va, $use_ratings,
 		$jabber_address,$jabber_only,$theme_id,$address,$address2,$phone,$fax,$title,$ccode)) {
 		form_release_key(getStringFromRequest('form_key'));
-		$feedback .= $u->getErrorMessage().'<br />';
+		$error_msg = $u->getErrorMessage();
+		$refresh_url = '/account/?error_msg='.urlencode($error_msg);
 	} else {
-		$feedback .= _('Updated').'<br />';
+		$feedback = _('Updated');
+		$refresh_url = '/account/?feedback='.urlencode($feedback);
 	}
 
 	if ($refresh) {
-		session_redirect("/account/?feedback=".urlencode($feedback));
+		session_redirect($refresh_url);
 	}
-
 }
 
 site_user_header(array('title'=>_('Account Maintenance')));
@@ -286,10 +289,10 @@ if (($u->getUnixStatus() == 'A') && (forge_get_config('use_shell'))) {
 
 </table>
 
-<div align="center">
+<p style="text-align: center;">
 <input type="submit" name="submit" value="<?php echo _('Update'); ?>" />
 <input type="reset" name="reset" value="<?php echo _('Reset Changes'); ?>" />
-</div>
+</p>
 </form>
 
 <?php

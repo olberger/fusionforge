@@ -59,8 +59,8 @@ class blocksPlugin extends Plugin {
 
 	function CallHook ($hookname, $params) {
 		global $use_blocksplugin,$G_SESSION,$HTML;
-		$group_id=$params['group'];
 		if ($hookname == "groupisactivecheckbox") {
+		    $group_id=$params['group'];
 			//Check if the group is active
 			// this code creates the checkbox in the project edit public info page to activate/deactivate the plugin
 			$group = &group_get_object($group_id);
@@ -78,6 +78,7 @@ class blocksPlugin extends Plugin {
 			echo "</td>";
 			echo "</tr>";
 		} elseif ($hookname == "groupisactivecheckboxpost") {
+		    $group_id=$params['group'];
 			// this code actually activates/deactivates the plugin after the form was submitted in the project edit public info page
 			$group = &group_get_object($group_id);
 			$use_blocksplugin = getStringFromRequest('use_blocksplugin');
@@ -134,17 +135,17 @@ class blocksPlugin extends Plugin {
 	function parseContent($t) {
 		global $HTML;
 
-		$t =& preg_replace('/<p>{boxTop (.*?)}<\/p>/ie', '$HTML->boxTop("$1")', $t);
-		$t =& preg_replace('/{boxTop (.*?)}/ie', '$HTML->boxTop("$1")', $t);
-		$t =& preg_replace('/<p>{boxMiddle (.*?)}<\/p>/ie', '$HTML->boxMiddle("$1")', $t);
-		$t =& preg_replace('/{boxMiddle (.*?)}/ie', '$HTML->boxMiddle("$1")', $t);
-		$t =& preg_replace('/<p>{boxBottom}<\/p>/i', $HTML->boxBottom(), $t);
-		$t =& preg_replace('/{boxBottom}/i', $HTML->boxBottom(), $t);
+		$t = preg_replace('/<p>{boxTop (.*?)}<\/p>/ie', '$HTML->boxTop("$1")', $t);
+		$t = preg_replace('/{boxTop (.*?)}/ie', '$HTML->boxTop("$1")', $t);
+		$t = preg_replace('/<p>{boxMiddle (.*?)}<\/p>/ie', '$HTML->boxMiddle("$1")', $t);
+		$t = preg_replace('/{boxMiddle (.*?)}/ie', '$HTML->boxMiddle("$1")', $t);
+		$t = preg_replace('/<p>{boxBottom}<\/p>/i', $HTML->boxBottom(), $t);
+		$t = preg_replace('/{boxBottom}/i', $HTML->boxBottom(), $t);
 
-		$t =& preg_replace('/<p>{boxHeader}/i', '<hr />', $t);
-		$t =& preg_replace('/{boxHeader}/i', '<hr />', $t);
-		$t =& preg_replace('/{boxFooter}<\/p>/i', '<hr />', $t);
-		$t =& preg_replace('/{boxFooter}/i', '<hr />', $t);
+		$t = preg_replace('/<p>{boxHeader}/i', '<hr />', $t);
+		$t = preg_replace('/{boxHeader}/i', '<hr />', $t);
+		$t = preg_replace('/{boxFooter}<\/p>/i', '<hr />', $t);
+		$t = preg_replace('/{boxFooter}/i', '<hr />', $t);
 		
 		return $t;
 	}

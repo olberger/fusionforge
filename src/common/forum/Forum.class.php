@@ -43,9 +43,9 @@ function &forum_get_object($forum_id) {
 		return NULL ;
 	}
 
-	$data =& db_fetch_array($res);
+	$data = db_fetch_array($res);
 	$Group =& group_get_object($data["group_id"]);
-	$f =  new Forum ($Group, $data["group_artifact_id"]);
+	$f =  new Forum ($Group, $forum_id);
 
 	$f->fetchData ($forum_id) ;
 
@@ -206,8 +206,8 @@ class Forum extends Error {
 						 $allow_anonymous,
 						 $moderation_level)) ;
 		if (!$result) {
-			db_rollback();
 			$this->setError(_('Error Adding Forum').db_error());
+			db_rollback();
 			return false;
 		}
 		$this->group_forum_id=db_insertid($result,'forum_group_list','group_forum_id');

@@ -40,7 +40,7 @@ function &projecttask_get_object($project_task_id,$data=false) {
 					$PROJECTTASK_OBJ["_".$project_task_id."_"]=false;
 					return false;
 				}
-				$data =& db_fetch_array($res);
+				$data = db_fetch_array($res);
 
 			}
 			$ProjectGroup =& projectgroup_get_object($data["group_project_id"]);
@@ -226,7 +226,7 @@ class ProjectTask extends Error {
 			$this->setError('ProjectTask::fetchData() Invalid Task ID'.db_error());
 			return false;
 		}
-		$this->data_array =& db_fetch_array($res);
+		$this->data_array = db_fetch_array($res);
 		db_free_result($res);
 		return true;
 	}
@@ -717,9 +717,9 @@ class ProjectTask extends Error {
 		if (!$arr_ || empty($arr_)) {
 			$arr_=array('100'=>PM_LINK_DEFAULT);
 		}
-		$arr =& array_keys($arr_);
+		$arr = array_keys($arr_);
 		//get existing dependencies to diff against
-		$arr2 =& array_keys($this->getDependentOn());
+		$arr2 = array_keys($this->getDependentOn());
 
 		if (count($arr) || count($arr2)) {
 			$add_arr = array_values (array_diff ($arr, $arr2));
@@ -770,8 +770,7 @@ class ProjectTask extends Error {
 	 *  Here we are converting an array like array(1,5,9,77) to array(1=>SS,5=>SF,9=>FS,77=>SS)
 	 */
 	function &convertDependentOn($arr) {
-//echo "<p>Convert Dep0: ".print_r($arr);
-		$deps =& $this->getDependentOn();
+		$deps = $this->getDependentOn();
 		for ($i=0; $i<count($arr); $i++) {
 			if ($deps[$arr[$i]]) {
 				//use existing link_type if it exists
@@ -781,7 +780,6 @@ class ProjectTask extends Error {
 				$new[$arr[$i]]=PM_LINK_DEFAULT;
 			}	
 		}
-//echo "<p>Convert Dep1: ".print_r($new);
 		return $new;
 	}
 
@@ -791,7 +789,7 @@ class ProjectTask extends Error {
 	 *	@return	array	The array of project_task_id's in this format: 
 	 *  array($id=>$link_type,id2=>link_type2).
 	 */
-	function &getDependentOn() {
+	function getDependentOn() {
 		if (!$this->getID()) {
 			$this->dependon = array();
 			return $this->dependon;
@@ -819,11 +817,11 @@ class ProjectTask extends Error {
 	 * @returns	boolean	success.
 	 */
 	function setAssignedTo(&$arr) {
-		$arr2 =& $this->getAssignedTo();
+		$arr2 = $this->getAssignedTo();
 		$this->assignedto =& $arr;
 
 		//If no one is assigned, then assign it to "100" - NOBODY
-		if (count($arr) < 1 || ((count($arr)==1) && ($arr[0]==''))) {
+		if (!$arr || count($arr) < 1 || ((count($arr)==1) && ($arr[0]==''))) {
 			$arr=array('100');
 		}
 		if (count($arr) || count($arr2)) {
@@ -1033,7 +1031,7 @@ class ProjectTask extends Error {
 				}
 				$has_changes = true;
 		}
-		$old_array =& array_keys($this->getDependentOn());			
+		$old_array = array_keys($this->getDependentOn());			
 		$diff_array=array_diff($old_array,array_keys($depend_arr));
 		if (count($diff_array)>0) { 
 			for ($tmp=0;$tmp<count($old_array);$tmp++) {
@@ -1108,7 +1106,7 @@ class ProjectTask extends Error {
 		if ($send_task_email===false) {
 			return true;
 		}
-		$ids =& $this->getAssignedTo();
+		$ids = $this->getAssignedTo();
 
 		//
 		//	See if there is anyone to send messages to
@@ -1118,12 +1116,20 @@ class ProjectTask extends Error {
 		}
 
 		$body = "Task #". $this->getID() ." has been updated. ".
-			"\n\nProject: ". $this->ProjectGroup->Group->getPublicName() 
-			."\n". $arrChangedAndInNotice['subproject']."Subproject: ". $this->ProjectGroup->getName() 
-			."\n". $arrChangedAndInNotice['summary']. "Summary: ".util_unconvert_htmlspecialchars( $this->getSummary() )
-			."\n". $arrChangedAndInNotice['complete']. "Complete: ". $this->getPercentComplete() ."%"
-			."\n". $arrChangedAndInNotice['status']. "Status: ". $this->getStatusName() .
-			"\n\nDescription: ". util_unconvert_htmlspecialchars( $this->getDetails() );
+			"\n\nProject: ". $this->ProjectGroup->Group->getPublicName(); 
+			if (isset($arrChangedAndInNotice['subproject']))
+				$body .= "\n". $arrChangedAndInNotice['subproject']."Subproject: ". $this->ProjectGroup->getName();
+
+			if (isset($arrChangedAndInNotice['summary']))
+				$body .= "\n". $arrChangedAndInNotice['summary']. "Summary: ".util_unconvert_htmlspecialchars( $this->getSummary() );
+
+			if (isset($arrChangedAndInNotice['complete']))
+				$body .= "\n". $arrChangedAndInNotice['complete']. "Complete: ". $this->getPercentComplete() ."%";
+
+			if (isset($arrChangedAndInNotice['status']))
+				$body .= "\n". $arrChangedAndInNotice['status']. "Status: ". $this->getStatusName();
+
+			$body .= "\n\nDescription: ". util_unconvert_htmlspecialchars( $this->getDetails() );
 
 		/*
 			Now get the followups to this task
