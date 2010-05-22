@@ -19,7 +19,7 @@ class ArtifactWorkflowTest extends PHPUnit_Framework_TestCase {
 		$ath = new ArtifactType($group,'101');
 		$efarr =& $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
 		if (empty($efarr)) {
-			$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=1', arrray());
+			$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=1', array());
 			$admin_id = db_result($res,0,'user_id');
 			session_set_new($admin_id);
 			

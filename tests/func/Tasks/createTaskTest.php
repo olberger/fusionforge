@@ -117,7 +117,7 @@ class CreateTask extends FForge_SeleniumTestCase
         $this->assertTextPresent("Task Created Successfully");
 
 	$this->clickAndWait("link=Tasks");
-        
+
 	// Delete this task
 	$this->clickAndWait("link=To Do");
 	$this->click("link=Task4: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
