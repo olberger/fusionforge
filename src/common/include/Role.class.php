@@ -24,6 +24,7 @@
  */
 
 require_once $gfcommon.'include/rbac_texts.php' ;
+require_once $gfcommon.'include/acl.class.php';
 require_once $gfcommon.'include/RBAC.php' ;
 
 class Role extends RoleExplicit implements PFO_RoleExplicit {
@@ -65,6 +66,10 @@ class Role extends RoleExplicit implements PFO_RoleExplicit {
 			//setting up an empty object
 			//probably going to call create()
 			return true;
+		}
+		if (!is_numeric($role_id)) {
+			$this->setError('Role::Role() role_id is not an integer');
+			return false;
 		}
 		return $this->fetchData($role_id);
 	}
