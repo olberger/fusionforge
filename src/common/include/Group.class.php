@@ -1334,9 +1334,8 @@ class Group extends Error {
 			return false;
 		}
 		$inserted = array();
-		$tags_array = split('[;,]', $tags);
+		$tags_array = preg_split('/[;,]/', $tags);
 		foreach ($tags_array as $tag) {
-			$tag = stripslashes($tag);
 			$tag = preg_replace('/[\t\r\n]/', ' ', $tag);
 			// Allowed caracteres: [A-Z][a-z][0-9] -_&'#+.
 			if (preg_match('/[^[:alnum:]| |\-|_|\&|\'|#|\+|\.]/', $tag)) {
@@ -1345,7 +1344,6 @@ class Group extends Error {
 				return false;
 			}
 			$tag = trim($tag);
-			$tag = addslashes($tag);
 			if ($tag == '' || array_search($tag, $inserted) !== false) continue;
 			$sql='INSERT INTO project_tags (group_id,name) VALUES ($1, $2)';
 			$res=db_query_params($sql, array($this->getID(), $tag));
