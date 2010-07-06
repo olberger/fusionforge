@@ -15,14 +15,16 @@ $group_id = getIntFromRequest ('group_id') ;
 $index = getIntFromRequest ('index') ;
 
 $tab_name = htmlspecialchars(trim(getStringFromRequest ('tab_name')));
+$tab_rename = htmlspecialchars(trim(getStringFromRequest ('tab_rename')));
 $tab_url = htmlspecialchars(trim(getStringFromRequest ('tab_url', 'http://')));
+$tab_new_url = htmlspecialchars(trim(getStringFromRequest ('tab_new_url')));
 
 session_require_perm ('project_admin', $group_id) ;
 
 // get current information
 $group =& group_get_object($group_id);
 if (!$group || !is_object($group)) {
-        exit_error('Error','Could Not Get Group');
+    exit_no_group();
 } elseif ($group->isError()) {
         exit_error('Error',$group->getErrorMessage());
 }
@@ -55,7 +57,7 @@ if (getStringFromRequest ('addtab') != '') {
 						       $tab_name,
 						       $tab_url)) ;
 			if (!$res || db_affected_rows($res) < 1) {
-				$feedback = sprintf (_('Cannot insert new tab entry: %s'),
+				$error_msg = sprintf (_('Cannot insert new tab entry: %s'),
 						      db_error());
 			} else {
 				$tab_name = '';
@@ -118,6 +120,31 @@ if (getStringFromRequest ('addtab') != '') {
 		$warning_msg = _('Tab not moved, already at last position');
 		$selected = $index;
 	}
+} elseif (getStringFromRequest ('modify') != '') {
+	//$tab_rename
+	//$tab_new_url
+	if ($tab_rename) {
+		$res = db_query_params ('UPDATE plugin_extratabs_main SET tab_name=$1 WHERE group_id=$2 AND index=$3',
+					array ($tab_rename,
+						   $group_id,
+						   $index));
+		if (!$res || db_affected_rows($res) < 1) {
+			$error_msg = sprintf (_('Cannot rename the tab: %s'), db_error());
+		} else {
+			$feedback = _('Tab successfully renamed');
+		}
+	}
+	if ($tab_new_url) {
+		$res = db_query_params ('UPDATE plugin_extratabs_main SET tab_url=$1 WHERE group_id=$2 AND index=$3',
+					array ($tab_new_url,
+						   $group_id,
+						   $index));
+		if (!$res || db_affected_rows($res) < 1) {
+			$error_msg .= ($error_msg ? '<br/>' : '') . sprintf (_('Cannot change URL: %s'), db_error());
+		} else {
+			$feedback .= ($feedback ? '<br/>' : '') . _('URL successfully changed');
+		}
+	}
 }
 if (!$res) {
 	db_rollback();
@@ -125,12 +152,10 @@ if (!$res) {
 	db_commit();
 }
 
-$adminheadertitle=sprintf(_('Project Admin: %1$s'), $group->getPublicName() );
+$adminheadertitle=sprintf(_('Manage extra tabs for project %1$s'), $group->getPublicName() );
 project_admin_header(array('title'=>$adminheadertitle, 'group'=>$group->getID()));
 
 ?>
-
-<h1><?php echo _('Manage extra tabs') ;?></h1>
 
 <h2><?php echo _('Add new tab'); ?></h2>
 
@@ -162,10 +187,49 @@ if ($nbtabs > 0) {
 	
 ?>
 
+<h2><?php echo _('Modify extra tabs') ;?></h2>
+<p>
+<?php echo _('You can modify the tabs that you already added.');
+?>
+</p>
+
+<form name="modify_tab" action="<?php echo util_make_url ('/plugins/extratabs/'); ?>" method="post">
+<fieldset>
+<legend>Modify tab</legend>
+<p>
+<input type="hidden" name="group_id" value="<?php echo $group->getID() ?>" />
+<?php
+	echo _('Tab to modify:')
+?>
+<select name="index">
+<?php
+$options = '';
+while ($row = db_fetch_array($res)) {
+    if ($row['index'] == $selected) {
+	$options .= "<option selected=\"selected\" value='" . $row['index'] . "'>" . $row['tab_name'] .  "</option>";
+    } else {
+	$options .= "<option value='" . $row['index'] . "'>" . $row['tab_name'] .  "</option>";
+    }
+}
+echo $options;
+?>
+</select>
+</p>
+<p>
+<?php echo _('Rename to:'); ?><input type="text" size="20" maxlength="255" name="tab_rename" value="" />
+</p>
+<p>
+<?php echo _('New URL:'); ?><input type="text" size="60" name="tab_new_url" value="" />
+</p>
+<p>
+<input type="submit" name="modify" value="<?php echo _('Modify tab') ?>" />
+</p>
+</fieldset>
+</form>
+
 <h2><?php echo _('Move or delete extra tabs') ;?></h2>
 <p>
 	<?php echo _('You can move and delete the tabs that you already added. Please note that those extra tabs can only appear after the standard tabs. And you can only move them inside the set of extra tabs.') ;
-
 ?>
 </p>
 
@@ -179,13 +243,8 @@ if ($nbtabs > 0) {
 ?>
 <select name="index">
 <?php
-while ($row = db_fetch_array($res)) {
-    if ($row['index'] == $selected) {
-	echo "<option selected=\"selected\" value='" . $row['index'] . "'>" . $row['tab_name'] .  "</option>";
-    } else {
-	echo "<option value='" . $row['index'] . "'>" . $row['tab_name'] .  "</option>";
-    }
-} ?>
+echo $options;
+?>
 </select>
 </p>
 <p>
