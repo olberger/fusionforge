@@ -21,9 +21,9 @@
  * along with GForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+if (!defined('BASE')) require('illegal_access.inc.php');
 
-
-$ath->header(array ('title'=>_('Submit')));
+$ath->header(array ('title'=>_('Submit New')));
 
 	/*
 		Show the free-form text submitted by the project admin

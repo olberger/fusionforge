@@ -8,6 +8,7 @@
   * http://sourceforge.net
   *
   */
+if (!defined('BASE')) require('illegal_access.inc.php');
 
 
 require_once $gfcommon.'tracker/Artifact.class.php';

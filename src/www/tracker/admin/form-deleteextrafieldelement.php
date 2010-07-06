@@ -1,9 +1,10 @@
 <?php
+if (!defined('BASE')) require('illegal_access.inc.php');
 //
-//  FORM TO DELETE POP-UP CHOICES FOR A BOX
+//  FORM TO DELETE A VALUE
 //
 	/*
-		Allow deletion of a Choice for a Pop-up Box
+		Allow delete of a value of an extra field
 	*/
 	$boxid = getIntFromRequest('boxid');
 	$ac = new ArtifactExtraField($ath,$boxid);

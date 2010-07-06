@@ -1,11 +1,5 @@
 <?php
-//
-//  get the Group object
-//
-$group =& group_get_object($group_id);
-if (!$group || !is_object($group) || $group->isError()) {
-	exit_no_group();
-}
+if (!defined('BASE')) require('illegal_access.inc.php');
 
 $atf = new ArtifactTypeFactory($group);
 if (!$group || !is_object($group) || $group->isError()) {

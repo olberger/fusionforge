@@ -20,9 +20,8 @@ http://dev.gforge.org/pm/task.php?func=addartifact
 //$related_artifact_summary
 //$related_artifact_id
 */
+if (!defined('BASE')) require('illegal_access.inc.php');
 
-require_once('../env.inc.php');
-require_once $gfwww.'include/pre.php';
 require_once $gfcommon.'pm/ProjectGroupFactory.class.php';
 require_once $gfcommon.'pm/ProjectTaskFactory.class.php';
 

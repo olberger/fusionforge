@@ -7,6 +7,8 @@
  * Copyright 2010 Alain Peyrat, Alcatel-Lucent
  *
  */
+if (!defined('BASE')) require('illegal_access.inc.php');
+
 require_once $gfcommon.'tracker/ArtifactFactory.class.php';
 require_once $gfcommon.'tracker/ArtifactQuery.class.php';
 //

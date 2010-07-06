@@ -1,4 +1,5 @@
 <?php
+if (!defined('BASE')) require('illegal_access.inc.php');
 //
 //  SHOW LINKS TO FUNCTIONS
 //

@@ -57,6 +57,7 @@ function switch2edit (a,show,edit) {
     elemdisp2.style.display='block'
   }
 }
+
 function flipAll(formObj) {
   var isFirstSet = -1;
   for (var i=0; i < formObj.length; i++) {

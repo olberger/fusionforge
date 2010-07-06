@@ -7,6 +7,8 @@
  * http://sourceforge.net
  *
  */
+if (!defined('BASE')) require('illegal_access.inc.php');
+
 
 
 $ath->header(array 

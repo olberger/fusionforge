@@ -1,4 +1,5 @@
 <?php
+if (!defined('BASE')) require('illegal_access.inc.php');
 
 $ath->adminHeader(array ('title'=>sprintf(_('Delete a custom field for %s'),$ath->getName())));
 

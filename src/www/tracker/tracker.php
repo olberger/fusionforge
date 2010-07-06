@@ -1,5 +1,5 @@
 <?php
-
+if (!defined('BASE')) require('illegal_access.inc.php');
 
 //
 //	get the Group object

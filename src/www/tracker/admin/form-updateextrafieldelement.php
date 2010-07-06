@@ -1,4 +1,5 @@
 <?php
+if (!defined('BASE')) require('illegal_access.inc.php');
 //
 //  FORM TO UPDATE POP-UP CHOICES FOR A BOX
 //

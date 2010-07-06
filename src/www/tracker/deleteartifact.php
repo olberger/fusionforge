@@ -6,6 +6,7 @@
  * http://gforge.org/
  *
  */
+if (!defined('BASE')) require('illegal_access.inc.php');
 
 $ath->header(array ('title'=>_('Delete artifact').': [#'. $ah->getID(). '] ' . $ah->getSummary(), 'atid'=>$ath->getID()));
 

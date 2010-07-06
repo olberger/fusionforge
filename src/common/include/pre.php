@@ -20,6 +20,7 @@
  * with FusionForge; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+define('BASE', true);
 
 require_once $gfcommon.'include/escapingUtils.php';
 require_once $gfcommon.'include/config.php';

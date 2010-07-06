@@ -18,6 +18,8 @@
  * along with GForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  US
  */
+if (!defined('BASE')) require('illegal_access.inc.php');
+
 require_once $gfcommon.'tracker/ArtifactFactory.class.php';
 
 $date = date('Y-m-d');
