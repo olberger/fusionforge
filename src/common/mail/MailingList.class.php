@@ -161,8 +161,8 @@ class MailingList extends Error {
 						  $description)) ;
 		
 		if (!$result) {
-			db_rollback();
 			$this->setError(sprintf(_('Error Creating %1$s'), _('Error Creating %1$s')).db_error());
+			db_rollback();
 			return false;
 		}
 			
@@ -172,8 +172,8 @@ class MailingList extends Error {
 		$user = &user_get_object($creator_id);
 		$userEmail = $user->getEmail();
 		if(empty($userEmail) || !validate_email($userEmail)) {
-			db_rollback();
 			$this->setInvalidEmailError();
+			db_rollback();
 			return false;
 		} else {
 			$mailBody = sprintf(_('A mailing list will be created on %1$s in 6-24 hours 
