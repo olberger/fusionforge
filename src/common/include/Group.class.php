@@ -1425,7 +1425,6 @@ class Group extends Error {
 				continue;
 			}
 			$f_arr[$i]->delete(1,1);
-//echo 'ForumFactory'.db_error();
 		}
 		//
 		//	Delete Subprojects
@@ -1438,7 +1437,6 @@ class Group extends Error {
 				continue;
 			}
 			$pg_arr[$i]->delete(1,1);
-//echo 'ProjectGroupFactory'.db_error();
 		}
 		//
 		//	Delete FRS Packages
@@ -1446,7 +1444,6 @@ class Group extends Error {
 		//$frspf = new FRSPackageFactory($this);
 		$res = db_query_params ('SELECT * FROM frs_package WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'frs_package'.db_error();
 		//$frsp_arr =& $frspf->getPackages();
 		while ($arr = db_fetch_array($res)) {
 			//if (!is_object($pg_arr[$i])) {
@@ -1462,6 +1459,12 @@ class Group extends Error {
 		$news_group=&group_get_object(forge_get_config('news_group'));
 		$res = db_query_params ('SELECT forum_id FROM news_bytes WHERE group_id=$1',
 					array ($this->getID())) ;
+		if (!$res) {
+			$this->setError(_('Error Deleting News: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		for ($i=0; $i<db_numrows($res); $i++) {
 			$Forum = new Forum($news_group,db_result($res,$i,'forum_id'));
 			if (!$Forum->delete(1,1)) {
@@ -1470,40 +1473,74 @@ class Group extends Error {
 		}
 		$res = db_query_params ('DELETE FROM news_bytes WHERE group_id=$1',
 					array ($this->getID())) ;
+		if (!$res) {
+			$this->setError(_('Error Deleting News: ').db_error());
+			db_rollback();
+			return false;
+		}
 
 		//
 		//	Delete docs
 		//
 		$res = db_query_params ('DELETE FROM doc_data WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'doc_data'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Documents: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		$res = db_query_params ('DELETE FROM doc_groups WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'doc_groups'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Documents: ').db_error());
+			db_rollback();
+			return false;
+		}
 
 		//
 		//  Delete Tags
 		//
 		$res=db_query_params('DELETE FROM project_tags WHERE group_id=$1', array($this->getID()));
+		if (!$res) {
+			$this->setError(_('Error Deleting Tags: ').db_error());
+			db_rollback();
+			return false;
+		}
 					
 		//
 		//	Delete group history
 		//
 		$res = db_query_params ('DELETE FROM group_history WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'group_history'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Project History: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		//
 		//	Delete group plugins
 		//
 		$res = db_query_params ('DELETE FROM group_plugin WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'group_plugin'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Project Plugins: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		//
 		//	Delete group cvs stats
 		//
 		$res = db_query_params ('DELETE FROM stats_cvs_group WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'stats_cvs_group'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting SCM Statistics: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		//
 		//	Delete Surveys
 		//
@@ -1515,7 +1552,6 @@ class Group extends Error {
 				continue;
 			}
 			$s_arr[$i]->delete();
-//echo 'SurveyFactory'.db_error();
 		}
 		//
 		//	Delete SurveyQuestions
@@ -1528,7 +1564,6 @@ class Group extends Error {
 				continue;
 			}
 			$sq_arr[$i]->delete();
-//echo 'SurveyQuestionFactory'.db_error();
 		}
 		//
 		//	Delete Mailing List Factory
@@ -1543,21 +1578,37 @@ class Group extends Error {
 			if (!$ml_arr[$i]->delete(1,1)) {
 				$this->setError(_('Could not properly delete the mailing list'));
 			}
-//echo 'MailingListFactory'.db_error();
 		}
 		//
 		//	Delete trove
 		//
 		$res = db_query_params ('DELETE FROM trove_group_link WHERE group_id=$1',
 					array ($this->getID())) ;
+		if (!$res) {
+			$this->setError(_('Error Deleting Trove: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		$res = db_query_params ('DELETE FROM trove_agg WHERE group_id=$1',
 					array ($this->getID())) ;
+		if (!$res) {
+			$this->setError(_('Error Deleting Trove: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		//
 		//	Delete counters
 		//
 		$res = db_query_params ('DELETE FROM project_sums_agg WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'project_sums_agg'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Counters: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		$res = db_query_params ('INSERT INTO deleted_groups (unix_group_name,delete_date,isdeleted) VALUES ($1, $2, $3)',
 					array ($this->getUnixName(),
 					       time(),
@@ -1565,7 +1616,12 @@ class Group extends Error {
 //echo 'InsertIntoDeleteQueue'.db_error();
 		$res = db_query_params ('DELETE FROM groups WHERE group_id=$1',
 					array ($this->getID())) ;
-//echo 'DeleteGroup'.db_error();
+		if (!$res) {
+			$this->setError(_('Error Deleting Project: ').db_error());
+			db_rollback();
+			return false;
+		}
+
 		db_commit();
 		if (!$res) {
 			return false;
