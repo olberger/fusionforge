@@ -58,9 +58,6 @@ function getAvailableBlocks($group) {
 	$blocks = array(
 		'summary_description' => 
 			_("Block to replace the default project description with an enhanced one."),
-//	To be reworked to play nice with the widgets page.
-//		'summary_right' => 
-//			_("Block in the summary page (right)"),
 		'request_join' => 
 			_("Block to list informations requested to ask to join a project"),
 	);
@@ -142,6 +139,7 @@ function blocks_Project_Header($params) {
 		Show horizontal links                                                                                                                                   
 	*/                                                                                                                                                              
 	site_project_header($params);														
+	echo '<h1>' . $params['title'] . '</h1>';
 }
 
 $user = session_get_user(); // get the session user
@@ -170,7 +168,7 @@ $blocks_text = array(
 );
 
 if (!$type) {
-	exit_error("Cannot Process your request","No TYPE specified"); // you can create items in Base.tab and customize this messages
+	exit_error("Cannot Process your request","No TYPE specified");
 } elseif (!$id) {
 	exit_error("Cannot Process your request","No ID specified");
 } else {
@@ -230,6 +228,7 @@ if (!$type) {
 			"</th>" .
 			"</tr></thead>";
 		$blocks = getAvailableBlocks($group);
+		$class = 'even';
 		foreach ($blocks as $b => $help) {
 			
 			$class = ($class == 'even') ? "odd" : "even";
@@ -252,6 +251,9 @@ if (!$type) {
 			_("Save Blocks") .
 			"\" /></p>";
 		print "</form><p />";
+		} else {
+			exit_error("Access Denied", "You are not a project Admin");
+		}
 	} elseif ($type == 'admin_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
@@ -300,6 +302,9 @@ if (!$type) {
 		}
 		header("Location: /plugins/blocks/index.php?id=$id&type=admin&pluginname=blocks");
 		exit;
+		} else {
+			exit_error("Access Denied", "You are not a project Admin");
+		}
 	} elseif ($type == 'configure') {
 		$group = group_get_object($id);
 		if ( !$group) {
@@ -359,6 +364,9 @@ if (!$type) {
 			"</legend>" .
 			_("<p>You can create boxes like the ones on the right site of summary page, by inserting the following sentences in the content:</p><ul><li>{boxTop Hello}: will create the top part of the box using Hello as title.</li><li>{boxMiddle Here}: will create a middle part of a box using Here as title (optional).</li><li>{boxBottom}: will create the end part of a box.</li></ul><p /><ul><li>{boxHeader}: will create a header before a text.</li><li>{boxFooter}: will create a footer after a text.</li></ul><p>You can create as many boxes as you want, but a boxTop has to be closed by a boxBottom and a boxHeader has to be closed by a boxFooter.</p>").
 			"</fieldset>";
+		} else {
+			exit_error("Access Denied", "You are not a project Admin");
+		}
 	} elseif ($type == 'configure_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
@@ -382,6 +390,9 @@ if (!$type) {
 		}
 		header("Location: /plugins/blocks/index.php?id=$id&type=admin&pluginname=blocks");
 		exit;
+		} else {
+			exit_error("Access Denied", "You are not a project Admin");
+		}
 	}
 }
 	
