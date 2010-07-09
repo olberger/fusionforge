@@ -115,7 +115,7 @@ FCKConfig.ToolbarSets["Default"] = [
 	['FitWindow','ShowBlocks','-','About']		// No comma for the last row.
 ] ;
 
-FCKConfig.ToolbarSets["GForge"] = [
+FCKConfig.ToolbarSets["FForge"] = [
 	['Source','Preview'],
 	['Cut','Copy','Paste','PasteText','PasteWord'],
 	['Undo','Redo','-','RemoveFormat'],
@@ -128,6 +128,15 @@ FCKConfig.ToolbarSets["GForge"] = [
 	['TextColor','BGColor'],
 	['Table','Rule','Smiley','SpecialChar','PageBreak'],
 	['FitWindow','-','About']
+] ;
+
+FCKConfig.ToolbarSets["FForge-Basic"] = [
+   	['Cut','Copy','Paste','PasteText','PasteWord'],
+   	['Bold','Italic','Underline','StrikeThrough'],
+   	['OrderedList','UnorderedList'],
+   	['JustifyLeft','JustifyCenter'],
+   	['Link','Unlink'],
+   	['Table','Rule']
 ] ;
 
 FCKConfig.ToolbarSets["Basic"] = [
