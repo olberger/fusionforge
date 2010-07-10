@@ -4,6 +4,12 @@ class SeleniumRemoteSuite extends PHPUnit_Framework_TestSuite
 {
 	protected function setUp()
 	{
+		if (getenv('SELENIUM_RC_DIR') && getenv('SELENIUM_RC_URL')) {
+			$this->captureScreenshotOnFailure = true;
+			$this->screenshotPath = getenv('SELENIUM_RC_DIR');
+			$this->screenshotUrl = getenv('SELENIUM_RC_URL');
+		}
+
 		system("cd scripts; ./start_vm.sh ".HOST);
 
 		//system("scp /usr/share/php/PHPUnit/Extensions/SeleniumTestCase/*pend.php root@centos52:/opt/tests");

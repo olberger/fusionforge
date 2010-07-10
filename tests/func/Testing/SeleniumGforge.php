@@ -48,18 +48,19 @@ require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 
 class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = true;
-    protected $screenshotPath = SELENIUM_RC_DIR;
-	protected $screenshotUrl = SELENIUM_RC_DIR;
-
 	protected $output;
 
     protected function setUp()
     {
-	if (defined('DB_INIT_CMD')) {
-		// Reload a fresh database before running this test suite.
-		system(DB_INIT_CMD);
-	}
+		if (getenv('SELENIUM_RC_DIR') && getenv('SELENIUM_RC_URL')) {
+			$this->captureScreenshotOnFailure = true;
+			$this->screenshotPath = getenv('SELENIUM_RC_DIR');
+			$this->screenshotUrl = getenv('SELENIUM_RC_URL');
+		}
+    	if (defined('DB_INIT_CMD')) {
+			// Reload a fresh database before running this test suite.
+			system(DB_INIT_CMD);
+		}
 
     	$this->setBrowser('*firefox');
         $this->setBrowserUrl(URL);
