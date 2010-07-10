@@ -201,18 +201,20 @@ class Acl extends Error {
 
 		if ($this->key_id == 1) {
 			$file = $gfconfig.'/http/svnroot-access';
-			$sql_groups = "SELECT is_public, enable_publicscm as public,enable_anonscm as anon,unix_group_name,groups.group_id 
+			$sql_groups = 'SELECT is_public, enable_publicscm as public,enable_anonscm as anon,unix_group_name,groups.group_id 
 				FROM groups, plugins, group_plugin 
-				WHERE groups.status = 'A'
+				WHERE groups.status=$1
 				AND groups.group_id=group_plugin.group_id
 				AND group_plugin.plugin_id=plugins.plugin_id
-				AND (plugins.plugin_name='scmsvn' OR plugins.plugin_name='websvn')";
+				AND (plugins.plugin_name=$2 OR plugins.plugin_name=$3)';
+			$sql_params = array('A', 'scmsvn', 'websvn');
 			$filter = '';
 		} elseif ($this->key_id == 2) {
 			$file = $gfconfig.'/http/davroot-access';
-			$sql_groups = "SELECT is_public, enable_publicdav as public,enable_anondav as anon,unix_group_name,group_id 
+			$sql_groups = 'SELECT is_public, enable_publicdav as public,enable_anondav as anon,unix_group_name,group_id 
 				FROM groups
-				WHERE status = 'A'";
+				WHERE status=$1';
+			$sql_params = array('A');
 		} else {
 			$this->setError("INTERNAL ERROR: Only key_id=1 or key_id=2 are supported right now.");
 			return false;
@@ -287,7 +289,7 @@ class Acl extends Error {
 		// Get all the ACL rules for all project and write all the rules that
 		// don't have any roles inside (for the anon and public clauses).
 		$sql = 'SELECT * FROM acl WHERE key_id=$1';
-		$res = db_query($sql, array($this->key_id));
+		$res = db_query_params($sql, array($this->key_id));
 		$acl = array();
 		while ( $r = db_fetch_array($res) ) {
 			$acl[ $r['group_id'] ][] = $r;
@@ -309,7 +311,7 @@ class Acl extends Error {
 				ORDER BY val';
 		$role_rows_acl = $this->sqlToArrayByGroupId($sql, array($this->section[$this->key_id]));
 
-		$res = db_query($sql_groups);
+		$res = db_query_params($sql_groups, $sql_params);
 		while ( $row = db_fetch_array($res) ) {
 			$prj = $row['unix_group_name'];
 
@@ -398,18 +400,20 @@ class Acl extends Error {
 		}
 		if ($this->key_id == 1) {
 			$file = $gfconfig.'/http/svnroot-access-external';
-			$sql_groups = "SELECT is_public, enable_publicscm as public,enable_anonscm as anon,unix_group_name,groups.group_id 
+			$sql_groups = 'SELECT is_public, enable_publicscm as public,enable_anonscm as anon,unix_group_name,groups.group_id 
 				FROM groups, plugins, group_plugin 
-				WHERE groups.status = 'A'
+				WHERE groups.status=$1
 				AND groups.group_id=group_plugin.group_id
 				AND group_plugin.plugin_id=plugins.plugin_id
-				AND (plugins.plugin_name='scmsvn' OR plugins.plugin_name='websvn')";
+				AND (plugins.plugin_name=$2 OR plugins.plugin_name=$3)';
+			$sql_params= array('A', 'scmsvn', 'websvn');
 			$filter = '';
 		} elseif ($this->key_id == 2) {
 			$file = $gfconfig.'/http/davroot-access-external';
-			$sql_groups = "SELECT is_public, enable_publicdav as public,enable_anondav as anon,unix_group_name,group_id 
+			$sql_groups = 'SELECT is_public, enable_publicdav as public,enable_anondav as anon,unix_group_name,group_id 
 				FROM groups
-				WHERE status = 'A'";
+				WHERE status=$1';
+			$sql_params = array('A');
 		} else {
 			$this->setError("INTERNAL ERROR: Only key_id=1 or key_id=2 are supported right now.");
 			return false;
@@ -424,15 +428,15 @@ class Acl extends Error {
 		$fd = fopen($tmpfile, 'w');
 				
 		// Get the members of the roles.
-		$sql = "SELECT r.role_id, u.user_name, r.is_external
+		$sql = 'SELECT r.role_id, u.user_name, r.is_external
 				FROM user_group ug, role r, users u, groups g
 				WHERE ug.role_id=r.role_id
 				AND ug.user_id=u.user_id
 				AND ug.group_id=g.group_id
-				AND g.status = 'A'
-				AND r.is_external = 1
-				ORDER BY role_id";
-		$res = db_query($sql);
+				AND g.status = $1
+				AND r.is_external = $2
+				ORDER BY role_id';
+		$res = db_query_params($sql, array('A', 1));
 
 		$content = "[groups]\n";
 		$current = '';
@@ -462,7 +466,7 @@ class Acl extends Error {
 				ORDER BY val";
 		$role_rows_root = $this->sqlToArrayByGroupId($sql);
 
-		$res = db_query($sql_groups);
+		$res = db_query_params($sql_groups, $sql_params);
 		while ( $row = db_fetch_array($res) ) {
 			$prj = $row['unix_group_name'];
 				
