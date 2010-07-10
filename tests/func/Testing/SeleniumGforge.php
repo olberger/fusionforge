@@ -150,6 +150,8 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		
 		// Create a simple project.
 		$this->open( BASE );
+		$this->waitForPageToLoad("30000");
+		$this->assertTrue($this->isTextPresent('Log In'));
 		$this->click("link=Log In");
 		$this->waitForPageToLoad("30000");
 		$this->type("form_loginname", "admin");
