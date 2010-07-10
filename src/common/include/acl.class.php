@@ -46,17 +46,16 @@ class Acl extends Error {
 		}
 		
 		db_begin();
-		$sql = "SELECT * FROM acl WHERE group_id=$group_id AND key_id=$key_id AND val='$path'";
-		$res = db_query($sql);
+		$sql = 'SELECT * FROM acl WHERE group_id=$1 AND key_id=$2 AND val=$3';
+		$res = db_query_params($sql, array($group_id, $key_id, $path));
 		if (db_numrows($res) > 0) {
 			$this->setError(_('There is already a defined rule for this path, use the [Update] link instead.'));
 			db_rollback();
 			return false;
 		}
 
-		$sql = "INSERT INTO acl (key_id, group_id, val, allow_public, allow_anon) 
-				VALUES ($key_id, $group_id, '$path', $role_public, $role_anon)";
-		$res = db_query($sql);
+		$sql = 'INSERT INTO acl (key_id, group_id, val, allow_public, allow_anon) VALUES ($1,$2,$3,$4,$5)';
+		$res = db_query_params($sql, array($key_id, $group_id, $path, $role_public, $role_anon));
 		if (!$res) {
 			$this->setError('create::'.db_error());
 			db_rollback();
@@ -100,16 +99,16 @@ class Acl extends Error {
 		}
 
 		db_begin();
-		$sql = "SELECT * FROM acl WHERE group_id=$group_id AND key_id=$key_id AND acl_id=$acl_id";
-		$res = db_query($sql);
+		$sql = 'SELECT * FROM acl WHERE group_id=$1 AND key_id=$2 AND acl_id=$3';
+		$res = db_query_params($sql, array($group_id, $key_id, $acl_id));
 		if (db_numrows($res) != 1) {
 			$this->setError(_('There is no already defined rule for this path.'));
 			db_rollback();
 			return false;
 		}
 
-		$sql = "UPDATE acl SET allow_public=$role_public, allow_anon=$role_anon WHERE acl_id=$acl_id";
-		$res = db_query($sql);
+		$sql = 'UPDATE acl SET allow_public=$1, allow_anon=$2 WHERE acl_id=$3';
+		$res = db_query_params($sql, array($role_public, $role_anon, $acl_id));
 		
 		$this->disableWriteRules();
 		
@@ -141,19 +140,19 @@ class Acl extends Error {
 			return false;
 		}
 
-		$sql = "SELECT * FROM acl WHERE group_id=$group_id AND key_id=$key_id AND acl_id=$acl_id";
-		$res = db_query($sql);
+		$sql = 'SELECT * FROM acl WHERE group_id=$1 AND key_id=$2 AND acl_id=$3';
+		$res = db_query_params($sql, array($group_id, $key_id, $acl_id));
 		if (db_numrows($res) != 1) {
 			$this->setError('Cannot delete rule, no such rule with id: '.$acl_id);
 			return false;
 		}
-		$sql = "DELETE FROM acl WHERE group_id=$group_id AND key_id=$key_id AND acl_id=$acl_id";
-		$res = db_query($sql);
+		$sql = 'DELETE FROM acl WHERE group_id=$1 AND key_id=$2 AND acl_id=$3';
+		$res = db_query_params($sql, array($group_id, $key_id, $acl_id));
 		
 		$this->disableWriteRules();
 
 		$group = group_get_object($group_id);
-		$res=db_query("SELECT role_id FROM role WHERE group_id='$group_id'");
+		$res=db_query_params('SELECT role_id FROM role WHERE group_id=$1', array($group_id));
 		while($arr = db_fetch_array($res)) {
 			$role = new Role($group, $arr['role_id']);
 			$role->delVal($section, $acl_id);
@@ -227,15 +226,15 @@ class Acl extends Error {
 		$tmpfile = tempnam( dirname($file), 'access');
 
 		// Get the members of the roles.
-		$sql = "SELECT r.role_id, u.user_name
+		$sql = 'SELECT r.role_id, u.user_name
 				FROM user_group ug, role r, users u, groups g
 				WHERE ug.role_id=r.role_id
 				AND ug.user_id=u.user_id
 				AND ug.group_id=g.group_id
-				AND g.status = 'A'
-				AND r.is_external = 0
-				ORDER BY role_id";
-		$res = db_query($sql);
+				AND g.status =$1
+				AND r.is_external=$2
+				ORDER BY role_id';
+		$res = db_query_params($sql, array('A', 0));
 
 		$content = "[groups]\n";
 		$current = '';
@@ -256,8 +255,8 @@ class Acl extends Error {
 		}
 		
 		// Add all other users in a specific group 'others' (for rule everyone).
-		$sql = "SELECT user_name FROM users WHERE status='A' AND is_external=0";
-		$res = db_query($sql);
+		$sql = 'SELECT user_name FROM users WHERE status=$1 AND is_external=$2';
+		$res = db_query_params($sql, array('A', 0));
 		$others = array();
 		while ( $row = db_fetch_array($res) ) {
 			if (!isset($users[ $row['user_name'] ])) {
@@ -272,14 +271,14 @@ class Acl extends Error {
 		
 		$content .= "\n\n[/]\n";
 		// Give rw to global admins (admins of the group_id=1)
-		$sql = "SELECT r.role_id
+		$sql = 'SELECT r.role_id
 				FROM groups g, role r, role_setting rs
-				WHERE g.group_id=1
+				WHERE g.group_id=$1
 				AND g.group_id=r.group_id
 				AND r.role_id=rs.role_id
-				AND section_name='projectadmin'
-				AND value='A'";
-		$res = db_query($sql);
+				AND section_name=$2
+				AND value=$3';
+		$res = db_query_params($sql, array(1, 'projectadmin', 'A'));
 		while ( $r = db_fetch_array($res) ) {
 			$content .= '@'.$r['role_id'].' = rw'."\n";
 		}
@@ -287,28 +286,28 @@ class Acl extends Error {
 		
 		// Get all the ACL rules for all project and write all the rules that
 		// don't have any roles inside (for the anon and public clauses).
-		$sql = "SELECT * FROM acl WHERE key_id=".$this->key_id;
-		$res = db_query($sql);
+		$sql = 'SELECT * FROM acl WHERE key_id=$1';
+		$res = db_query($sql, array($this->key_id));
 		$acl = array();
 		while ( $r = db_fetch_array($res) ) {
 			$acl[ $r['group_id'] ][] = $r;
 		}
 		
 		// Preload roles for all groups to reduce SQL queries.
-		$sql = "SELECT r.role_id, r.group_id, rs.value
+		$sql = 'SELECT r.role_id, r.group_id, rs.value
 				FROM role r, role_setting rs
 				WHERE r.role_id=rs.role_id
-				AND ref_id=0
-				AND section_name = '".$this->section[$this->key_id]."'";
-		$role_rows_root = $this->sqlToArrayByGroupId($sql);
+				AND ref_id=$1
+				AND section_name=$2';
+		$role_rows_root = $this->sqlToArrayByGroupId($sql, array(0, $this->section[$this->key_id]));
 
-		$sql = "SELECT r.role_id, r.group_id, a.acl_id, a.val, a.allow_public, a.allow_anon, rs.value
+		$sql = 'SELECT r.role_id, r.group_id, a.acl_id, a.val, a.allow_public, a.allow_anon, rs.value
 				FROM acl a, role r, role_setting rs
 				WHERE r.role_id=rs.role_id
 				AND a.acl_id=rs.ref_id
-				AND section_name = '".$this->section[$this->key_id]."'
-				ORDER BY val";
-		$role_rows_acl = $this->sqlToArrayByGroupId($sql);
+				AND section_name=$1
+				ORDER BY val';
+		$role_rows_acl = $this->sqlToArrayByGroupId($sql, array($this->section[$this->key_id]));
 
 		$res = db_query($sql_groups);
 		while ( $row = db_fetch_array($res) ) {
@@ -515,9 +514,9 @@ class Acl extends Error {
 			return "* =\n";
 	}
 
-	private function sqlToArrayByGroupId($sql) {
+	private function sqlToArrayByGroupId($sql, $params) {
 		$array = array();
-		$res = db_query($sql);
+		$res = db_query_params($sql, $params);
 		while ( $r = db_fetch_array($res) ) {
 			$array[ $r['group_id'] ][] = $r;
 		}
