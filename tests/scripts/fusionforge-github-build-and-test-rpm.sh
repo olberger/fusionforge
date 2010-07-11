@@ -13,5 +13,5 @@ make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all
 cd tests
 phpunit --log-junit $WORKSPACE/reports/phpunit-selenium.xml RPMCentos52Tests.php
 
-cd ..
-cp $WORKSPACE/reports/phpunit-selenium.xml $WORKSPACE/reports/phpunit-selenium.xml.org; xalan -in $WORKSPACE/reports/phpunit-selenium.xml.org -xsl fix_phpunit.xslt -out $WORKSPACE/reports/phpunit-selenium.xml
+#cd ..
+#cp $WORKSPACE/reports/phpunit-selenium.xml $WORKSPACE/reports/phpunit-selenium.xml.org; xalan -in $WORKSPACE/reports/phpunit-selenium.xml.org -xsl fix_phpunit.xslt -out $WORKSPACE/reports/phpunit-selenium.xml
