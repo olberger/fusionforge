@@ -22,8 +22,7 @@ class SeleniumRemoteSuite extends PHPUnit_Framework_TestSuite
 	protected function tearDown()
 	{
 		if (getenv('SELENIUM_RC_DIR')) {
-			system("scp root@".HOST.":/var/log/httpd/error_log ".getenv('SELENIUM_RC_DIR'));
-			system("scp root@".HOST.":/var/log/httpd/access_log ".getenv('SELENIUM_RC_DIR'));
+			system("scp -r root@".HOST.":/var/log ".getenv('SELENIUM_RC_DIR'));
 		}
 		system("cd scripts; ./stop_vm.sh ".HOST);
 	}
