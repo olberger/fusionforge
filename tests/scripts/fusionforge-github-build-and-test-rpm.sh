@@ -7,6 +7,8 @@ export SELENIUM_RC_URL=${HUDSON_URL}job/$JOB_NAME/ws/reports
 export HOST=centos52.local
 export CONFIGURED=true
 
+rm -fr build/ reports/
+
 mkdir -p build/packages reports/coverage
 make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all
 
