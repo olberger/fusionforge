@@ -16,7 +16,7 @@ class RPMSeleniumRemoteSuite extends SeleniumRemoteSuite
 
 //		system("scp -rp ".dirname(__FILE__)."/../../../src/rpm-specific/fusionforge-ci.repo root@".HOST.":/etc/yum.repos.d/");
 		if (getenv('FFORGE_RPM_REPO')) {
-			system("ssh root@".HOST." 'cd /etc/yum.repos.d/; wget FFORGE_RPM_REPO/fusionforge.repo'");
+			system("ssh root@".HOST." 'cd /etc/yum.repos.d/; wget ".getenv('FFORGE_RPM_REPO')."/fusionforge.repo'");
 		}
 
 		# Prefill yum cache to reduce real downloads.
