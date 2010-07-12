@@ -12,7 +12,7 @@
 
 // Host where selenium-rc is running
 define ('SELENIUM_RC_HOST', getenv('SELENIUM_RC_HOST'));
-define ('SELENIUM_RC_DIR', getenv('SELENIUM_RC_DIR');
+define ('SELENIUM_RC_DIR', getenv('SELENIUM_RC_DIR'));
 
 // The forge's hostname
 define ('HOST', getenv('HOST'));
