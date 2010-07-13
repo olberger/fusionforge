@@ -113,7 +113,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
     protected function init() {
 		$this->createProject('ProjectA');
 
-		$this->open( BASE );
+		$this->open( ROOT );
 		$this->click("link=ProjectA");
 		$this->waitForPageToLoad("30000");
     }
@@ -138,7 +138,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 	protected function logout()
 	{
 //		$this->click("link=Log Out");
-		$this->open( BASE ."/account/logout.php" );
+		$this->open( ROOT ."/account/logout.php" );
 		$this->waitForPageToLoad("30000");
 	}
 	
@@ -152,7 +152,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$unix_name = strtolower($name);
 		
 		// Create a simple project.
-		$this->open( BASE );
+		$this->open( ROOT );
 		$this->waitForPageToLoad("30000");
 		$this->assertTrue($this->isTextPresent('Log In'));
 		$this->click("link=Log In");
