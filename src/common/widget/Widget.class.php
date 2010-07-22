@@ -253,7 +253,7 @@ require_once('common/widget/Widget_ProjectSvnStats.class.php');
 				plugin_hook('widget_instance', array('widget' => $widget_name, 'instance' => &$o));
 				break;
 		}
-		if (!$o || !($o instanceof Widget)) {
+		if (!$o || !is_a($o, 'Widget')) {
 			$o = null;
 		}
 		return $o;
