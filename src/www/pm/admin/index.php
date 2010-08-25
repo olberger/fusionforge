@@ -16,7 +16,7 @@
 */
 
 require_once('../../env.inc.php');
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'pm/include/ProjectGroupHTML.class.php';
 require_once $gfcommon.'pm/ProjectGroupFactory.class.php';
 require_once $gfcommon.'pm/ProjectCategory.class.php';
@@ -418,7 +418,8 @@ if ($add_cat && $group_project_id) {
 	$pg_arr =& $pgf->getProjectGroups();
 
 	if (count($pg_arr) < 1 || $pg_arr == false) {
-		echo _('<h2>No Subprojects Found in this Project</h2><p>You may add new Subprojects using the "Add a Subproject" link above.</p>');
+		echo '<h2>' . _('No Subprojects Found in this Project') . '</h2>';
+		echo '<p>' . _('You may add new Subprojects using the "Add a Subproject" link above.') . '</p>';
 		echo db_error();
 	} else {
 		for ($i=0; $i<count($pg_arr); $i++) {

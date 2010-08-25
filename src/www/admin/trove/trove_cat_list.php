@@ -23,13 +23,16 @@
 
 
 require_once('../../env.inc.php');
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'include/trove.php';
 require_once $gfwww.'admin/admin_utils.php';
 
 // print current node, then all subnodes
 function printnode ($nodeid,$text) {
 	print ('<br />');
+
+	if (!isset($GLOBALS['depth']))
+		$GLOBALS['depth'] = 0;
 
 	for ($i=0;$i<$GLOBALS['depth'];$i++) {
 		print "&nbsp; &nbsp; ";

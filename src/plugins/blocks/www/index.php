@@ -45,7 +45,7 @@
  */
 
 require_once dirname(__FILE__)."/../../env.inc.php";
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfconfig.'plugins/blocks/config.php' ;
 
 require_once $gfcommon.'forum/ForumFactory.class.php';
@@ -327,8 +327,8 @@ if (!$type) {
 		print "<input type=\"hidden\" name=\"name\" value=\"$name\" />\n";
 
 		// Get default page from the templates defined in the config file.
-		$templates=json_decode(file_get_contents(forge_get_config('templates_file','blocks'))) ;
-		if (!$body) {
+		if (!$body && function_exists ('json_decode')) {
+			$templates=json_decode(file_get_contents(forge_get_config('templates_file','blocks'))) ;
 			if (isset($templates[$name])) {
 				$body = $templates[$name];
 			} else {

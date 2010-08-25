@@ -384,6 +384,7 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 
 %{__rm} -f $RPM_BUILD_ROOT%{FORGE_DIR}/utils/fusionforge-shell-postgresql.spec
 
+%{__rm} -f $RPM_BUILD_ROOT%{FORGE_DIR}/COPYING.php
 %{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/packaging
 %{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/deb-specific
 %{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/rpm-specific
@@ -536,7 +537,7 @@ if [ "$1" -eq "1" ]; then
 	/etc/init.d/httpd restart >/dev/null 2>&1
 
 	# generate random hash for session_key
-	HASH=$(/bin/dd if=/dev/urandom bs=1024 count=100 2>/dev/null | /usr/bin/sha1sum | cut -c1-40)
+	HASH=$(/bin/dd if=/dev/urandom bs=32 count=1 2>/dev/null | /usr/bin/sha1sum | cut -c1-40)
 	%{__sed} -i -e "s/sys_session_key = 'foobar'/sys_session_key = '$HASH'/g" %{FORGE_CONF_DIR}/local.inc
 
 	# add noreply mail alias

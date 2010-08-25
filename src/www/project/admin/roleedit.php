@@ -25,7 +25,7 @@
  */
 
 require_once('../../env.inc.php');
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'project/admin/project_admin_utils.php';
 require_once $gfcommon.'include/Role.class.php';
 require_once $gfcommon.'include/RoleObserver.class.php';
@@ -191,12 +191,12 @@ if (USE_PFO_RBAC) {
 	$keys = $keys2 ;
 }
 for ($i=0; $i<count($keys); $i++) {
-        if ((!$group->usesForum() && ereg("forum", $keys[$i])) ||
-                (!$group->usesTracker() && ereg("tracker", $keys[$i])) ||
-                (!$group->usesPM() && ereg("pm", $keys[$i])) ||
-                (!$group->usesFRS() && ereg("frs", $keys[$i])) ||
-                (!$group->usesSCM() && ereg("scm", $keys[$i])) ||
-                (!$group->usesDocman() && ereg("docman", $keys[$i]))) {
+        if ((!$group->usesForum() && preg_match("/forum/", $keys[$i])) ||
+                (!$group->usesTracker() && preg_match("/tracker/", $keys[$i])) ||
+                (!$group->usesPM() && preg_match("/pm/", $keys[$i])) ||
+                (!$group->usesFRS() && preg_match("/frs/", $keys[$i])) ||
+                (!$group->usesSCM() && preg_match("/scm/", $keys[$i])) ||
+                (!$group->usesDocman() && preg_match("/docman/", $keys[$i]))) {
 
                 //We don't display modules not used
 
