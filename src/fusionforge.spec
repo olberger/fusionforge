@@ -6,7 +6,7 @@
 #
 
 # Global Definitions
-%define dbname          fforge
+%define dbname          gforge
 %define dbuser          gforge
 
 %define gfuser          gforge
