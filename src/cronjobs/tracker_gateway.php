@@ -30,7 +30,7 @@
  */
 
 require dirname(__FILE__).'/../www/env.inc.php';
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfcommon.'include/Group.class.php';
 require_once $gfcommon.'include/MailParser.class.php';
 require_once $gfcommon.'tracker/Artifact.class.php';
