@@ -74,8 +74,7 @@ if (getStringFromRequest('add')) {
 			if (!$res || db_affected_rows($res) < 1) {
 				$feedback .= _('Error adding VHOST:') .db_error();
 			} else {
-				$feedback .= sprintf(_("Virtual host <strong>%s</strong> scheduled for creation on group <em>%s</em>"),
-				    $vhost_name, $group->getUnixName());
+				$feedback .= _('Virtual Host:'). "<strong>".$vhost_name."</strong>" ._('scheduled for creation on group'). "<em>".$group->getUnixName()."</em>";
 			}
 		} else {
 
@@ -123,7 +122,7 @@ site_admin_header(array('title'=>_('Site admin')));
 <table border="0">
 
 <tr>
-<td><?php echo _('Group Unix Name'); ?></td>
+<td><?php echo _('Project Unix Name'); ?></td>
 <td><input type="text" name="groupname" /></td>
 </tr>
 

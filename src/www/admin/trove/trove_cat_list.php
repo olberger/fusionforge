@@ -31,11 +31,14 @@ require_once $gfwww.'admin/admin_utils.php';
 function printnode ($nodeid,$text) {
 	print ('<br />');
 
+	if (!isset($GLOBALS['depth']))
+		$GLOBALS['depth'] = 0;
+
 	for ($i=0;$i<$GLOBALS['depth'];$i++) {
 		print "&nbsp; &nbsp; ";
 	}
 
-	print html_image('ic/cfolder15.png','15','13',array());
+	print html_image('ic/cfolder15.png','15','13');
 	print ('&nbsp; '.$text." ");
 	if ($nodeid == 0) {
 		print ('<a href="trove_cat_add.php?parent_trove_cat_id='.$nodeid.'">['._('Add').']</a> ');
