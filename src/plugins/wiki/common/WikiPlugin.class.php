@@ -30,14 +30,10 @@ class GforgeWikiPlugin extends Plugin {
 		$this->Plugin() ;
 		$this->name = "wiki" ;
 		$this->text = "Wiki" ; // To show in the tabs, use...
-//		$this->hooks[] = "user_personal_links"; //to make a link to the user's personal wiki
-//		$this->hooks[] = "usermenu" ;
 		$this->hooks[] = "groupmenu";
 		$this->hooks[] = "groupisactivecheckbox" ; // The "use ..." checkbox in editgroupinfo
 		$this->hooks[] = "groupisactivecheckboxpost" ; // 
 		$this->hooks[] = "project_admin_plugins"; // to show up in the project admin page
-//		$this->hooks[] = "userisactivecheckbox" ; // The "use ..." checkbox in user account
-//		$this->hooks[] = "userisactivecheckboxpost" ; // 
 		$this->hooks[] = 'search_engines';
 		$this->hooks[] = 'full_search_engines';
 		$this->hooks[] = 'cssfile';
@@ -49,18 +45,7 @@ class GforgeWikiPlugin extends Plugin {
 		if (is_array($params) && isset($params['group']))
 			$group_id=$params['group'];
 		$use_wikiplugin = getIntFromRequest('use_wikiplugin');
-		if ($hookname == "usermenu") {
-			$text = $this->text;
-			if ( ($G_SESSION) && ($G_SESSION->usesPlugin("wiki")) ) {
-				$param = '?id=' . $G_SESSION->getId() . '&type=u';
-				echo ' | ' . $HTML->PrintSubMenu (array ($text),
-						  array ('/wiki/u/'. $user_name.'/HomePage' ));
-			} else {
-				$this->hooks["usermenu"] = "" ;
-				//$param = "?off=true";
-			}
-			
-		} elseif ($hookname == "groupmenu") {
+		if ($hookname == "groupmenu") {
 			$project = &group_get_object($group_id);
 			if (!$project || !is_object($project))
 				return;
@@ -76,8 +61,10 @@ class GforgeWikiPlugin extends Plugin {
 				//$params['TITLES'][]=$this->text." [Off]";
 				//$params['DIRS'][]='/plugins/wiki/index.php?off=true';
 			}
-							
-			(($params['toptab'] == $this->name) ? $params['selected']=(count($params['TITLES'])-1) : '' );
+
+			if (isset($params['toptab'])) {
+				(($params['toptab'] == $this->name) ? $params['selected']=(count($params['TITLES'])-1) : '' );
+			}
 		} elseif ($hookname == "groupisactivecheckbox") {
                         //Check if the group is active
 			$group = &group_get_object($group_id);
@@ -101,53 +88,12 @@ class GforgeWikiPlugin extends Plugin {
 			} else {
 				$group->setPluginUse ( $this->name, false );
 			}
-                } elseif ($hookname == "project_admin_plugins") {
-                        // this displays the link in the project admin options page to its administration page.
-                        $group_id = $params['group_id'];
-                        $group = &group_get_object($group_id);
-                        if ( $group->usesPlugin ( $this->name ) ) {
-                                echo '<p><a href="/plugins/wiki/wikiadmin.php?id=' . $group->getID() . '&amp;type=admin&amp;pluginname=' . $this->name . '">' . _('Wiki Admin') . '</a></p>';
-                        }
-		} elseif ($hookname == "userisactivecheckbox") {
-			//check if user is active
-			$user = $params['user'];
-			echo "<tr>";
-			echo "<td>";
-			echo ' <input type="checkbox" name="use_wikiplugin" value="1" ';
-			// checked or unchecked?
-			if ( $user->usesPlugin ( $this->name ) ) {
-				echo "checked=\"checked\"";
-                            }
-
-			echo " />    Use ".$this->text." Plugin";
-			echo "</td>";
-			echo "</tr>";
-		} elseif ($hookname == "userisactivecheckboxpost") {
-			$user = $params['user'];
-			if ( getIntFromRequest('use_wikiplugin') == 1 ) {
-				$user->setPluginUse ( $this->name );
-			} else {
-				$user->setPluginUse ( $this->name, false );
-			}
-			echo "<tr>";
-			echo "<td>";
-			echo ' <input type="checkbox" name="use_wikiplugin" value="1" ';
-			// checked or unchecked?
-			if ( $user->usesPlugin ( $this->name ) ) {
-				echo "checked=\"checked\"";
-                            }
-
-			echo " />    Use ".$this->text." Plugin";
-			echo "</td>";
-			echo "</tr>";
-		} elseif ($hookname == "user_personal_links") {
-			$userid = $params['user_id'];
-			$user = user_get_object($userid);
-			$text = $params['text'];
-			//check if the user has the plugin activated
-			if ($user->usesPlugin($this->name)) {
-				echo '	<p>
-					<a href="/plugins/wiki/index.php?id=' . $userid . '&type=u">' . _("View Personal Wiki") .'</a></p>';
+		} elseif ($hookname == "project_admin_plugins") {
+			// this displays the link in the project admin options page to its administration page.
+			$group_id = $params['group_id'];
+			$group = &group_get_object($group_id);
+			if ( $group->usesPlugin ( $this->name ) ) {
+				echo '<p><a href="/plugins/wiki/wikiadmin.php?id=' . $group->getID() . '&amp;type=admin&amp;pluginname=' . $this->name . '">' . _('Wiki Admin') . '</a></p>';
 			}
 		} elseif ($hookname == 'search_engines') {
 			// FIXME: when the hook is called, the group_id is not set.
@@ -205,20 +151,19 @@ class GforgeWikiPlugin extends Plugin {
 
 					$pat = '_g'.$group_id.'_';
 					$len = strlen($pat)+1;
-					$wres = db_query_params ('SELECT plugin_wiki_page.id AS id,
-							substring(plugin_wiki_page.pagename from $1) AS pagename,
-							plugin_wiki_version.version AS version, 
-							plugin_wiki_version.mtime AS activity_date, 
+					$wres = db_query_params ("SELECT plugin_wiki_page.id AS id,
+							substring(plugin_wiki_page.pagename from $len) AS pagename,
+							plugin_wiki_version.version AS version,
+							plugin_wiki_version.mtime AS activity_date,
 							plugin_wiki_version.minor_edit AS minor_edit,
 							plugin_wiki_version.versiondata AS versiondata
-						FROM plugin_wiki_page, plugin_wiki_version 
-						WHERE plugin_wiki_page.id=plugin_wiki_version.id 
-							AND mtime BETWEEN $2 AND $3
+						FROM plugin_wiki_page, plugin_wiki_version
+						WHERE plugin_wiki_page.id=plugin_wiki_version.id
+							AND mtime BETWEEN $1 AND $2
 							AND minor_edit=0
-							AND substring(plugin_wiki_page.pagename from 0 for $1) = $4
-						ORDER BY mtime DESC',
-                                                                 array ($len,
-                                                                        $params['begin'],
+							AND substring(plugin_wiki_page.pagename from 0 for $len) = $3
+						ORDER BY mtime DESC",
+                                                                 array ($params['begin'],
                                                                         $params['end'],
                                                                         $pat));
 
@@ -240,7 +185,7 @@ class GforgeWikiPlugin extends Plugin {
 						$arr['realname'] = $data['author'];
 						$arr['icon']=html_image("ic/wiki20g.png","20","20",array("alt"=>"Wiki"));
 						$arr['title'] = 'Wiki Page '.$arr['pagename'];
-						$arr['link'] = '/wiki/g/'.$group_name.'/'.$arr['pagename'];
+						$arr['link'] = '/wiki/g/'.$group_name.'/'.urlencode($arr['pagename']);
 						$arr['description']= $arr['title'];
 						$params['results'][] = $arr;
 					}
