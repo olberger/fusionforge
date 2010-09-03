@@ -231,15 +231,7 @@ if (!$type) {
 		$blocks = getAvailableBlocks($group);
 		$class = 'even';
 		foreach ($blocks as $b => $help) {
-<<<<<<< HEAD:src/plugins/blocks/www/index.php
-
 			$class = ($class == 'even') ? "odd" : "even";
-
-=======
-			
-			$class = (! isset($class) || $class == 'bgcolor-white') ? "bgcolor-grey" : "bgcolor-white";
-			
->>>>>>> master:src/plugins/blocks/www/index.php
 			$match = '';
 			if (preg_match('/(.*) index$/', $b, $match)) {
 				print '<tr><td colspan="4"><b>'.$blocks_text[$match[1]].'</b></td></tr>';
