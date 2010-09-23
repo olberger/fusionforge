@@ -47,7 +47,7 @@ if (!$survey_id) {
 	/*
 		Quit if params are not provided
 	*/
-	echo '<div class="error">'._('For some reason, the Group ID or Survey ID did not make it to this page').'</div>';
+	echo '<div class="error">'._('For some reason, the Project ID or Survey ID did not make it to this page').'</div>';
 	$sh->footer(array());
 	exit;
 }
@@ -74,8 +74,8 @@ if (!session_loggedin()) {
 	Delete this customer's responses in case they had back-arrowed
 */
 $result = db_query_params ('DELETE FROM survey_responses WHERE survey_id=$1 AND group_id=$2 AND user_id=$3',
-			   array(addslashes($survey_id) ,
-				 addslashes($group_id) ,
+			   array($survey_id,
+				 $group_id,
 				 user_getid()));
 /*
 	Select this survey from the database

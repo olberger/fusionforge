@@ -368,7 +368,7 @@ class GFUser extends Error {
 						  $ccode,
 						  $theme_id)) ;
 		if (!$result) {
-			$this->setError(_('Insert Failed') . db_error());
+			$this->setError(_('Insert Failed: ') . db_error());
 			db_rollback();
 			return false;
 		} else {
@@ -616,7 +616,7 @@ Enjoy the site.
 		$res = db_query_params ('SELECT * FROM users WHERE user_id=$1',
 					array ($user_id)) ;
 		if (!$res || db_numrows($res) < 1) {
-			$this->setError('GFUser::fetchData()::'.db_error());
+			$this->setError('GFUser::fetchData():: '.db_error());
 			return false;
 		}
 		$this->data_array = db_fetch_array($res);
@@ -1140,10 +1140,23 @@ Enjoy the site.
 	 *	@return array	Array of groups.
 	 */
 	function &getGroups() {
-		$res = db_query_params ('SELECT group_id FROM user_group WHERE user_id=$1',
-					array ($this->getID())) ;
-		$arr =& util_result_column_to_array($res,0);	
-		return group_get_objects($arr);
+
+		if (USE_PFO_RBAC) {
+			$roles = RBACEngine::getInstance()->getAvailableRolesForUser ($this) ;
+			$ids = array () ;
+			foreach ($roles as $r) {
+				if ($r instanceof RoleExplicit
+				    && $r->getHomeProject() != NULL) {
+					$ids[] = $r->getHomeProject()->getID() ;
+				}
+			}
+			return group_get_objects(array_unique($ids)) ;
+		} else {
+			$res = db_query_params ('SELECT group_id FROM user_group WHERE user_id=$1',
+						array ($this->getID())) ;
+			$arr =& util_result_column_to_array($res,0);	
+			return group_get_objects($arr);
+		}
 	}
 
 	/**
@@ -1152,7 +1165,7 @@ Enjoy the site.
 	 *	@return	string	This user's SSH authorized (public) keys.
 	 */
 	function getAuthorizedKeys() {
-		return ereg_replace("###", "\n", $this->data_array['authorized_keys']);
+		return preg_replace("/###/", "\n", $this->data_array['authorized_keys']);
 	}
 
 	/**
@@ -1491,9 +1504,10 @@ Enjoy the site.
 		} else {
 			$this->theme=$this->data_array['dirname'];
 		}
-		if (is_file(forge_get_config('themes_root').$this->theme.'/Theme.class.php')) {
+		if (is_file(forge_get_config('themes_root').'/'.$this->theme.'/Theme.class.php')) {
 			$GLOBALS['sys_theme']=$this->theme;
 		} else {
+			echo "icicici";
 			$this->theme=forge_get_config('default_theme');
 		}
 		return $this->theme;

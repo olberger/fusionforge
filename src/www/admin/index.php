@@ -30,8 +30,11 @@
 require_once('../env.inc.php');
 require_once $gfcommon.'include/pre.php';
 require_once $gfwww.'admin/admin_utils.php';
+require_once $gfwww.'include/role_utils.php';
 
 $feedback = htmlspecialchars(getStringFromRequest('feedback'));
+$error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
+$warning_msg = htmlspecialchars(getStringFromRequest('warning_msg'));
 
 site_admin_header(array('title'=>_('Site Admin')));
 echo '<h1>' . _('Site Admin') . '</h1>';
@@ -72,6 +75,25 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
     ?></a>
     </li>
 </ul>
+<?php if (USE_PFO_RBAC) { ?>
+<h2><?php echo _('Global roles and permissions'); ?></h2>
+	<ul>
+	<li><?php
+
+		echo '<form action="globalroleedit.php" method="post"><p>';
+		echo global_role_box('role_id');
+		echo '&nbsp;<input type="submit" name="edit" value="'._("Edit Role").'" /></p></form>';
+?>
+</li>
+<li>
+<?
+
+		echo '<form action="globalroleedit.php" method="post"><p>';
+		echo '<input type="text" name="role_name" size="10" value="" />';
+		echo '&nbsp;<input type="submit" name="add" value="'._("Create Role").'" /></p></form>';
+	?></li>
+</ul>
+<?php } ?>
 <h2><?php echo _('Project Maintenance'); ?></h2>
 <ul>
 	<li><?php
@@ -163,7 +185,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 	<?php plugin_hook("site_admin_option_hook", false); ?>
 </ul>
 
-<?php if(forge_get_config('use_project_database') || forge_get_config('use_project_vhost')) { ?>
+<?php if(forge_get_config('use_project_database') || forge_get_config('use_project_vhost') || forge_get_config('use_people')) { ?>
 <ul>
 	<?php if(forge_get_config('use_project_vhost')) { ?>
 		<li><a href="vhost.php"><?php echo _('Virtual Host Admin Tool'); ?></a></li>
@@ -171,6 +193,9 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 	}
 	if(forge_get_config('use_project_database')) { ?>
 		<li><a href="database.php"><?php echo _('Project Database Administration'); ?></a></li>
+	<?php } 
+	if(forge_get_config('use_people')) { ?>
+        <li><a href="<?php echo util_make_url ('/people/admin/'); ?>"><?php echo _('Job / Categories Administration'); ?></a></li>
 	<?php } ?>
 </ul>
 <?php }

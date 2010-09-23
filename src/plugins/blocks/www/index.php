@@ -144,9 +144,14 @@ function blocks_Project_Header($params) {
 
 $user = session_get_user(); // get the session user
 
-if (!$user || !is_object($user) || $user->isError() || !$user->isActive()) {
-	exit_error("Invalid User", "Cannot Process your request for this user.");
+if (!$user || !is_object($user) ) {
+	exit_error(_('Invalid User'),'home');
+} else if ( $user->isError() ) {
+	exit_error($user->getErrorMessage(),'home');
+} else if ( !$user->isActive()) {
+	exit_error(_('Invalid User : Not active'), 'home');
 }
+
 
 $type = getStringFromRequest('type');
 $id = getStringFromRequest('id');
@@ -169,17 +174,17 @@ $blocks_text = array(
 );
 
 if (!$type) {
-	exit_error("Cannot Process your request","No TYPE specified");
+	exit_error(_('Cannot Process your request : No TYPE specified'),'home'); // you can create items in Base.tab and customize this messages
 } elseif (!$id) {
-	exit_error("Cannot Process your request","No ID specified");
+	exit_error(_('Cannot Process your request : No ID specified'),'home');
 } else {
 	if ($type == 'group') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');
 		}
 
 		session_require_perm ('project_admin', $id) ;
@@ -191,10 +196,10 @@ if (!$type) {
 	} elseif ($type == 'admin') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interfacer'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -231,7 +236,9 @@ if (!$type) {
 		$blocks = getAvailableBlocks($group);
 		$class = 'even';
 		foreach ($blocks as $b => $help) {
-			$class = ($class == 'even') ? "odd" : "even";
+
+			$class = (! isset($class) || $class == 'even') ? "odd" : "even";
+
 			$match = '';
 			if (preg_match('/(.*) index$/', $b, $match)) {
 				print '<tr><td colspan="4"><b>'.$blocks_text[$match[1]].'</b></td></tr>';
@@ -253,10 +260,10 @@ if (!$type) {
 	} elseif ($type == 'admin_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -301,10 +308,10 @@ if (!$type) {
 	} elseif ($type == 'configure') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginnname),'home');
 		}
 		session_require_perm ('project_admin', $id) ;
 
@@ -361,10 +368,10 @@ if (!$type) {
 	} elseif ($type == 'configure_post') {
 		$group = group_get_object($id);
 		if ( !$group) {
-			exit_error("Invalid Project", "Inexistent Project");
+			exit_no_group();
 		}
 		if ( ! ($group->usesPlugin ( $pluginname )) ) {//check if the group has the blocks plugin active
-			exit_error("Error", "First activate the $pluginname plugin through the Project's Admin Interface");
+			exit_error(sprintf(_('First activate the %s plugin through the Project\'s Admin Interface'),$pluginname),'home');			
 		}
 		session_require_perm ('project_admin', $id) ;
 

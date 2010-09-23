@@ -7,24 +7,23 @@
  * members, but only admins may perform most functions.
  *
  * Copyright 2004 GForge, LLC
+ * Copyright 2006 federicot
+ * http://fusionforge.org
  *
- * @version   $Id: index.php 5829 2006-10-19 20:02:18Z federicot $
- * @author Tim Perdue tim@gforge.org
+ * This file is part of FusionForge.
  *
- * This file is part of GForge.
- *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -36,15 +35,17 @@ require_once $gfcommon.'include/account.php';
 require_once $gfcommon.'include/GroupJoinRequest.class.php';
 
 $group_id = getIntFromRequest('group_id');
-$feedback = getStringFromRequest('feedback');
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
+$warnig_msg = htmlspecialchars(getStringFromRequest('warnig_msg'));
+$error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
 session_require_perm ('project_admin', $group_id) ;
 
 // get current information
 $group =& group_get_object($group_id);
 if (!$group || !is_object($group)) {
-	exit_error('Error','Could Not Get Group');
+    exit_no_group();
 } elseif ($group->isError()) {
-	exit_error('Error',$group->getErrorMessage());
+	exit_error($group->getErrorMessage(),'admin');
 }
 
 // Add hook to replace users managements by a plugin.
@@ -55,6 +56,40 @@ if (plugin_hook_listeners("project_admin_users") > 0) {
 	plugin_hook ("project_admin_users", $hook_params);
 }
 
+function cache_external_roles () {
+	global $used_external_roles, $unused_external_roles, $group, $group_id;
+
+	if (USE_PFO_RBAC) {
+		$unused_external_roles = array () ;
+		foreach (RBACEngine::getInstance()->getPublicRoles() as $r) {
+			$grs = $r->getLinkedProjects () ;
+			$seen = false ;
+			foreach ($grs as $g) {
+				if ($g->getID() == $group_id) {
+					$seen = true ;
+					break ;
+				}
+			}
+			if (!$seen) {
+				$unused_external_roles[] = $r ;
+			}
+		}
+		$used_external_roles = array () ;
+		foreach ($group->getRoles() as $r) {
+			if ($r->getHomeProject() == NULL
+			    || $r->getHomeProject()->getID() != $group_id) {
+				$used_external_roles[] = $r ;
+			}
+		}
+
+		sortRoleList ($used_external_roles, $group, 'composite') ;
+		sortRoleList ($unused_external_roles, $group, 'composite') ;
+
+	}
+}
+
+cache_external_roles () ;
+
 if (getStringFromRequest('submit')) {
 	if (getStringFromRequest('adduser')) {
 		/*
@@ -63,17 +98,17 @@ if (getStringFromRequest('submit')) {
 		$form_unix_name = getStringFromRequest('form_unix_name');
 		$user_object = &user_get_object_by_name($form_unix_name);
 		if ($user_object === false) {
-			$feedback .= _("<p>No Matching Users Found</p>");
+			$warning_msg .= _('No Matching Users Found');
 		} else {
 			$role_id = getIntFromRequest('role_id');
 			if (!$role_id) {
-				$feedback .= _("Role not selected");
+				$warning_msg .= _('Role not selected');
 			} else {
 				$user_id = $user_object->getID();
 				if (!$group->addUser($form_unix_name,$role_id)) {
 					$error_msg = $group->getErrorMessage();
 				} else {
-					$feedback = _("User Added Successfully");
+					$feedback = _("Member Added Successfully");
 					//if the user have requested to join this group
 					//we should remove him from the request list
 					//since it has already been added
@@ -85,19 +120,15 @@ if (getStringFromRequest('submit')) {
 			}
 		}
 	} else if (getStringFromRequest('rmuser')) {
-		/*
-			remove a user from this group
-			*/
+		/* remove a member from this project */
 		$user_id = getIntFromRequest('user_id');
 		if (!$group->removeUser($user_id)) {
 			$error_msg = $group->getErrorMessage();
 		} else {
-			$feedback = _("User Removed Successfully");
+			$feedback = _("Member Removed Successfully");
 		}
 	} else if (getStringFromRequest('updateuser')) {
-		/*
-			Adjust User Role
-			*/
+		/* Adjust Member Role */
 		$user_id = getIntFromRequest('user_id');
 		$role_id = getIntFromRequest('role_id');
 		if (! $role_id) {
@@ -116,7 +147,7 @@ if (getStringFromRequest('submit')) {
 			*/
 		$role_id = getIntFromRequest('role_id');
 		if (!$role_id) {
-			$feedback .= _("Role not selected");
+			$warning_msg .= _("Role not selected");
 		} else {
 			$form_userid = getIntFromRequest('form_userid');
 			$form_unix_name = getStringFromRequest('form_unix_name');
@@ -125,11 +156,11 @@ if (getStringFromRequest('submit')) {
 			} else {
 				$gjr=new GroupJoinRequest($group,$form_userid);
 				if (!$gjr || !is_object($gjr) || $gjr->isError()) {
-					$error_msg = 'Error Getting GroupJoinRequest';
+					$error_msg = _('Error Getting GroupJoinRequest');
 				} else {
 					$gjr->delete(true);
 				}
-				$feedback = _("User Added Successfully");
+				$feedback = _("Member Added Successfully");
 			}
 		}
 	} elseif (getStringFromRequest('rejectpending')) {
@@ -139,12 +170,42 @@ if (getStringFromRequest('submit')) {
 		$form_userid = getIntFromRequest('form_userid');
 		$gjr=new GroupJoinRequest($group,$form_userid);
 		if (!$gjr || !is_object($gjr) || $gjr->isError()) {
-			$feedback .= 'Error Getting GroupJoinRequest';
+			$error_msg .= _('Error Getting GroupJoinRequest');
 		} else {
 			if (!$gjr->reject()) {
-				exit_error('Error',$gjr->getErrorMessage());
+				$error_msg = $gjr->getErrorMessage();
 			} else {
 				$feedback .= 'Rejected';
+			}
+		}
+	} else if (getStringFromRequest('linkrole')) {
+		/* link a role to this project */
+		if (USE_PFO_RBAC) {
+			$role_id = getIntFromRequest('role_id');
+			foreach ($unused_external_roles as $r) {
+				if ($r->getID() == $role_id) {
+					if (!$r->linkProject($group)) {
+						$error_msg = $r->getErrorMessage();
+					} else {
+						$feedback = _("Role linked successfully");
+						cache_external_roles () ;
+					}
+				}
+			}
+		}
+	} else if (getStringFromRequest('unlinkrole')) {
+		/* unlink a role from this project */
+		if (USE_PFO_RBAC) {
+			$role_id = getIntFromRequest('role_id');
+			foreach ($used_external_roles as $r) {
+				if ($r->getID() == $role_id) {
+					if (!$r->unLinkProject($group)) {
+						$error_msg = $r->getErrorMessage();
+					} else {
+						$feedback = _("Role unlinked successfully");
+						cache_external_roles () ;
+					}
+				}
 			}
 		}
 	}
@@ -152,7 +213,7 @@ if (getStringFromRequest('submit')) {
 
 $group->clearError();
 
-project_admin_header(array('title'=>sprintf(_('Project Admin: %s'), $group->getPublicName()),'group'=>$group->getID()));
+project_admin_header(array('title'=>sprintf(_('Members of %s'), $group->getPublicName()),'group'=>$group->getID()));
 
 ?>
 
@@ -196,7 +257,7 @@ project_admin_header(array('title'=>sprintf(_('Project Admin: %s'), $group->getP
 			echo $HTML->boxBottom();
 		}
 
-		echo $HTML->boxTop(_("Add User"));
+		echo $HTML->boxTop(_("Add Member"));
 
 		if (isset($html_code['add_user'])) {
 			echo $html_code['add_user'];
@@ -212,7 +273,7 @@ project_admin_header(array('title'=>sprintf(_('Project Admin: %s'), $group->getP
 		<p><input type="hidden" name="submit" value="y" /> <input type="text"
 			name="form_unix_name" size="10" value="" /> <?php echo role_box($group_id,'role_id'); ?>
 		<input type="submit" name="adduser"
-			value="<?php echo _("Add User") ?>" />
+			value="<?php echo _("Add Member") ?>" />
 		</p>
 		</form>
 		<p><a
@@ -236,14 +297,52 @@ if (!USE_PFO_RBAC) {
 		echo role_box($group_id,'role_id','',false);
 		echo '&nbsp;<input type="submit" name="edit" value="'._("Edit Role").'" /></p></form>';
 
-		echo '<p><a href="roleedit.php?group_id='.$group_id.'">'._("Add Role").'</a>';
-		echo '</p>';
+
+		echo '<form action="roleedit.php?group_id='. $group_id .'" method="post"><p>';
+		echo '<input type="text" name="role_name" size="10" value="" />';
+		echo '&nbsp;<input type="submit" name="add" value="'._("Create Role").'" /></p></form>';
+
+
+
+if (USE_PFO_RBAC) {
+	if (count ($used_external_roles)) {
+		echo $HTML->boxMiddle(_("Currently used external roles"));
+		$ids = array () ;
+		$names = array () ;
+		foreach ($used_external_roles as $r) {
+			$ids[] = $r->getID() ;
+			$names[] = $r->getDisplayableName($group) ;
+		}		
+		echo '<form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
+		echo '<input type="hidden" name="submit" value="y" />' ;
+		echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
+		
+		echo html_build_select_box_from_arrays($ids,$names,'role_id','',false,'',false,'');
+		echo '<input type="submit" name="unlinkrole" value="'._("Unlink external role").'" /></form><br />' ;
+	}
+
+	if (count ($unused_external_roles)) {
+		echo $HTML->boxMiddle(_("Available external roles"));
+		$ids = array () ;
+		$names = array () ;
+		foreach ($unused_external_roles as $r) {
+			$ids[] = $r->getID() ;
+			$names[] = $r->getDisplayableName($group) ;
+		}		
+		echo '<form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
+		echo '<input type="hidden" name="submit" value="y" />' ;
+		echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
+		
+		echo html_build_select_box_from_arrays($ids,$names,'role_id','',false,'',false,'');
+		echo '<input type="submit" name="linkrole" value="'._("Link external role").'" /></form><br />' ;
+	}
+}
 
 		echo $HTML->boxBottom();
-
+	
 		?></td>
 		<td><?php
-
+			 
 		echo $HTML->boxTop(_("Project Members"));
 
 		/*
@@ -269,7 +368,14 @@ foreach ($members as $user) {
 			  <input type="hidden" name="submit" value="y" />
 			  <input type="hidden" name="user_id" value="'.$user->getID().'" />
 			  <input type="hidden" name="group_id" value="'. $group_id .'" />
-			  <a href="/users/'.$user->getUnixName().'">'.$user->getRealName().'</a>
+			  <a href="/users/'.$user->getUnixName().'">';
+	$display = $user->getRealName();
+	if (!empty($display)) {
+		echo $user->getRealName();
+	} else {
+		echo $user->getUnixName();
+	}
+	echo '</a>
 			</td>
 			<td style="white-space: nowrap; text-align: right;">';
 
@@ -297,5 +403,10 @@ echo $HTML->boxBottom();
 <?php
 
 project_admin_footer(array());
+
+// Local Variables:
+// mode: php
+// c-file-style: "bsd"
+// End:
 
 ?>

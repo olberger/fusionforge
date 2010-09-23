@@ -218,13 +218,13 @@ class ForumMessage extends Error {
 		} else {
 			$msg_id=db_insertid($result,'forum','msg_id');
 			if (!$this->fetchData($msg_id)) {
-				db_rollback();
 				$this->setError(_('ForumMessage::create() Posting Failed').' '.db_error());
+				db_rollback();
 				return false;
 			}
 			if (!$msg_id) {
-				db_rollback();
 				$this->setError(_('ForumMessage::create() Unable to get new message id'));
+				db_rollback();
 				return false;
 			} else {
 				if (!$this->sendNotice()) {
@@ -409,7 +409,7 @@ class ForumMessage extends Error {
 			$this->setError(_('ForumMessage::fetchData() Invalid MessageID').db_error());
 			return false;
 		}
-		$this->data_array =& db_fetch_array($res);
+		$this->data_array = db_fetch_array($res);
 		db_free_result($res);
 		return true;
 	}
@@ -613,7 +613,7 @@ class ForumMessage extends Error {
 	 *	@return boolean success.
 	 */
 	function sendNotice($has_attach=false) {
-		$ids =& $this->Forum->getMonitoringIDs();
+		$ids = $this->Forum->getMonitoringIDs();
 
 		$recipients = array ();
 		foreach ($ids as $id) {

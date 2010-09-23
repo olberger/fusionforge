@@ -6,24 +6,23 @@
  * as allows to manage it. This page should be accessible to all project
  * members, but only admins may perform most functions.
  *
- * Copyright 2004 GForge, LLC
+ * Copyright 2004 GForge, LLC - Tim Perdue
+ * Copyright 2010 (c), Franck Villaume
  *
- * @author Tim Perdue tim@gforge.org
+ * This file is part of FusionForge.
  *
- * This file is part of GForge.
- *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -34,41 +33,20 @@ require_once $gfwww.'project/admin/project_admin_utils.php';
 require_once $gfcommon.'include/GroupJoinRequest.class.php';
 
 $group_id = getIntFromRequest('group_id');
+$feedback = htmlspecialchars(getStringFromRequest('feedback'));
+
 session_require_perm ('project_admin', $group_id) ;
 
 // get current information
 $group =& group_get_object($group_id);
 if (!$group || !is_object($group)) {
-	exit_error('Error','Could Not Get Group');
+    exit_no_group();
 } elseif ($group->isError()) {
-	exit_error('Error',$group->getErrorMessage());
+	exit_error($group->getErrorMessage(),'admin');
 }
 
 $group->clearError();
 
-$adminheadertitle=sprintf(_('Project Admin: %1$s'), $group->getPublicName() );
-project_admin_header(array('title'=>$adminheadertitle, 'group'=>$group->getID()));
-?>
-
-<table class="my-layout-table">
-	<tr>
-		<td>
-
-<?php echo $HTML->boxTop(_('Misc. Project Information'));  ?>
-
-
-<?php
-
-	if (forge_get_config('use_shell')) {
-?> 
-<p><?php echo _('Group shell (SSH) server:&nbsp;') ?><strong><?php echo $group->getUnixName().'.'.forge_get_config('web_host'); ?></strong></p>
-<p><?php echo _('Group directory on shell server:&nbsp;') ?><br/><strong><?php echo account_group_homedir($group->getUnixName()); ?></strong></p>
-<p><?php echo _('Project WWW directory on shell server:&nbsp;') ?><br /><strong><?php echo account_group_homedir($group->getUnixName()).'/htdocs'; ?></strong></p>
-<?php
-	} //end of use_shell condition
-?> 
-
-<?php
 // If this was a submission, make updates
 if (getStringFromRequest('submit')) {
 	$form_group_name = getStringFromRequest('form_group_name');
@@ -118,13 +96,31 @@ if (getStringFromRequest('submit')) {
 	//100 $logo_image_id
 
 	if (!$res) {
-		$feedback .= $group->getErrorMessage();
+		$error_msg = $group->getErrorMessage();
 	} else {
-		$feedback .= _('Project information updated');
+		$feedback = _('Project information updated');
 	}
 }
 
+$adminheadertitle=sprintf(_('Project Admin: %1$s'), $group->getPublicName() );
+project_admin_header(array('title'=>$adminheadertitle, 'group'=>$group->getID()));
+
 ?>
+
+<table class="my-layout-table">
+	<tr>
+		<td>
+
+<?php echo $HTML->boxTop(_('Misc. Project Information'));
+
+if (forge_get_config('use_shell')) {
+?> 
+<p><?php echo _('Group shell (SSH) server:&nbsp;') ?><strong><?php echo $group->getUnixName().'.'.forge_get_config('web_host'); ?></strong></p>
+<p><?php echo _('Group directory on shell server:&nbsp;') ?><br/><strong><?php echo account_group_homedir($group->getUnixName()); ?></strong></p>
+<p><?php echo _('Project WWW directory on shell server:&nbsp;') ?><br /><strong><?php echo account_group_homedir($group->getUnixName()).'/htdocs'; ?></strong></p>
+<?php
+	} //end of use_shell condition
+?> 
 
 <form action="<?php echo getStringFromServer('PHP_SELF'); ?>" method="post">
 

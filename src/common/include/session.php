@@ -365,7 +365,7 @@ function session_require($req, $reason='') {
 	$user =& user_get_object(user_getid());
 	if (! $user->isActive()) {
 		session_logout();
-		exit_error('Error','Your account is no longer active ; you have been disconnected');
+		exit_error(_('Your account is no longer active ; you have been disconnected'),'');
 	}
 
 	if (array_key_exists('group', $req)) {
@@ -373,27 +373,27 @@ function session_require($req, $reason='') {
 		if (!$group || !is_object($group)) {
 			exit_no_group();
 		} elseif ($group->isError()) {
-			exit_error('Error',$reason == '' ? $group->getErrorMessage() : $reason);
+			exit_error($reason == '' ? $group->getErrorMessage() : $reason, '');
 		}
 
 		$perm =& $group->getPermission ();
 		if (!$perm || !is_object($perm) || $perm->isError()) {
-			exit_permission_denied($reason);
+			exit_permission_denied($reason,'');
 		}
 
 		if (isset($req['admin_flags']) && $req['admin_flags']) {
 			if (!$perm->isAdmin()) {
-				exit_permission_denied($reason);
+				exit_permission_denied($reason,'');
 			}
 		} else {
 			if (!$perm->isMember()) {
-				exit_permission_denied($reason);
+				exit_permission_denied($reason,'');
 			}
 		}
 	} else if ($req['isloggedin']) {
 		//no need to check as long as the check is present at top of function
 	} else {
-		exit_permission_denied($reason);
+		exit_permission_denied($reason,'');
 	}
 }
 
@@ -406,7 +406,7 @@ function session_require($req, $reason='') {
  */
 function session_require_perm ($section, $reference, $action = NULL, $reason='') {
 	if (!forge_check_perm ($section, $reference, $action)) {
-		exit_permission_denied ($reason);
+		exit_permission_denied ($reason,'');
 	}		
 }
 
@@ -419,7 +419,7 @@ function session_require_perm ($section, $reference, $action = NULL, $reason='')
  */
 function session_require_global_perm ($section, $action = NULL, $reason='') {
 	if (!forge_check_global_perm ($section, $action)) {
-		exit_permission_denied ($reason);
+		exit_permission_denied ($reason,'');
 	}		
 }
 
@@ -469,10 +469,10 @@ function session_set_new($user_id) {
 	$res = session_getdata($user_id);
 
 	if (!$res) {
-		exit_error(_('ERROR'),_('ERROR').": ".db_error());
+		exit_error(db_error(),'');
 	}
 	else if (db_numrows($res) < 1) {
-		exit_error(_('ERROR'),_('ERROR').": could not fetch user session data");
+		exit_error(_('Could not fetch user session data'),'');
 	} else {
 
 		//set up the new user object
@@ -498,12 +498,10 @@ function session_set_admin() {
 	$res = db_query_params ('SELECT user_id FROM user_group WHERE admin_flags=$1 AND group_id=1',
 				array ('A'));
 	if (!$res) {
-		echo db_error();
-		exit (1);
+		exit_error(db_error(),'');
 	}
 	if (db_numrows($res) == 0) {
-		echo "No admin users?\n" ;
-		exit (1);
+		exit_error(_('No admin users ?'),'');
 	}
 	$id = db_result ($res, 0, 0);
 	session_set_new ($id);

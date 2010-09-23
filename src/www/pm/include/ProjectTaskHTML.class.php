@@ -1,19 +1,27 @@
 <?php
 /**
- * GForge Project Management Facility
+ * FusionForge Project Management Facility
  *
+ * Copyright 1999/2000, Tim Perdue - Sourceforge
  * Copyright 2002 GForge, LLC
- * http://gforge.org/
+ * Copyright 2010, FusionForge Team
+ * http://fusionforge.org
  *
+ * This file is part of FusionForge. FusionForge is free software;
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with FusionForge; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/*
-
-	Tasks
-	By Tim Perdue, Sourceforge, 11/99
-	Heavy rewrite by Tim Perdue April 2000
-
-	Total rewrite in OO and GForge coding guidelines 12/2002 by Tim Perdue
-*/
 
 require_once $gfcommon.'include/Error.class.php';
 require_once $gfcommon.'pm/ProjectTask.class.php';
@@ -110,7 +118,7 @@ class ProjectTaskHTML extends ProjectTask {
 					<td>'.util_make_link ('/tracker/?func=detail&aid='.db_result($res,$i,'artifact_id').'&group_id='.db_result($res,$i,'group_id').'&atid='.db_result($res,$i,'group_artifact_id'), db_result($res,$i,'summary')).'</td>
 					<td>'. db_result($res,$i,'name') .'</td>
 					<td>'. date(_('Y-m-d H:i'),db_result($res,$i,'open_date')) .'</td>'.
-					(($is_admin) ? '<td><input type="checkbox" name="rem_artifact_id[]" value="'.db_result($res,$i,'artifact_id').'"></td>' : '').
+					(($is_admin) ? '<td><input type="checkbox" name="rem_artifact_id[]" value="'.db_result($res,$i,'artifact_id').'" /></td>' : '').
 					'</tr>';
 			}
 

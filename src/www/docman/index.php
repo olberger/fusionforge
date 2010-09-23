@@ -35,7 +35,7 @@ require_once $gfcommon.'include/TextSanitizer.class.php'; // to make the HTML in
 
 /* are we using docman ? */
 if (!forge_get_config('use_docman'))
-	exit_disabled();
+	exit_disabled('home');
 
 /* get informations from request or $_POST */
 $group_id = getIntFromRequest('group_id');
@@ -44,17 +44,19 @@ $error_msg = htmlspecialchars(getStringFromRequest('error_msg'));
 $warning_msg = htmlspecialchars(getStringFromRequest('warning_msg'));
 
 /* validate group */
-if (!$group_id) {
+if (!$group_id)
 	exit_no_group();
-}
+
 $g =& group_get_object($group_id);
-if (!$g || !is_object($g) || $g->isError()) {
+if (!$g || !is_object($g))
 	exit_no_group();
-}
 
 /* is this group using docman ? */
 if (!$g->usesDocman())
-	exit_error(_('Error'),_('This project has turned off the Doc Manager.'));
+	exit_disabled('home');
+
+if ($g->isError())
+	exit_error($g->getErrorMessage(),'docman');
 
 $dirid = getIntFromRequest('dirid');
 if (empty($dirid))
@@ -62,18 +64,19 @@ if (empty($dirid))
 
 $df = new DocumentFactory($g);
 if ($df->isError())
-	exit_error(_('Error'),$df->getErrorMessage());
+	exit_error($df->getErrorMessage(),'docman');
 
 $dgf = new DocumentGroupFactory($g);
 if ($dgf->isError())
-	exit_error(_('Error'),$dgf->getErrorMessage());
+	exit_error($dgf->getErrorMessage(),'docman');
 
-$nested_groups =& $dgf->getNested();
+$nested_groups = $dgf->getNested();
+if ($dgf->isError())
+    exit_error($dgf->getErrorMessage(),'docman');
 
 $dgh = new DocumentGroupHTML($g);
-
 if ($dgh->isError())
-	exit_error('Error',$dgh->getErrorMessage());
+	exit_error($dgh->getErrorMessage(),'docman');
 
 $d_arr =& $df->getDocuments();
 if (!$d_arr || count($d_arr) <1)

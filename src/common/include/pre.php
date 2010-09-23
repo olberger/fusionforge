@@ -125,6 +125,8 @@ forge_define_config_item ('sysdebug_enable', 'core', $default_sysdebug_enable) ;
 forge_set_config_item_bool ('sysdebug_enable', 'core') ;
 forge_define_config_item ('sysdebug_phphandler', 'core', 'true') ;
 forge_set_config_item_bool ('sysdebug_phphandler', 'core') ;
+forge_define_config_item ('sysdebug_backtraces', 'core', 'false') ;
+forge_set_config_item_bool ('sysdebug_backtraces', 'core') ;
 forge_define_config_item ('sysdebug_ignored', 'core', 'false') ;
 forge_set_config_item_bool ('sysdebug_ignored', 'core') ;
 forge_define_config_item ('sysdebug_xmlstarlet', 'core', 'false') ;
@@ -139,6 +141,11 @@ if ($sysdebug_enable) {
 
 // Get constants used for flags or status
 require $gfcommon.'include/constants.php';
+
+// Declare and init variables to store messages
+$feedback = '';
+$warning_msg = '';
+$error_msg = '';
 
 // Base error library for new objects
 require_once $gfcommon.'include/Error.class.php';
@@ -190,7 +197,7 @@ ini_set('date.timezone', forge_get_config ('default_timezone'));
 
 if (isset($_SERVER['SERVER_SOFTWARE'])) { // We're on the web
 	// exit_error() and variants (for the web)
-	require_once $gfwww.'include/exit.php';
+	require_once $gfcommon.'include/exit.php';
 
 	// Library to determine browser settings
 	require_once $gfwww.'include/browser.php';
@@ -229,14 +236,16 @@ if (isset($_SERVER['SERVER_SOFTWARE'])) { // We're on the web
 
 	// If logged in, set up a $LUSER var referencing
 	// the logged in user's object
+	// and setup theme
 	if (session_loggedin()) {
 		$LUSER =& session_get_user();
 		$LUSER->setUpTheme();
 		putenv ('TZ='. $LUSER->getTimeZone());
 		header ('Cache-Control: private');
+		require_once forge_get_config('themes_root').'/'.$LUSER->setUpTheme().'/Theme.class.php';
+	} else {
+		require_once forge_get_config('themes_root').'/'.forge_get_config('default_theme').'/Theme.class.php';
 	}
-
-	require_once forge_get_config('themes_root').'/'.forge_get_config('default_theme').'/Theme.class.php';
 	$HTML = new Theme () ;
 } else {		     // Script run from cron or a command line
 	require_once $gfcommon.'include/squal_exit.php';

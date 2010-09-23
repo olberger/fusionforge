@@ -34,22 +34,68 @@ function role_box ($group_id,$name,$selected='xzxzxz',$local_only=true) {
 		$roles = $roles2 ;
 	}
 
+	sortRoleList ($roles, $group, 'composite') ;
+
 	$ids = array () ;
 	$names = array () ;
 	
 	foreach ($roles as $role) {
 		$ids[] = $role->getID ();
 
-		if ($role->getHomeProject() == NULL) {
-			$names[] = sprintf (_('%s (global role)'),
-					    $role->getName ()) ;
-		} elseif ($role->getHomeProject()->getID() != $group_id) {
-			$names[] = sprintf (_('%s (in project %s)'),
-					    $role->getName (),
-					    $role->getHomeProject()->getPublicName()) ;
-		} else {
-			$names[] = $role->getName () ;
+		$names[] = $role->getDisplayableName($group) ;
+	}
+
+	if ($selected == 'xzxzxz') {
+		$selected = $ids[0] ;
+	}
+
+	return html_build_select_box_from_arrays($ids,$names,$name,$selected,false,'',false);
+}
+
+function external_role_box ($group_id,$name) {
+	$group = group_get_object ($group_id) ;
+	$roles = array () ;
+	foreach (RBACEngine::getInstance()->getPublicRoles() as $r) {
+		$grs = $r->getLinkedProjects () ;
+		$seen = false ;
+		foreach ($grs as $g) {
+			if ($g->getID() == $group_id) {
+				$seen = true ;
+				break ;
+			}
 		}
+		if (!$seen) {
+			$roles[] = $r ;
+		}
+	}
+
+	sortRoleList ($roles, $group, 'composite') ;
+
+	$ids = array () ;
+	$names = array () ;
+	foreach ($roles as $role) {
+		$ids[] = $role->getID ();
+
+		$names[] = $role->getDisplayableName($group) ;
+	}
+
+	$selected = $ids[0] ;
+
+	return html_build_select_box_from_arrays($ids,$names,$name);
+}
+
+function global_role_box ($name,$selected='xzxzxz') {
+	$roles = RBACEngine::getInstance()->getGlobalRoles () ;
+
+	$ids = array () ;
+	$names = array () ;
+	
+	sortRoleList ($roles, NULL, 'composite') ;
+
+	foreach ($roles as $role) {
+		$ids[] = $role->getID ();
+		
+		$names[] = $role->getName () ;
 	}
 
 	if ($selected == 'xzxzxz') {

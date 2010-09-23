@@ -2,7 +2,7 @@
 
 /*
  * Copyright 2010, Capgemini
- * Author: Franck Villaume - Capgemini
+ * Authors: Franck Villaume - capgemini
  *
  * This file is part of FusionForge.
  *
@@ -21,34 +21,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-GLOBAL $HTML;
+echo '<form method="POST" Action="?type='.$type.'&id='.$id.'&pluginname='.$pluginname.'&idBug='.$idBug.'&action=addAttachment&view=viewIssue" enctype="multipart/form-data">';
+echo	'<table class="innertabs">';
+echo '<tr><td>';
+echo '     Fichier : <input type="file" name="attachment">';
+echo '</td></tr></table>';
+echo '<br/><input type="button" onclick="this.form.submit();this.disabled=true;" name="envoyer" value="Envoyer le fichier">';
+echo '</form>';
 
-if (!isset($defect)){
-	try{
-		$clientSOAP = new SoapClient("http://$sys_mantisbt_host/api/soap/mantisconnect.php?wsdl", array('trace'=>true, 'exceptions'=>true));
-		$defect = $clientSOAP->__soapCall('mc_issue_get', array("username" => $username, "password" => $password, "issue_id" => $idBug));
-	}catch (SoapFault $soapFault) {
-		echo $soapFault->faultstring;
-		echo "<br/>";
-		$errorPage = true;
-	}
-}
-
-$boxTitle = 'Ajouter un fichier (<a style="color:#FFFFFF;font-size:0.8em;" href="?type='.$type.'&id='.$id.'&pluginname='.$pluginname.'&idBug='.$idBug.'&view=viewIssue">Retour Ticket '.$idBug.'</a>)';
-echo $HTML->boxTop($boxTitle,InTextBorder);
-
-if ($errorPage){
-	echo 	'<div>Un problème est survenu lors de la récupération des données</div>';
-	echo $HTML->boxBottom();
-}else {
-	echo '<form method="POST" Action="?type='.$type.'&id='.$id.'&pluginname='.$pluginname.'&idBug='.$idBug.'&action=addAttachment&view=viewIssue" enctype="multipart/form-data">';
-	echo	'<table class="innertabs">';
-	echo '<tr><td>';
-	echo '     Fichier : <input type="file" name="attachment">';
-	echo '</td><td>';
-	echo '     <input type="submit" name="envoyer" value="Envoyer le fichier">';
-	echo '</td></tr></table>';
-	echo '</form>';
-	echo $HTML->boxBottom();
-}
 ?>

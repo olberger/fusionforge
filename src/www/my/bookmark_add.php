@@ -1,23 +1,23 @@
 <?php
 /**
- * SourceForge User's bookmark Page
+ * User's bookmark Page
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -33,7 +33,7 @@ $bookmark_title = trim(getStringFromRequest('bookmark_title'));
 
 if (getStringFromRequest('submit') && $bookmark_url && $bookmark_title) {
 
-	printf(_('Added bookmark for <strong>%1$s</strong> with title <strong>%2$s</strong>'), htmlspecialchars(stripslashes($bookmark_url)),htmlspecialchars(stripslashes($bookmark_title))).".<p>&nbsp;</p>";
+	printf(_('Added bookmark for <strong>%1$s</strong> with title <strong>%2$s</strong>'), htmlspecialchars($bookmark_url),htmlspecialchars($bookmark_title)).".<p>&nbsp;</p>";
 
 	bookmark_add ($bookmark_url, $bookmark_title);
 	print "<a href=\"$bookmark_url\">"._('Visit the bookmarked page')."</a> - ";

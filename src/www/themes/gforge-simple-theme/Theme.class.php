@@ -103,7 +103,7 @@ class Theme extends Layout {
 		}
 		?>
 
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 	<!--
 
 	function admin_window(adminurl) {
@@ -616,11 +616,8 @@ function projectTabs($toptab,$group) {
 function searchBox() {
 	global $words,$forum_id,$group_id,$group_project_id,$atid,$exact,$type_of_search;
 
-	if(get_magic_quotes_gpc()) {
-		$defaultWords = stripslashes($words);
-	} else {
-		$defaultWords = $words;
-	}
+	//Fix CVE-2007-0176
+	$defaultWords = htmlspecialchars($words);
 
 	// if there is no search currently, set the default
 	if ( ! isset($type_of_search) ) {
@@ -672,7 +669,7 @@ function advancedSearchBox($sectionsArray, $group_id, $words, $isExact) {
 		<input type="hidden" name="search" value="1"/>
 		<input type="hidden" name="group_id" value="'.$group_id.'"/>
 		<div id="advancedsearchtext">
-						<input type="text" size="60" name="words" value="'.stripslashes(htmlspecialchars($words)).'" />
+						<input type="text" size="60" name="words" value="'.htmlspecialchars($words).'" />
 						<input type="submit" name="submitbutton" value="'._('Search').'" />
 						<input type="radio" name="mode" value="'.SEARCH__MODE_AND.'" '.($isExact ? 'checked="checked"' : '').' />'._('with all words').'
 						<input type="radio" name="mode" value="'.SEARCH__MODE_OR.'" '.(!$isExact ? 'checked="checked"' : '').' />'._('with one word').'
@@ -921,7 +918,7 @@ function quickNav() {
 				//task mgr
 				if (db_result($res,$i,'use_pm')) {
 					$ret .= '
-				<option value="/pm/?group_id='.db_result($res,$i,'group_id').'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Task Manager</option>';
+				<option value="/pm/?group_id='.db_result($res,$i,'group_id').'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tasks</option>';
 					if (trim(db_result($res,$i,'admin_flags')) =='A' || db_result($res,$i,'project_flags')) {
 						$ret .= '
 				<option value="/pm/admin/?group_id='.db_result($res,$i,'group_id').'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Admin</option>';

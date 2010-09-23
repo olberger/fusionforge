@@ -1,4 +1,4 @@
-<?php // -*-php-*- $Id: g 7666 2010-08-31 16:02:45Z vargenau $
+<?php // -*-php-*- $Id: g 7679 2010-09-09 13:25:20Z vargenau $
 
 /*
  * Copyright (C) 2008-2010 Alcatel-Lucent
@@ -48,13 +48,13 @@ ini_set("memory_limit", "64M");
 $no_gz_buffer=true;
 
 require_once('../../env.inc.php');
-require_once $gfwww.'include/pre.php';
+require_once $gfcommon.'include/pre.php';
 require_once $gfplugins.'wiki/common/wikiconfig.class.php';
 
 if (!$group_id || !$project) {
-     exit_no_group();
+    exit_no_group();
 } else if (!($project->usesPlugin("wiki"))) {
-    exit_error("Wiki plugin not activated in project", $project->getPublicName());
+    exit_disabled('home');
 } else {
 
     $group_name = $project->getUnixName();

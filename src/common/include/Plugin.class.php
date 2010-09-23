@@ -148,7 +148,7 @@ class Plugin extends Error {
 		echo ' <input type="checkbox" name="'.$flag.'" value="1" ';
 		// checked or unchecked?
 		if ( $user->usesPlugin ( $this->name ) ) {
-			echo "checked";
+			echo 'checked="checked"';
 		}
 		echo " />    Use ".$this->text." Plugin";
 		echo "</td>";
@@ -169,7 +169,7 @@ class Plugin extends Error {
 		echo ' <input type="checkbox" name="'.$flag.'" value="1" ';
 		// checked or unchecked?
 		if ( $user->usesPlugin ( $this->name ) ) {
-			echo "checked";
+			echo 'checked="checked"';
 		}
 		echo " />    Use ".$this->text." Plugin";
 		echo "</td>";
@@ -195,7 +195,7 @@ class PluginSpecificRoleSetting {
 		$this->role->role_values = array_replace_recursive ($this->role->role_values,
 								    array ($this->name => $values)) ;
 		if ($this->global) {
-			$this->role->global_values[] = $this->name ;
+			$this->role->global_settings[] = $this->name ;
 		}
 	}
 

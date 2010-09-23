@@ -8844,7 +8844,7 @@ class SimplePie_Misc
 		return $output . $input;
 	}
 
-	function get_element($realname, $string)
+	static function get_element($realname, $string)
 	{
 		$return = array();
 		$name = preg_quote($realname, '/');

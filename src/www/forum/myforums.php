@@ -6,6 +6,7 @@
  * Portions Copyright 1999-2001 (c) VA Linux Systems
  * The rest Copyright 2002-2004 (c) GForge Team
  * Copyright 2005 (c) - Daniel Perez
+ * Copyright 2010 (c) Franck Villaume - Capgemini
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.
@@ -56,10 +57,12 @@ $result = db_query_params ('SELECT mon.forum_id, fg.group_id FROM forum_monitore
 			   array ($user_id));
 if (!$result) {
     echo '<div class="error">Database error :'.db_error().'</div>';
+    forum_footer(array());
     exit;
 }
 if ( db_numrows($result) < 1) {
     echo '<div class="feedback">'._('You have no monitored forums').'</div>';
+    forum_footer(array());
     exit;
 }
 
@@ -86,7 +89,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 	}
 	$f = new Forum($g,$monitored_forums[$i]["forum_id"]);
 	if (!$f || !is_object($f) || $f->isError()) {
-		exit_error(_('Error'));
+		exit_error($f->isError(),'forums');
 	}
 	if (!is_object($f)) {
 		//just skip it - this object should never have been placed here
@@ -97,16 +100,16 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 
 		$fh = new ForumHTML($f);
 		if (!$fh || !is_object($fh)) {
-			exit_error(_('Error'), "Error getting new ForumHTML");
+			exit_error(_('Error getting new ForumHTML'),'forums');
 		}	elseif ($fh->isError()) {
-			exit_error(_('Error'),$fh->getErrorMessage());
+			exit_error($fh->getErrorMessage(),'forums');
 		}
 
 		$fmf = new ForumMessageFactory($f);
 		if (!$fmf || !is_object($fmf)) {
-			exit_error(_('Error'), "Error getting new ForumMessageFactory");
+			exit_error(_('Error getting new ForumMessageFactory'),'forums');
 		}	elseif ($fmf->isError()) {
-			exit_error(_('Error'),$fmf->getErrorMessage());
+			exit_error($fmf->getErrorMessage(),'forums');
 		}
 		$fmf->setUp($offset,$style,$max_rows,$set);
 		$style=$fmf->getStyle();
@@ -114,7 +117,7 @@ for($i=0;$i<sizeof($monitored_forums);$i++) {
 		$offset=$fmf->offset;
 		$msg_arr =& $fmf->nestArray($fmf->getNested());
 		if ($fmf->isError()) {
-			echo $fmf->getErrorMessage();
+			exit_error($fmf->getErrorMessage(),'forums');
 		}
 		$rows=count($msg_arr[0]);
 		$avail_rows=$fmf->fetched_rows;

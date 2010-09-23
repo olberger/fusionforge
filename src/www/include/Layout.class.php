@@ -2,14 +2,34 @@
 /**
  * Base layout class.
  *
+ * Copyright 1999-2001 (c) VA Linux Systems
+ * http://fusionforge.org
+ *
+ * This file is part of FusionForge.
+ *
+ * FusionForge is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FusionForge; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/**
+ *
  * Extends the basic Error class to add HTML functions
  * for displaying all site dependent HTML, while allowing
  * extendibility/overriding by themes via the Theme class.
  *
  * Make sure browser.php is included _before_ you create an instance
  * of this object.
- *
- * Geoffrey Herteg, August 29, 2000
  *
  */
 
@@ -114,6 +134,12 @@ class Layout extends Error {
 	 * not be modified.
 	 */
 	var $navigation;
+
+
+	/**
+	 * The color bars in pm reporting
+	 */
+	var $COLOR_LTBACK1 = '#C0C0C0';
 
 
 	/**
@@ -623,20 +649,20 @@ class Layout extends Error {
 			return;
 		} else {
 			// get all projects that the user belongs to
-			$res = db_query_params ('SELECT group_id FROM groups JOIN user_group USING (group_id) WHERE user_group.user_id=$1 AND groups.status=$2 ORDER BY group_name',
-					array (user_getid(),
-						'A'));
-			echo db_error();
-			if (!$res || db_numrows($res) < 1) {
+			$groups = session_get_user()->getGroups () ;
+
+			if (count ($groups) < 1) {
 				return;
 			} else {
+				sortProjectList ($groups) ;
+
 				echo '
 					<form id="quicknavform" name="quicknavform" action=""><div>
 					<select name="quicknav" id="quicknav" onChange="location.href=document.quicknavform.quicknav.value">
 					<option value="">'._('Quick Jump To...').'</option>';
 
-				for ($i = 0; $i < db_numrows($res); $i++) {
-					$group_id = db_result($res, $i, 'group_id');
+				foreach ($groups as $g) {
+					$group_id = $g->getID() ;
 					$menu =& $this->navigation->getProjectMenu($group_id);
 
 					echo '

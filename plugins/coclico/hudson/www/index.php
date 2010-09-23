@@ -18,7 +18,7 @@
  * along with Codendi. If not, see <http://www.gnu.org/licenses/>.
  */
 require_once('env.inc.php');
-require_once('pre.php');
+require_once $gfcommon.'include/pre.php';
 require_once('preplugins.php');
 require_once('plugins_utils.php');
 
