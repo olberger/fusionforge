@@ -3,7 +3,7 @@
  * FusionForge user management
  *
  * Copyright 1999-2001, VA Linux Systems, Inc.
- * Copyright 2009, Roland Mas
+ * Copyright 2009-2010, Roland Mas
  *
  * This file is part of FusionForge.
  *
@@ -133,6 +133,12 @@ function &user_get_objects_by_name($username_arr) {
 				array (db_string_array_to_any_clause ($username_arr))) ;
 	$arr =& util_result_column_to_array($res,0);
 	return user_get_objects($arr);
+}
+
+function &user_get_active_users() {
+	$res=db_query_params ('SELECT user_id FROM users WHERE status=$1',
+			      array ('A')) ;
+	return user_get_objects (util_result_column_to_array($res,0)) ;
 }
 
 class GFUser extends Error {
@@ -669,15 +675,12 @@ Enjoy the site.
 		} else {
 			$this->data_array['status']=$status;
 			if ($status == 'D') {
-				// Remove this user from all groups
-				$res = db_query_params ('DELETE FROM user_group WHERE user_id=$1',
-							array ($this->getID())) ;
-				if (!$res) {
-					$this->setError('ERROR - Could Not Propogate Deleted Status: '.db_error());
-					db_rollback();
-					return false;
+				$projects = $this->getGroups() ;
+				foreach ($projects as $p) {
+					$p->removeUser ($this->getID()) ;
 				}
 			}
+
 			$hook_params = array ();
 			$hook_params['user'] = $this;
 			$hook_params['user_id'] = $this->getID();
@@ -1139,24 +1142,21 @@ Enjoy the site.
 	 *
 	 *	@return array	Array of groups.
 	 */
-	function &getGroups() {
-
-		if (USE_PFO_RBAC) {
-			$roles = RBACEngine::getInstance()->getAvailableRolesForUser ($this) ;
-			$ids = array () ;
-			foreach ($roles as $r) {
+	function &getGroups($onlylocal = true) {
+		$ids = array () ;
+		foreach ($this->getRoles() as $r) {
+			if ($onlylocal) {
 				if ($r instanceof RoleExplicit
 				    && $r->getHomeProject() != NULL) {
 					$ids[] = $r->getHomeProject()->getID() ;
 				}
+			} else {
+				foreach ($r->getLinkedProjects() as $p) {
+					$ids[] = $p->getID() ;
+				}
 			}
-			return group_get_objects(array_unique($ids)) ;
-		} else {
-			$res = db_query_params ('SELECT group_id FROM user_group WHERE user_id=$1',
-						array ($this->getID())) ;
-			$arr =& util_result_column_to_array($res,0);	
-			return group_get_objects($arr);
 		}
+		return group_get_objects(array_unique($ids)) ;
 	}
 
 	/**
@@ -1197,19 +1197,11 @@ Enjoy the site.
 	 *
 	 * 	@param	boolean	The session value.
 	 */
-	function setLoggedIn($val=true) {
-		$this->is_logged_in=$val;
+	function setLoggedIn ($val=true) {
+		$this->is_logged_in = $val;
+
 		if ($val) {
-			//if this is the logged in user, see if they are a super user
-			$result = db_query_params ('SELECT count(*) AS count FROM user_group WHERE user_id=$1 AND group_id=1 AND admin_flags=$2',
-						   array ($this->getID(),
-							  'A')) ;
-			if (!$result) {
-				$this->is_super_user=false;
-				return;
-			}
-			$row_count = db_fetch_array($result);
-			$this->is_super_user = ($row_count['count'] > 0);
+			$this->is_super_user = forge_check_global_perm_for_user ($this, 'forge_admin') ;
 		}
 	}
 
@@ -1519,35 +1511,57 @@ Enjoy the site.
 	 *  @return object  Role object
 	 */
 	function getRole(&$group) {
-		if (!$group || !is_object($group)) {
-			$this->setError('User::getRole : Unable to get group object');
-			return false;
+		foreach ($this->getRoles () as $r) {
+			if ($r instanceof RoleExplicit
+			    && $r->getHomeProject() != NULL
+			    && $r->getHomeProject()->getID() == $group->getID()) {
+				return $r ;
+			}
 		}
-		$res = db_query_params ('SELECT role_id FROM user_group WHERE user_id=$1 AND group_id=$2',
-					array ($this->getID(),
-					       $group->getID())) ;
-		if (!$res || db_numrows($res) < 1) {
-			$this->setError('User::getRole::DB - Could Not get role_id '.db_error());
-			return false;
-		}
-		$role_id = db_result($res,0,'role_id');
-		//
-		//  Role setup
-		//
-		$role = new Role($group,$role_id);
-		if (!$role || !is_object($role)) {
-			$this->setError('Error Getting Role Object');
-			return false;
-		} elseif ($role->isError()) {
-			$this->setError('User::getRole::roleget::'.$role->getErrorMessage());
-			return false;
-		}
-		return $role;
+		return false ;
+	}
+
+	function getRoles () {
+		return RBACEngine::getInstance()->getAvailableRolesForUser($this) ;
 	}
 
 	/* Codendi Glue */
-	function isMember($group_id,$type=0){
-		return user_ismember($group_id,$type);
+	function isMember($g,$type=0){
+		if (is_int ($g) || is_string($g)) {
+			$group = group_get_object ($g) ;
+			$group_id = $g ;
+		} else {
+			$group = $g ;
+			$group_id = $group->getID() ;
+		}
+
+		switch ($type) {
+		case 'P2':
+			//pm admin
+			return forge_check_perm_for_user($this,'pm_admin',$group_id) ;
+			break; 
+		case 'F2':
+			//forum admin
+			return forge_check_perm_for_user($this,'forum_admin',$group_id) ;
+			break; 
+		case 'A':
+			//admin for this group
+			return forge_check_perm_for_user($this,'project_admin',$group_id) ;
+			break;
+		case 'D1':
+			//document editor
+			return forge_check_perm_for_user($this,'docman',$group_id,'admin') ;
+			break;
+		case '0':
+		default:
+			foreach ($this->getGroups() as $p) {
+				if ($p->getID() == $group_id) {
+					return true ;
+				}
+			}
+			return false ;
+			break;
+		}
 	}
 }
 
@@ -1580,51 +1594,7 @@ function user_ismember($group_id,$type=0) {
 		return false;
 	}
 
-	$project =& group_get_object($group_id);
-
-	if (!$project || !is_object($project)) {
-			return false;
-	}
-
-	$perm =& $project->getPermission ();
-	if (!$perm || !is_object($perm) || !$perm->isMember()) {
-		return false;
-	}
-
-	$type=strtoupper($type);
-	
-	switch ($type) {
-		case 'P2' : {
-			//pm admin
-			return $perm->isPMAdmin();
-			break; 
-		}
-		case 'F2' : {
-			//forum admin
-			return $perm->isForumAdmin();
-			break; 
-		}
-		case '0' : {
-			//just in this group
-			return $perm->isMember();
-			break;
-		}
-		case 'A' : {
-			//admin for this group
-			return $perm->isAdmin();
-			break;
-		}
-		case 'D1' : {
-			//document editor
-			return $perm->isDocEditor();
-			break;
-		}
-		default : {
-			//fubar request
-			return false;
-		}
-	}
-	return false;
+	return session_get_user()->isMember($group_id, $type) ;
 }
 
 /**
@@ -1655,6 +1625,42 @@ function user_getname($user_id = false) {
 			return 'Invalid User';
 		}
 	}
+}
+
+class UserComparator {
+	var $criterion = 'name' ;
+
+	function Compare ($a, $b) {
+		switch ($this->criterion) {
+		case 'name':
+		default:
+			$namecmp = strcoll ($a->getRealName(), $b->getRealName()) ;
+			if ($namecmp != 0) {
+				return $namecmp ;
+			}
+			/* If several projects share a same real name */
+			return strcoll ($a->getUnixName(), $b->getUnixName()) ;
+			break ;
+		case 'unixname':
+			return strcmp ($a->getUnixName(), $b->getUnixName()) ;
+			break ;
+		case 'id':
+			$aid = $a->getID() ;
+			$bid = $b->getID() ;
+			if ($a == $b) {
+				return 0;
+			}
+			return ($a < $b) ? -1 : 1;
+			break ;
+		}
+	}
+}
+
+function sortUserList (&$list, $criterion='name') {
+	$cmp = new UserComparator () ;
+	$cmp->criterion = $criterion ;
+
+	return usort ($list, array ($cmp, 'Compare')) ;
 }
 
 // Local Variables:

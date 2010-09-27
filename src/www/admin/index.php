@@ -1,6 +1,6 @@
 <?php
 /**
- * GForge Site Admin main page
+ * Site Admin main page
  *
  * This pages lists all global administration facilities for the
  * site, including user/group properties editing, maintanance of
@@ -8,21 +8,23 @@
  * etc.
  *
  * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright 2010 (c) FusionForge Team
+ * http://fusionforge.org
  *
- * This file is part of GForge.
+ * This file is part of FusionForge.
  *
- * GForge is free software; you can redistribute it and/or modify
+ * FusionForge is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GForge is distributed in the hope that it will be useful,
+ * FusionForge is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GForge; if not, write to the Free Software
+ * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -74,6 +76,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
     echo _('Register a New User');
     ?></a>
     </li>
+	<li><a href="userlist.php?status=P"><?php echo _('Pending users'); ?></a></li>
 </ul>
 <?php if (USE_PFO_RBAC) { ?>
 <h2><?php echo _('Global roles and permissions'); ?></h2>
@@ -138,7 +141,7 @@ $abc_array = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','
 </ul>
 <ul>
 	<li><?php echo util_make_link ('/register/',_('Register New Project')); ?></li>
-	<li><?php echo _('Projects with status'); ?> <a href="approve-pending.php"><?php echo _('Pending (P)'); ?> <em><?php echo _('(New Project Approval)'); ?></em></a></li>
+	<li><a href="approve-pending.php"><?php echo _('Pending projects (new project approval)'); ?></a></li>
 	<li><form name="projectsearch" action="search.php">
 	<?php echo _('Projects with status'); ?>
 	<select name="status">

@@ -122,8 +122,15 @@ if (getStringFromRequest('submit')) {
 	} else if (getStringFromRequest('rmuser')) {
 		/* remove a member from this project */
 		$user_id = getIntFromRequest('user_id');
-		if (!$group->removeUser($user_id)) {
-			$error_msg = $group->getErrorMessage();
+		$role_id = getIntFromRequest('role_id');
+		$role = RBACEngine::getInstance()->getRoleById($role_id) ;
+		if ($role->getHomeProject() == NULL) {
+			session_require_global_perm ('forge_admin') ;
+		} else {
+			session_require_perm ('project_admin', $role->getHomeProject()->getID()) ;
+		}
+		if (!$role->removeUser (user_get_object ($user_id))) {
+			$error_msg = $role->getErrorMessage() ;
 		} else {
 			$feedback = _("Member Removed Successfully");
 		}
@@ -225,7 +232,7 @@ project_admin_header(array('title'=>sprintf(_('Members of %s'), $group->getPubli
 		//
 		$reqs =& get_group_join_requests($group);
 		if (count($reqs) > 0) {
-			echo $HTML->boxTop(_("Pending Requests"));
+			echo $HTML->boxTop(_("Pending Membership Requests"));
 			for ($i=0; $i<count($reqs); $i++) {
 				$user =& user_get_object($reqs[$i]->getUserId());
 				if (!$user || !is_object($user)) {
@@ -254,10 +261,11 @@ project_admin_header(array('title'=>sprintf(_('Members of %s'), $group->getPubli
 
 		<?php
 			}
-			echo $HTML->boxBottom();
-		}
 
-		echo $HTML->boxTop(_("Add Member"));
+			echo $HTML->boxMiddle(_("Add Member"));
+		} else {
+			echo $HTML->boxTop(_("Add Member"));
+		}
 
 		if (isset($html_code['add_user'])) {
 			echo $html_code['add_user'];
@@ -281,69 +289,8 @@ project_admin_header(array('title'=>sprintf(_('Members of %s'), $group->getPubli
 
 			<?php
 		}
-		//
-		//      RBAC Editing Functions
-		//
-		echo $HTML->boxMiddle(_("Edit Roles"));
 
-if (!USE_PFO_RBAC) {
-		echo '
-        <form action="roleedit.php?group_id='. $group_id .'&amp;role_id=observer" method="post">
-        <p><input type="submit" name="edit" value="'._("Edit Observer").'" /></p>
-        </form>';
-}
-
-		echo '<form action="roleedit.php?group_id='. $group_id .'" method="post"><p>';
-		echo role_box($group_id,'role_id','',false);
-		echo '&nbsp;<input type="submit" name="edit" value="'._("Edit Role").'" /></p></form>';
-
-
-		echo '<form action="roleedit.php?group_id='. $group_id .'" method="post"><p>';
-		echo '<input type="text" name="role_name" size="10" value="" />';
-		echo '&nbsp;<input type="submit" name="add" value="'._("Create Role").'" /></p></form>';
-
-
-
-if (USE_PFO_RBAC) {
-	if (count ($used_external_roles)) {
-		echo $HTML->boxMiddle(_("Currently used external roles"));
-		$ids = array () ;
-		$names = array () ;
-		foreach ($used_external_roles as $r) {
-			$ids[] = $r->getID() ;
-			$names[] = $r->getDisplayableName($group) ;
-		}		
-		echo '<form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
-		echo '<input type="hidden" name="submit" value="y" />' ;
-		echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
-		
-		echo html_build_select_box_from_arrays($ids,$names,'role_id','',false,'',false,'');
-		echo '<input type="submit" name="unlinkrole" value="'._("Unlink external role").'" /></form><br />' ;
-	}
-
-	if (count ($unused_external_roles)) {
-		echo $HTML->boxMiddle(_("Available external roles"));
-		$ids = array () ;
-		$names = array () ;
-		foreach ($unused_external_roles as $r) {
-			$ids[] = $r->getID() ;
-			$names[] = $r->getDisplayableName($group) ;
-		}		
-		echo '<form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
-		echo '<input type="hidden" name="submit" value="y" />' ;
-		echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
-		
-		echo html_build_select_box_from_arrays($ids,$names,'role_id','',false,'',false,'');
-		echo '<input type="submit" name="linkrole" value="'._("Link external role").'" /></form><br />' ;
-	}
-}
-
-		echo $HTML->boxBottom();
-	
-		?></td>
-		<td><?php
-			 
-		echo $HTML->boxTop(_("Project Members"));
+		echo $HTML->boxMiddle(_("Current Project Members"));
 
 		/*
 
@@ -356,44 +303,155 @@ $members = $group->getUsers() ;
 echo '<table width="100%"><thead><tr>';
 echo '<th>'._('User name').'</th>';
 echo '<th>'._('Role').'</th>';
-echo '<th>'._('Update').'</th>';
-echo '<th>'._('Remove').'</th>';
+echo '<th>'._('Action').'</th>';
 echo '</tr></thead><tbody>';
 
 foreach ($members as $user) {
-	echo '
-		<form action="'.getStringFromServer('PHP_SELF').'" method="post">
-                        <tr>
-                        <td style="white-space: nowrap;">
-			  <input type="hidden" name="submit" value="y" />
-			  <input type="hidden" name="user_id" value="'.$user->getID().'" />
-			  <input type="hidden" name="group_id" value="'. $group_id .'" />
-			  <a href="/users/'.$user->getUnixName().'">';
-	$display = $user->getRealName();
-	if (!empty($display)) {
-		echo $user->getRealName();
-	} else {
-		echo $user->getUnixName();
-	}
-	echo '</a>
-			</td>
-			<td style="white-space: nowrap; text-align: right;">';
-
-	$roles = RBACEngine::getInstance()->getAvailableRolesForUser ($user) ;
-	foreach ($roles as $role) {
+	$roles = array () ;
+	foreach (RBACEngine::getInstance()->getAvailableRolesForUser ($user) as $role) {
 		if ($role->getHomeProject() && $role->getHomeProject()->getID() == $group->getID()) {
-			$role_id = $role->getID() ;
-			break ;
+			$roles[] = $role ;
 		}
 	}
-	echo role_box($group_id,'role_id',$role_id);
-	echo '</td><td><input type="submit" name="updateuser" value="'._("Update").'" />';
-	echo '</td><td><input type="submit" name="rmuser" value="'._("Remove").'" />
+
+	sortRoleList ($roles) ;
+
+	$seen = false ;
+	foreach ($roles as $role) {
+		echo '<tr>' ;
+		if (!$seen) {
+			echo '<td style="white-space: nowrap;" rowspan="'.(count($roles)+1).'"><a href="/users/'.$user->getUnixName().'">';
+			$display = $user->getRealName();
+			if (!empty($display)) {
+				echo $user->getRealName();
+			} else {
+				echo $user->getUnixName();
+			}
+			echo '</a></td>';
+			$seen = true ;
+		} 
+			
+		echo '
+		<form action="'.getStringFromServer('PHP_SELF').'" method="post">
+			  <input type="hidden" name="submit" value="y" />
+			  <input type="hidden" name="user_id" value="'.$user->getID().'" />
+			  <input type="hidden" name="group_id" value="'. $group_id .'" />' ;
+			
+		echo '<td style="white-space: nowrap;">';
+		echo $role->getName() ;
+		echo '<input type="hidden" name="role_id" value="'.$role->getID().'" />' ;
+		echo '</td><td><input type="submit" name="rmuser" value="'._("Remove").'" />
                         </td>
-			</tr>
-                </form>';
+                </form></tr>';
+	}
+
+	echo '
+		<form action="'.getStringFromServer('PHP_SELF').'" method="post">
+			  <input type="hidden" name="submit" value="y" />
+			  <input type="hidden" name="form_unix_name" value="'.$user->getUnixName().'" />
+			  <input type="hidden" name="group_id" value="'. $group_id .'" />' ;
+			
+	echo '<tr><td style="white-space: nowrap;">';
+	echo role_box($group_id,'role_id',$role->getID());
+	echo '</td><td><input type="submit" name="adduser" value="'._("Grant extra role").'" />
+                        </td>
+                </form></tr>';
 }
 echo '</tbody></table>';
+
+		echo $HTML->boxBottom();
+	
+		?></td>
+		<td><?php
+			 
+
+
+
+
+
+
+		//
+		//      RBAC Editing Functions
+		//
+		echo $HTML->boxTop(_("Edit Roles"));
+echo '<table width="100%"><thead><tr>';
+echo '<th>'._('Role name').'</th>';
+echo '<th>'._('Action').'</th>';
+echo '</tr></thead><tbody>';
+
+if (!USE_PFO_RBAC) {
+		echo '
+        <form action="roleedit.php?group_id='. $group_id .'&amp;role_id=observer" method="post">
+        <p><input type="submit" name="edit" value="'._("Edit Observer").'" /></p>
+        </form>';
+}
+
+$roles = $group->getRoles() ;
+sortRoleList ($roles, $group, 'composite') ;
+
+foreach ($roles as $r) {
+	echo '<tr><form action="roleedit.php?group_id='. $group_id .'" method="post">' ;
+	echo '<input type="hidden" name="role_id" value="'.$r->getID().'" />' ;
+	echo '<td>'.$r->getDisplayableName($group).'</td>' ;
+	echo '<td><input type="submit" name="edit" value="'._("Edit Permissions").'" /></td>' ;
+	echo '</form></tr>' ;
+}
+
+echo '<tr>' ;
+echo '<form action="roleedit.php?group_id='. $group_id .'" method="post">';
+echo '<td><input type="text" name="role_name" size="10" value="" /></td>';
+echo '<td><input type="submit" name="add" value="'._("Create Role").'" /></td>' ;
+echo '</form></tr>';
+
+echo '</table>' ;
+
+
+if (USE_PFO_RBAC) {
+	if (count ($used_external_roles)) {
+		echo $HTML->boxMiddle(_("Currently used external roles"));
+echo '<table width="100%"><thead><tr>';
+echo '<th>'._('Role name').'</th>';
+echo '<th>'._('Action').'</th>';
+echo '</tr></thead><tbody>';
+
+foreach ($used_external_roles as $r) {
+	echo '<tr><form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
+	echo '<input type="hidden" name="submit" value="y" />' ;
+	echo '<input type="hidden" name="role_id" value="'.$r->getID().'" />' ;
+	echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
+	echo '<td>'.$r->getDisplayableName($group).'</td>' ;
+	echo '<td><input type="submit" name="unlinkrole" value="'._("Unlink Role").'" /></td>' ;
+	echo '</form></tr>' ;
+}
+echo '</table>' ;
+	}
+
+	if (count ($unused_external_roles)) {
+		echo $HTML->boxMiddle(_("Available external roles"));
+echo '<table width="100%"><thead><tr>';
+echo '<th>'._('Role name').'</th>';
+echo '<th>'._('Action').'</th>';
+echo '</tr></thead><tbody>';
+
+$ids = array () ;
+$names = array () ;
+foreach ($unused_external_roles as $r) {
+	$ids[] = $r->getID() ;
+	$names[] = $r->getDisplayableName($group) ;
+}		
+echo '<tr><form action="'.getStringFromServer('PHP_SELF').'" method="post">' ;
+echo '<input type="hidden" name="submit" value="y" />' ;
+echo '<input type="hidden" name="group_id" value="'.$group_id.'" />' ;
+echo '<td>' ;
+echo html_build_select_box_from_arrays($ids,$names,'role_id','',false,'',false,'');
+echo '</td><td>' ;
+echo '<input type="submit" name="linkrole" value="'._("Link external role").'" /></form><br />' ;
+echo '</td>' ;
+echo '</form></tr>';
+echo '</table>' ;
+	}
+}
+
 echo $HTML->boxBottom(); 
 ?></td>
 	</tr>

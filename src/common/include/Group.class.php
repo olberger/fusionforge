@@ -37,6 +37,7 @@ require_once $gfcommon.'mail/MailingListFactory.class.php';
 require_once $gfcommon.'survey/SurveyFactory.class.php';
 require_once $gfcommon.'survey/SurveyQuestionFactory.class.php';
 require_once $gfcommon.'include/gettext.php';
+require_once $gfcommon.'include/GroupJoinRequest.class.php';
 
 //the license_id of "Other/proprietary" license
 define('GROUP_LICENSE_OTHER',126);
@@ -138,6 +139,12 @@ function &group_get_objects($id_arr) {
 		}
 	}
 	return $return;
+}
+
+function &group_get_active_projects() {
+	$res=db_query_params ('SELECT group_id FROM groups WHERE status=$1',
+			      array ('A')) ;
+	return group_get_objects (util_result_column_to_array($res,0)) ;
 }
 
 function &group_get_object_by_name($groupname) {
@@ -351,7 +358,13 @@ class Group extends Error {
 				db_rollback();
 				return false;
 			}
-	
+			
+			if (USE_PFO_RBAC) {
+				$gjr = new GroupJoinRequest ($this) ;
+				$gjr->create ($user->getID(),
+					      'Fake GroupJoinRequest to store the creator of a project',
+					      false) ;
+			} else {
 			//
 			// Now, make the user an admin
 			//
@@ -369,6 +382,7 @@ class Group extends Error {
 				$this->setError(sprintf(_('ERROR: Could not add admin to newly created group: %s'),db_error()));
 				db_rollback();
 				return false;
+			}
 			}
 	
 			if (!$this->fetchData($id)) {
@@ -1427,6 +1441,9 @@ class Group extends Error {
 		for ($i=0; $i<count($members); $i++) {
 			$this->removeUser($members[$i]->getID());
 		}
+		// Failsafe until user_group table is gone
+		$res = db_query_params ('DELETE FROM user_group WHERE group_id=$1', 
+					array ($this->getID())) ;
 		//
 		//	Delete Trackers
 		//
@@ -1914,6 +1931,12 @@ class Group extends Error {
 				return false;
 			}
 			$found_role->removeUser ($user) ;
+			if (!$SYS->sysGroupCheckUser($this->getID(),$user_id)) {
+				$this->setError($SYS->getErrorMessage());
+				db_rollback();
+				return false;
+			}
+
 		} else {
 			$res = db_query_params ('DELETE FROM user_group WHERE group_id=$1 AND user_id=$2', 
 						array ($this->getID(),
@@ -1978,7 +2001,6 @@ class Group extends Error {
 			//
 			//	Remove user from system
 			//
-//echo "<h2>Group::addUser SYS->sysGroupRemoveUser(".$this->getID().",$user_id)</h2>";
 			if (!$SYS->sysGroupRemoveUser($this->getID(),$user_id)) {
 				$this->setError($SYS->getErrorMessage());
 				db_rollback();
@@ -2089,39 +2111,37 @@ class Group extends Error {
 	 *	@access private
 	 */
 	function activateUsers() {
-
 		/*
 			Activate member(s) of the project
 		*/
 		
-		$member_res = db_query_params ('SELECT user_id, role_id FROM user_group	WHERE group_id=$1',
-					       array ($this->getID())) ;
-		
-		$rows = db_numrows($member_res);
+		if (USE_PFO_RBAC) {
+		$members = $this->getUsers (true) ;
 
-		if ($rows > 0) {
-
-			for ($i=0; $i<$rows; $i++) {
-
-				$member = user_get_object(db_result($member_res,$i,'user_id'));
-				$roleId = db_result($member_res,$i,'role_id');
-
-				if (!$member || !is_object($member)) {
-					$this->setError(_('Error getting member object'));
-					return false;
-				} else if ($member->isError()) {
-					$this->setError(sprintf(_('Error getting member object: %s'),$member->getErrorMessage()));
-					return false;
+		foreach ($members as $member) {
+			$roles = array () ;
+			foreach (RBACEngine::getInstance()->getAvailableRolesForUser ($member) as $role) {
+				if ($role->getHomeProject() && $role->getHomeProject()->getID() == $this->getID()) {
+					$roles[] = $role ;
 				}
-
-				if (!$this->addUser($member->getUnixName(),$roleId)) {
-					return false;
+				if (!$this->addUser($member->getUnixName(),$role->getID())) {
+					return false ;
 				}
 			}
-
-		 }
-
-		 return true;
+			
+		}
+		} else {
+			$res_member = db_query_params ('SELECT user_id,role_id FROM user_group WHERE group_id=$1',
+						       array ($this->getID())) ;
+			while ($row_member = db_fetch_array($res_member)) {
+				$u = user_get_object($row_member['user_id']) ;
+				if (!$this->addUser($u->getUnixName(),$row_member['role_id'])) {
+					return false ;
+				}
+			}
+		}
+		
+		return true ;
 	}
 
 	/**
@@ -2270,6 +2290,16 @@ class Group extends Error {
 		//	Set Default Roles
 		//
 		//
+		if (USE_PFO_RBAC) {
+			$idadmin_group = NULL ;
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$idadmin_group = $gjr->getUserID() ;
+				break ;
+			}
+			if ($idadmin_group == NULL) {
+				$idadmin_group = $user->getID();
+			}
+		} else {
 
 		$admin_group = db_query_params ('SELECT user_id FROM user_group WHERE group_id=$1 AND admin_flags=$2',
 						array ($this->getID(),
@@ -2282,6 +2312,7 @@ class Group extends Error {
 					 array ($idadmin_group,
 						$this->getID(),
 						'A')) ;
+		}
 		}
 
 		$role = new Role($this);
@@ -2307,9 +2338,13 @@ class Group extends Error {
 					$r->addUser (user_get_object ($idadmin_group)) ;
 				}
 			}
-
-			RoleAnonymous::getInstance()->linkProject($this) ;
-			RoleLoggedIn::getInstance()->linkProject($this) ;
+			if ($this->isPublic()) {
+				RoleAnonymous::getInstance()->linkProject($this) ;
+				RoleLoggedIn::getInstance()->linkProject($this) ;
+			}
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$gjr->delete (true) ;
+			}
 		}
 
 		//
@@ -2355,23 +2390,15 @@ class Group extends Error {
 	 *	@access public
 	 */
 	function sendApprovalEmail() {
-		$res_admins = db_query_params ('
-			SELECT users.user_name,users.email,users.language,users.user_id
-			FROM users,user_group
-			WHERE users.user_id=user_group.user_id
-			AND user_group.group_id=$1
-			AND user_group.admin_flags=$2',
-					       array ($this->getID(),
-						      'A')) ;
+		$admins = RBACEngine::getInstance()->getUsersByAllowedAction ('project_admin', $this->getID()) ;
 
-		if (db_numrows($res_admins) < 1) {
+		if (count($admins) < 1) {
 			$this->setError(_("Group does not have any administrators."));
 			return false;
 		}
 
 		// send one email per admin
-		while ($row_admins = db_fetch_array($res_admins)) {
-			$admin =& user_get_object($row_admins['user_id']);
+		foreach ($admins as $admin) {
 			setup_gettext_for_user ($admin) ;
 
 			$message=sprintf(_('Your project registration for %4$s has been approved.
@@ -2410,7 +2437,7 @@ if there is anything we can do to help you.
 						       util_make_url ('/project/admin/?group_id='.$this->getID()),
 						       forge_get_config ('forge_name'));
 	
-			util_send_message($row_admins['email'], sprintf(_('%1$s Project Approved'), forge_get_config ('forge_name')), $message);
+			util_send_message($admin->getEmail(), sprintf(_('%1$s Project Approved'), forge_get_config ('forge_name')), $message);
 
 			setup_gettext_from_context();
 		}
@@ -2431,19 +2458,25 @@ if there is anything we can do to help you.
 	 *	@access public
 	 */
 	function sendRejectionEmail($response_id, $message="zxcv") {
-		$res_admins = db_query_params ('
-			SELECT u.email, u.language, u.user_id
-			FROM users u, user_group ug
-			WHERE ug.group_id=$1
-			AND u.user_id=ug.user_id',
-					       array ($this->getID())) ;
-		if (db_numrows($res_admins) < 1) {
+		$submitters = array () ;
+		if (USE_PFO_RBAC) {
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$submitters[] =  user_get_object($gjr->getUserID()) ;
+			}
+		} else {
+			$res = db_query_params("SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND u.user_id=ug.user_id",
+					       $this->getID());
+			while ($arr = db_fetch_array ($res)) {
+				$submitter[] =& user_get_object($arr['user_id']);
+			}
+		}
+
+		if (count ($submitters) < 1) {
 			$this->setError(_("Group does not have any administrators."));
 			return false;
 		}
-		
-		while ($row_admins = db_fetch_array($res_admins)) {
-			$admin =& user_get_object($row_admins['user_id']);
+
+		foreach ($submitters as $admin) {
 			setup_gettext_for_user ($admin) ;
 
 			$response=sprintf(_('Your project registration for %3$s has been denied.
@@ -2465,7 +2498,7 @@ Reasons for negative decision:
 					"response_text");
 			}
 
-			util_send_message($row_admins['email'], sprintf(_('%1$s Project Denied'), forge_get_config ('forge_name')), $response);
+			util_send_message($admin->getEmail(), sprintf(_('%1$s Project Denied'), forge_get_config ('forge_name')), $response);
 			setup_gettext_from_context();
 		}
 
@@ -2484,48 +2517,58 @@ Reasons for negative decision:
 	 */
 	function sendNewProjectNotificationEmail() {
 		// Get the user who wants to register the project
-		$res = db_query_params ('SELECT user_id FROM user_group WHERE group_id=$1',
-					array ($this->getID())) ;
-
-		if (db_numrows($res) < 1) {
+		$submitters = array () ;
+		if (USE_PFO_RBAC) {
+			foreach (get_group_join_requests ($this) as $gjr) {
+				$submitters[] =  user_get_object($gjr->getUserID()) ;
+			}
+		} else {
+			$res = db_query_params("SELECT u.user_id FROM users u, user_group ug WHERE ug.group_id=$1 AND u.user_id=ug.user_id",
+					       $this->getID());
+			while ($arr = db_fetch_array ($res)) {
+				$submitter[] =& user_get_object($arr['user_id']);
+			}
+		}
+		if (count ($submitters) < 1) {
 			$this->setError(_("Could not find user who has submitted the project."));
 			return false;
 		}
 		
-		$submitter =& user_get_object(db_result($res,0,'user_id'));
+		$admins = RBACEngine::getInstance()->getUsersByAllowedAction ('project_approve', -1) ;
 
-
-		$res = db_query_params ('SELECT users.email, users.language, users.user_id
-	 			FROM users, user_group
-				WHERE group_id=1 
-				AND user_group.admin_flags=$1
-				AND users.user_id=user_group.user_id',
-					array ('A'));
-		
-		if (db_numrows($res) < 1) {
+		if (count($admins) < 1) {
 			$this->setError(_("There is no administrator to send the mail to."));
 			return false;
 		}
 
-		for ($i=0; $i<db_numrows($res) ; $i++) {
-			$admin_email = db_result($res,$i,'email') ;
-			$admin =& user_get_object(db_result($res,$i,'user_id'));
+		foreach ($admins as $admin) {
+			$admin_email = $admin->getEmail () ;
 			setup_gettext_for_user ($admin) ;
+
+			foreach ($submitters as $u) {
+				$submitter_names[] = $u->getRealName() ;
+			}
 			
-			$message=sprintf(_('New %1$s Project Submitted
+			$message = sprintf(_('New %1$s Project Submitted
 
 Project Full Name:  %2$s
 Submitted Description: %3$s
-Submitter: %5$s (%6$s)
+'),
+					   forge_get_config ('forge_name'),
+					   htmlspecialchars_decode($this->getPublicName()),
+					   htmlspecialchars_decode($this->getRegistrationPurpose()));
+			
+			foreach ($submitters as $submitter) {
+				$message .= sprintf(_('Submitter: %1$s (%2$s)
+'),
+						    $submitter->getRealName(), 
+						    $submitter->getUnixName());
+			}
 
+			$message .= sprintf (_('
 Please visit the following URL to approve or reject this project:
-%4$s'),
-						       forge_get_config ('forge_name'),
-						       htmlspecialchars_decode($this->getPublicName()),
-						       htmlspecialchars_decode($this->getRegistrationPurpose()),
-						       util_make_url ('/admin/approve-pending.php'),
-						       $submitter->getRealName(), 
-						       $submitter->getUnixName());
+%1$s'),
+					    util_make_url ('/admin/approve-pending.php')) ;
 			util_send_message($admin_email, sprintf(_('New %1$s Project Submitted'), forge_get_config ('forge_name')), $message);
 			setup_gettext_from_context();
 		}
@@ -2826,6 +2869,9 @@ class ProjectComparator {
 			}
 			/* If several projects share a same public name */
 			return strcoll ($a->getUnixName(), $b->getUnixName()) ;
+			break ;
+		case 'unixname':
+			return strcmp ($a->getUnixName(), $b->getUnixName()) ;
 			break ;
 		case 'id':
 			$aid = $a->getID() ;
