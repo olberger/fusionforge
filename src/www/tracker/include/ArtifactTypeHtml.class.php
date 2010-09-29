@@ -36,11 +36,11 @@ class ArtifactTypeHtml extends ArtifactType {
 	/**
 	 *  ArtifactType() - constructor
 	 *
-	 *  @param $Group object
+	 *  @param $group object
 	 *  @param $artifact_type_id - the id # assigned to this artifact type in the db
 	 */
-	function ArtifactTypeHtml(&$Group,$artifact_type_id=false, $arr=false) {
-		return $this->ArtifactType($Group,$artifact_type_id,$arr);
+	function ArtifactTypeHtml(&$group,$artifact_type_id=false, $arr=false) {
+		return $this->ArtifactType($group,$artifact_type_id,$arr);
 	}
 
 	function header($params) {
@@ -102,7 +102,7 @@ class ArtifactTypeHtml extends ArtifactType {
 
 	function adminHeader($params) {
 		global $HTML;
-		echo $this->header($params);
+		site_header($params);
 		$group_id= $this->Group->getID();
 
 		$links_arr[]='/tracker/admin/?group_id='.$group_id;
@@ -187,7 +187,7 @@ class ArtifactTypeHtml extends ArtifactType {
 					if ($value == 100) {
 						$value = 'None';
 					} else {
-						$arr =& $this->getExtraFieldElements($efarr[$i]['extra_field_id']);
+						$arr = $this->getExtraFieldElements($efarr[$i]['extra_field_id']);
 						
 						// Convert the values (ids) to names in the ids order.
 						$new = array();
@@ -366,7 +366,6 @@ class ArtifactTypeHtml extends ArtifactType {
 
 		$return = '
 			<!-- Start Extra Fields Rendering -->
-			<!-- COLUMN NAMES MUST BE PRESERVED EXACTLY, INCLUDING CASE! -->
 			<tr>';
 		$col_count=0;
 
@@ -505,7 +504,7 @@ class ArtifactTypeHtml extends ArtifactType {
 	 *	@return		radio buttons
 	 */	
 	function renderRadio ($extra_field_id,$checked='xzxz',$show_100=false,$text_100='none',$show_any=false,$text_any='Any') {
-		$arr =& $this->getExtraFieldElements($extra_field_id);
+		$arr = $this->getExtraFieldElements($extra_field_id);
 		for ($i=0; $i<count($arr); $i++) {
 			$keys[$i]=$arr[$i]['element_id'];
 			$vals[$i]=$arr[$i]['element_name'];
@@ -529,7 +528,8 @@ class ArtifactTypeHtml extends ArtifactType {
 		if (!$checked || !is_array($checked)) {
 			$checked=array();
 		}
-		$arr =& $this->getExtraFieldElements($extra_field_id);
+		$arr = $this->getExtraFieldElements($extra_field_id);
+		$return = '';
 		if ($show_100) {
 			$return .= '
 				<input type="checkbox" name="extra_fields['.$extra_field_id.'][]" value="100" '.
@@ -591,7 +591,7 @@ class ArtifactTypeHtml extends ArtifactType {
 	 *	@return		text area and data.
 	 */	
 	function renderRelationField ($extra_field_id,$contents,$size,$maxlength) {
-		$arr =& $this->getExtraFieldElements($extra_field_id);
+		$arr = $this->getExtraFieldElements($extra_field_id);
 		for ($i=0; $i<count($arr); $i++) {
 			$keys[$i]=$arr[$i]['element_id'];
 			$vals[$i]=$arr[$i]['element_name'];

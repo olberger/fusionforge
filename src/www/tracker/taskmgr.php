@@ -56,7 +56,6 @@ if (getStringFromRequest('add_to_task')) {
 		exit_error($pg->getErrorMessage(),'tracker');
 	}
 
-
 	$ptf = new ProjectTaskFactory($pg);
 	if (!$ptf || !is_object($ptf)) {
 		exit_error(_('Could Not Get ProjectTaskFactory'),'tracker');
@@ -78,6 +77,22 @@ if (getStringFromRequest('add_to_task')) {
 		}
 	}
 
+	$related_tasks = $a->getRelatedTasks();
+	$skip = array();
+	while ($row = db_fetch_array($related_tasks)) {
+		$skip[$row['project_task_id']] = true;
+	}
+	$tasks = array();
+	foreach($pt_arr as $p) {
+		$id = $p->getID();
+		if (!isset($skip[$id])) {
+			$tasks[] = $p;
+		}
+	}
+	if (empty($tasks)) {
+		exit_error(_('No Available Tasks Found'));
+	}
+
 	$ath->header(array('atid'=>$ath->getID()));
 
 	echo '
@@ -91,8 +106,8 @@ if (getStringFromRequest('add_to_task')) {
 		<p>
 		<strong>'._('Task').':</strong></p>
 		<select name="project_task_id">';
-	for ($i=0; $i<count($pt_arr); $i++) {
-		echo '<option value="'.$pt_arr[$i]->getID().'">'.$pt_arr[$i]->getSummary().'</option>';
+	foreach($tasks as $task) {
+		echo '<option value="'.$task->getID().'">'.$task->getSummary().'</option>';
 	}
 	echo '</select><br />
 		<input type="submit" name="done_adding" value="'._('Add Relationship to Selected Task') . '" />
@@ -124,7 +139,7 @@ if (getStringFromRequest('add_to_task')) {
 		exit_error($pgf->getErrorMessage(),'tracker');
 	}
 
-	$pg_arr =& $pgf->getProjectGroups();
+	$pg_arr = $pgf->getProjectGroups();
 	if (!$pg_arr) {
 		if ($pgf->isError()) {
 			exit_error($pgf->getErrorMessage(),'tracker');

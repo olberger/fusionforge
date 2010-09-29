@@ -1,4 +1,26 @@
 <?php
+/**
+ * Tracker Facility
+ *
+ * Copyright 2010 (c) FusionForge Team
+ * http://fusionforge.org
+ *
+ * This file is part of FusionForge. FusionForge is free software;
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the Licence, or (at your option)
+ * any later version.
+ *
+ * FusionForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with FusionForge; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 if (!defined('BASE')) require('illegal_access.inc.php');
 //
 //  FORM TO DELETE A VALUE
@@ -9,16 +31,16 @@ if (!defined('BASE')) require('illegal_access.inc.php');
 	$boxid = getIntFromRequest('boxid');
 	$ac = new ArtifactExtraField($ath,$boxid);
 	if (!$ac || !is_object($ac)) {
-		exit_error('Error','Unable to create ArtifactExtraField Object');
+		exit_error(_('Unable to create ArtifactExtraField Object'),'tracker');
 	} elseif ($ac->isError()) {
-		exit_error('Error',$ac->getErrorMessage());
+		exit_error($ac->getErrorMessage(),'tracker');
 	} else {
 		$id = getStringFromRequest('id');
 		$ao = new ArtifactExtraFieldElement($ac,$id);
 		if (!$ao || !is_object($ao)) {
-			exit_error('Error','Unable to create ArtifactExtraFieldElement Object');
+			exit_error(_('Unable to create ArtifactExtraFieldElement Object'),'tracker');
 		} elseif ($ao->isError()) {
-			exit_error('Error',$ao->getErrorMessage());
+			exit_error($ao->getErrorMessage(),'tracker');
 		} else {
 			$title = sprintf(_('Remove a custom field element in %s'), $ath->getName()) ;
 			$ath->adminHeader(array('title'=>$title));

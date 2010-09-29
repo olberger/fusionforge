@@ -61,7 +61,7 @@ if (session_loggedin()) {
 		} else {
 			$aq = new ArtifactQuery($ath,$query_id);
 			if (!$aq || !is_object($aq)) {
-				exit_error('Error',$aq->getErrorMessage());
+				exit_error($aq->getErrorMessage(),'tracker');
 			}
 			$aq->makeDefault();
 		}
@@ -87,9 +87,9 @@ if (session_loggedin()) {
 $af = new ArtifactFactory($ath);
 
 if (!$af || !is_object($af)) {
-	exit_error('Error','Could Not Get Factory');
+	exit_error(_('Could Not Get Factory'),'tracker');
 } elseif ($af->isError()) {
-	exit_error('Error',$af->getErrorMessage());
+	exit_error($af->getErrorMessage(),'tracker');
 }
 
 if (!isset($_sort_col)) {
@@ -145,7 +145,7 @@ $_extra_fields=$af->extra_fields;
 $art_arr =& $af->getArtifacts();
 
 if (!$art_arr && $af->isError()) {
-	exit_error('Error',$af->getErrorMessage());
+	exit_error($af->getErrorMessage(),'tracker');
 }
 
 //build page title to make bookmarking easier
@@ -337,13 +337,13 @@ if (session_loggedin()) {
 
 if (db_numrows($res)>0) {
 	echo '<form action="'. getStringFromServer('PHP_SELF') .'" method="get">';
+	echo '<input type="hidden" name="group_id" value="'.$group_id.'" />';
+	echo '<input type="hidden" name="atid" value="'.$ath->getID().'" />';
+	echo '<input type="hidden" name="power_query" value="1" />';
 	echo '	<table width="100%" cellspacing="0">
 	<tr>
 	<td>
 	';
-	echo '<input type="hidden" name="group_id" value="'.$group_id.'" />';
-	echo '<input type="hidden" name="atid" value="'.$ath->getID().'" />';
-	echo '<input type="hidden" name="power_query" value="1" />';
 	$optgroup['key'] = 'type';
 	$optgroup['values'][0] = 'Private queries';
 	$optgroup['values'][1] = 'Project queries';
@@ -382,11 +382,11 @@ echo '
 	</div>
 	<div class="tabbertab'.($af->query_type == 'custom' ? ' tabbertabdefault' : '').'" title="'._('Simple Filtering and Sorting').'">
 	<form action="'. getStringFromServer('PHP_SELF') .'?group_id='.$group_id.'&amp;atid='.$ath->getID().'" method="post">
+	<input type="hidden" name="query_id" value="-1" />
+	<input type="hidden" name="set" value="custom" />
 	<table width="100%" cellspacing="0">
 	<tr>
 	<td>
-	<input type="hidden" name="query_id" value="-1" />
-	<input type="hidden" name="set" value="custom" />
 	'._('Assignee').':&nbsp;'. $tech_box .'
 	</td>
 	<td align="center">
@@ -453,7 +453,7 @@ if ($art_cnt > 0) {
 		}
 		
 		$i=0;
-		$efarr =& $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
+		$efarr = $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
 		$keys=array_keys($efarr);
 		$field_id = $keys[0];
 		$states = $ath->getExtraFieldElements($field_id);
@@ -664,7 +664,6 @@ if ($art_cnt > 0) {
 <span class="important">'._('<strong>Admin:</strong> If you wish to apply changes to all items selected above, use these controls to change their properties and click once on "Mass Update".').'</span></p>
 			</td></tr>';
 
-
 		//
 		//	build custom fields
 		//
@@ -715,7 +714,7 @@ if ($art_cnt > 0) {
 		show_priority_colors_key();
 	}
 } else {
-	echo '<div class="warning_msg">'._('No items found').'</div>';
+	echo '<p class="warning_msg">'._('No items found').'</p>';
 	echo db_error();
 }
 

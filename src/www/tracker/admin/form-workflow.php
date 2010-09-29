@@ -1,10 +1,9 @@
 <?php
-if (!defined('BASE')) require('illegal_access.inc.php');
-
 /**
- * FusionForge Update Artifact Type Form
+ * Update Artifact Type Form
  *
  * Copyright 2010, FusionForge Team
+ * http://fusionforge.org
  *
  * This file is part of FusionForge.
  *
@@ -24,10 +23,11 @@ if (!defined('BASE')) require('illegal_access.inc.php');
  * USA
  */
 
+if (!defined('BASE')) require('illegal_access.inc.php');
+
 require_once('common/tracker/ArtifactWorkflow.class.php');
 
 $has_error = false;
-$error_msg = '';
 $efarr = $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
 if (count($efarr) === 0) {
 	$has_error = true;
@@ -35,7 +35,7 @@ if (count($efarr) === 0) {
 } elseif (count($efarr) !== 1) {
 	// Internal error.
 	$has_error = true;
-   	$error_msg .= 'Internal error: Illegal number of status fields (WKFL01).';
+   	$error_msg .= _('Internal error: Illegal number of status fields (WKFL01).');
 }
     	
 $ath->adminHeader(array ('title'=> _('Configure workflow'),'pagename'=>'tracker_admin_customize_liste','titlevals'=>array($ath->getName())));
@@ -81,7 +81,7 @@ if (!$has_error) {
 		$name = 'wk[100]['. $s['element_id'].']';
 		$value = in_array($s['element_id'], $next)? ' checked="checked"' : '';
 		$str = '<input type="checkbox" name="'.$name.'"'.$value.' />';
-		$str .= ' '.html_image('spacer.gif', 20, 20, array());
+				$str .= ' '.html_image('spacer.gif', 20, 20);
 		echo '<td align="center">'.$str.'</td>'."\n";
 	}
 	echo '</tr>'."\n";
@@ -108,11 +108,11 @@ if (!$has_error) {
 					$url = getStringFromServer('PHP_SELF').'?group_id='.$group_id.'&amp;atid='.$ath->getID().'&amp;workflow_roles=1&amp;from='.$status['element_id'].'&amp;next='.$s['element_id'];
 					$str .= ' <a href="'.$url.'" title="Edit roles">'.html_image('ic/acl_roles20.png', 20, 20, array('alt'=>'Edit Roles')).'</a>';
 				} else {
-					$str .= ' '.html_image('spacer.gif', 20, 20, array());
+							$str .= ' '.html_image('spacer.gif', 20, 20);
 				}
 			} else {
 				$str = '<input type="checkbox" checked="checked" disabled="disabled" />';
-				$str .= ' '.html_image('spacer.gif', 20, 20, array());
+						$str .= ' '.html_image('spacer.gif', 20, 20);
 			}
 			echo '<td align="center">'.$str.'</td>'."\n";
 		}
