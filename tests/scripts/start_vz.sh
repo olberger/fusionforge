@@ -1,19 +1,23 @@
 #!/bin/sh
 
 VZHOST=$1
-USEVZCTL=${USEVZCTL:-false}
-if ! $USEVZCTL
+if sudo /root/start_vz.sh centos-5-x86 "$1"
 then
-	echo "Using /root/start_vz.sh"
-	sudo /root/start_vz.sh $VZTEMPLATE "$1"
+	echo "VM Started"
 else
-	sudo /usr/sbin/vzctl create $VEID --private $VZPRIVATEDIR/$VEID --ostemplate $VZTEMPLATE
-	sudo /usr/sbin/vzctl start $VEID
-	VZHOST=$IPBASE.$VEID
+	pwd
+	. ../openvz/config.default
+	if [ -f ../openvz/config.`hostname` ]
+	then
+		. ../openvz/config.`hostname`
+	fi
+	ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+	sudo /usr/sbin/vzctl create $VEIDCEN --private $VZPRIVATEDIR/$VEIDCEN --ostemplate centos-$CENTVERS-$ARCH-minimal
+	sudo /usr/sbin/vzctl start $VEIDCEN
+	VZHOST=$IPCENTOSBASE.$VEIDCEN
 	export VZHOST
-	sudo /usr/sbin/vzctl set $VEID --hostname $HOST --save
-	sudo /usr/sbin/vzctl set $VEID --ipadd $IPBASE.$VEID --save
-        sudo /usr/sbin/vzctl set $VEID --nameserver $IPDNS --save
+	sudo /usr/sbin/vzctl set $VEIDCEN --ipadd $IPCENTOSBASE.$VEIDCEN --save
+        sudo /usr/sbin/vzctl set $VEIDCEN --nameserver $IPCENTOSDNS --save
 fi
 
 ssh -o 'StrictHostKeyChecking=no' "root@$VZHOST" uname -a

@@ -1,0 +1,61 @@
+From rg@alcatel-lucent.com Tue Jul 20 14:23:57 2010
+Received: from smail6.alcatel.fr (smail6.dc-m.alcatel-lucent.com [155.132.188.84])
+	by acrg.nmu.alcatel.fr (8.13.1/8.13.1) with ESMTP id o6KANvxK007571
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Tue, 20 Jul 2010 14:23:57 +0400
+Received: from FRMRSSXCHHUB01.dc-m.alcatel-lucent.com (FRMRSSXCHHUB01.dc-m.alcatel-lucent.com [135.120.45.61])
+	by smail6.alcatel.fr (8.14.3/8.14.3/ICT) with ESMTP id o6KANpoJ026614
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NOT)
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Tue, 20 Jul 2010 12:23:52 +0200
+Received: from FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com ([135.120.45.38]) by
+ FRMRSSXCHHUB01.dc-m.alcatel-lucent.com ([135.120.45.61]) with mapi; Tue, 20
+ Jul 2010 12:23:52 +0200
+From: "Admin" <admin@debug.log>
+To: "projecta-open-discussion@acrg.nmu.alcatel.fr"
+	<projecta-open-discussion@acrg.nmu.alcatel.fr>
+Date: Tue, 20 Jul 2010 12:23:51 +0200
+Subject: [projecta-open-discussion][7] All txt UTF-8 (200720101224)
+Thread-Topic: [projecta-open-discussion][298] All txt UTF-8 (200720101224)
+Thread-Index: Acsn8SpeugkRcQ7yTLuNhEuk++z/RwAA2pYQ
+Message-ID: <C472E6A4C17FA14E90533C0369A4798B125E3F6E7A@FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com>
+References: <forumpost298@acrg.nmu.alcatel.fr>
+In-Reply-To: <forumpost298@acrg.nmu.alcatel.fr>
+Accept-Language: en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 2.64 on 155.132.188.84
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by acrg.nmu.alcatel.fr id o6KANvxK007571
+
+
+
+-----Message d'origine-----
+De : noreply@acrg.nmu.alcatel.fr [mailto:noreply@acrg.nmu.alcatel.fr] 
+Envoyé : mardi 20 juillet 2010 11:52
+À : noreply@acrg.nmu.alcatel.fr
+Objet : [projecta-open-discussion][298] New txt message (200720101152)
+
+
+Read and respond to this message at: 
+http://acrg.nmu.alcatel.fr/forum/message.php?msg_id=298
+Or by replying to this e-mail entering your response between the following markers: 
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+All txt UTF-8 ²&é~"#'{([-|è`_\ç^à@)°]=+}€^ê¨ë$£¤ù%*µ<>,?;.:/!§
+(200720101224)
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+
+
+By: Roger G.
+
+This is a new txt message (200720101152).
+
+
+
+______________________________________________________________________
+You are receiving this email because you elected to monitor this forum.
+To stop monitoring this forum, login to ACOS Forge and visit: 
+http://acrg.nmu.alcatel.fr/forum/monitor.php?forum_id=1&group_id=6&stop=1
+

@@ -1,0 +1,8 @@
+[groups]
+27 = external
+
+[/]
+* = 
+
+[projecta:/third-parties]
+@27 = rw

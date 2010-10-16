@@ -1,0 +1,30 @@
+To: admin@debug.log
+From:  <noreply@{site}> 
+Subject: ACOS Forge Project Approved
+
+Your project registration for ACOS Forge has been approved.
+
+Project Full Name:  projectb ' & Z
+Project Unix Name:  projectb
+
+If you visit your
+own project page in ACOS Forge while logged in, you will find
+additional menu functions to your left labeled 'Project Admin'.
+
+We highly suggest that you now visit ACOS Forge and create a public
+description for your project. This can be done by visiting your project
+page while logged in, and selecting 'Project Admin' from the menus
+on the left (or by visiting http://{site}/project/admin/?group_id=7
+after login).
+
+Your project will also not appear in the Trove Software Map (primary
+list of projects hosted on ACOS Forge which offers great flexibility in
+browsing and search) until you categorize it in the project administration
+screens. So that people can find your project, you should do this now.
+Visit your project while logged in, and select 'Project Admin' from the
+menus on the left.
+
+Enjoy the system, and please tell others about ACOS Forge. Let us know
+if there is anything we can do to help you.
+
+-- the ACOS Forge crew

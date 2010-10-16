@@ -51,25 +51,37 @@ class CreateForum extends FForge_SeleniumTestCase
 	{
 		// Create the first message (Message1/Text1).
 		$this->init();
-		$this->click("link=Forums");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Forums");
 		$this->assertFalse($this->isTextPresent("Permission denied."));
-		$this->assertTrue($this->isTextPresent("open-discussion"));
-		$this->click("link=open-discussion");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Start New Thread");
-		$this->waitForPageToLoad("30000");
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->clickAndWait("link=Start New Thread");
 		$this->type("subject", "Message1");
 		$this->type("body", "Text1");
-		$this->click("submit");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Message Posted Successfully");
+		$this->clickAndWait("link=Forums");
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->assertTextPresent("Message1");
+
+		// Create a message with funny characters
+		$this->clickAndWait("link=Forums");
+		$this->assertFalse($this->isTextPresent("Permission denied."));
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->clickAndWait("link=Start New Thread");
+		$this->type("subject", "subject: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+		$this->type("body", "body: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Message Posted Successfully");
+		$this->clickAndWait("link=Forums");
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->assertTextPresent("subject: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+		$this->click("link=subject: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
 		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Message Posted Successfully"));
-		$this->click("link=Forums");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("open-discussion"));
-		$this->click("link=open-discussion");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Message1"));
+		$this->assertTextPresent("body: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
 	}
 
 	/*
@@ -88,9 +100,8 @@ class CreateForum extends FForge_SeleniumTestCase
 		$this->waitForPageToLoad("30000");
 		$this->type("form_loginname", 'admin');
 		$this->type("form_pw", 'myadmin');
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Welcome to Developers"));
+		$this->clickAndWait("login");
+		$this->assertTextPresent("Welcome to Developers");
 	}
 
 	/*
@@ -105,27 +116,20 @@ class CreateForum extends FForge_SeleniumTestCase
 		$this->logout();
 
 		$this->open("/projects/projecta/");
-		$this->click("link=Forums");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=open-discussion");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Welcome to Open-Discussion");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=[ reply ]");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Cookies must be enabled past this point."));
+		$this->clickAndWait("link=Forums");
+		$this->clickAndWait("link=open-discussion");
+		$this->clickAndWait("link=Welcome to Open-Discussion");
+		$this->clickAndWait("link=[ reply ]");
+		$this->assertTextPresent("Cookies must be enabled past this point.");
 //		$this->assertEquals("ACOS Forge - Login", $this->getTitle());
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", 'myadmin');
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("login");
 		$this->type("body", "Here is my 19823 reply");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Message Posted Successfully"));
-		$this->click("link=Welcome to Open-Discussion");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Here is my 19823 reply"));
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Message Posted Successfully");
+		$this->clickAndWait("//td[@id='main']/table[1]/tbody/tr/td[1]/a/strong");
+		$this->assertTextPresent("Here is my 19823 reply");
 
 	}
 	
@@ -134,30 +138,41 @@ class CreateForum extends FForge_SeleniumTestCase
 	 */
 	function testEmailAddressNotAlreadyUsed() {
 		$this->init();
-		$this->click("link=Mailing Lists");
-		$this->waitForPageToLoad("30000");
-		$this->click("//body/div[@id='maindiv']/p[1]/strong/a");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Add Mailing List");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Mailing Lists");
+		$this->clickAndWait("link=Administration");
+		$this->clickAndWait("link=Add Mailing List");
 		$this->type("list_name", "toto");
 		$this->type("description", "Toto mailing list");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("List Added"));
-		$this->click("link=Forums");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=open-discussion");
-		$this->waitForPageToLoad("30000");
-		$this->click("//body/div[@id='maindiv']/p[1]/strong/a[2]");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Add forum");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("List Added");
+		$this->clickAndWait("link=Forums");
+		$this->clickAndWait("link=Administration");
+		$this->clickAndWait("link=Add forum");
 		$this->type("forum_name", "toto");
 		$this->type("description", "Toto forum");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Error: a mailing list with the same email address already exists"));
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Error: a mailing list with the same email address already exists");
+	}
+	
+	function testHtmlFiltering()
+	{
+		// Create the first message (Message1/Text1).
+		$this->init();
+		$this->clickAndWait("link=Forums");
+		$this->assertFalse($this->isTextPresent("Permission denied."));
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->clickAndWait("link=Start New Thread");
+		$this->type("subject", "Message1");
+		$this->type("body", "Text1 <script>Hacker inside</script> done");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Message Posted Successfully");
+		$this->clickAndWait("link=Forums");
+		$this->assertTextPresent("open-discussion");
+		$this->clickAndWait("link=open-discussion");
+		$this->assertTextPresent("Message1");
+		$this->assertFalse($this->isTextPresent("Hacker inside"));
+		$this->assertFalse($this->isTextPresent("Text1  done"));
 	}
 }
 ?>

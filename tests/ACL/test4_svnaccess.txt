@@ -1,0 +1,18 @@
+[groups]
+17 = admin
+22 = admin
+others = 
+everyone = @17, @22, @others
+
+[/]
+@17 = rw
+* = 
+
+[projecta:/]
+@22 = rw
+@everyone = r
+* =
+
+[projecta:/toto]
+@22 = rw
+* =

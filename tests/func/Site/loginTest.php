@@ -54,39 +54,33 @@ class LoginProcess extends FForge_SeleniumTestCase
 	{
 		// Test with a normal login.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "myadmin");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("ACOS Forge Admin"));
-		$this->assertTrue($this->isTextPresent("Log Out"));
+		$this->clickAndWait("login");
+		$this->assertTextPresent("ACOS Forge Admin");
+		$this->assertTextPresent("Log Out");
 		$this->logout();
 				
 		// Test with an empty password.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Missing Password Or Users Name"));
+		$this->clickAndWait("login");
+		$this->assertTextPresent("Missing Password Or Users Name");
 		$this->assertFalse($this->isTextPresent("ACOS Forge Admin"));
-		$this->assertTrue($this->isTextPresent("Log In"));
+		$this->assertTextPresent("Log In");
 		
 		// Test with a wrong password.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "awrongpassword");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Invalid Password Or User Name"));
+		$this->clickAndWait("login");
+		$this->assertTextPresent("Invalid Password Or User Name");
 		$this->assertFalse($this->isTextPresent("ACOS Forge Admin"));
-		$this->assertTrue($this->isTextPresent("Log In"));
+		$this->assertTextPresent("Log In");
 		
 	}
 }

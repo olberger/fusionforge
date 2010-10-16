@@ -1,0 +1,1 @@
+../../../gforge/acde/sql/20050504_monitor_news.sql

@@ -1,0 +1,13 @@
+Return-Path: noreply@gforge.org
+Date: Mon, 23 Mar 2009 11:00:36 -0400
+Message-Id: <200903231500.n2NF0aN3008256@vm12.gforgegroup.com>
+To: aljeux@free.fr
+From: "Admin" <admin@debug.log>
+Reply-To: "GForge" <gforge-gateway@gforge.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Subject: =?utf-8?B?WyBnZm9yZ2UgQnVncyBJdGVtICM2MTExXSBzeXNfZm9yY2VfbG9naW4gYnJlYWtzIFNWTiAodHJhY2tlcml0ZW0tNjExMSk=?=
+
+Here is my first question 123
+Test1
+Test1 ..

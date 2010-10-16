@@ -52,86 +52,139 @@ class CreateProject extends FForge_SeleniumTestCase
 	// After creation, project is visible on the main page.
 	function testSimpleCreate()
 	{
+
+		// Test with a correct Unix name
+		$prj = "projectb";
+
 		$this->open( ROOT );
-		$this->click("link=Log In");
 		$this->waitForPageToLoad("30000");
-		$this->type("form_loginname", "admin");
-		$this->type("form_pw", "myadmin");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=My Page");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Register Project");
-		$this->waitForPageToLoad("30000");
-		$this->type("full_name", "ProjectA");
-		$this->type("purpose", "This is a simple description for project A");
-		$this->type("description", "This is the public description for project A.");
-		$this->type("unix_name", "projecta");
-		$this->click("//input[@name='scm' and @value='scmsvn']");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Your project has been submitted"));
-		$this->assertTrue($this->isTextPresent("you will receive notification of their decision and further instructions"));
-		$this->click("link=Site Admin");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Pending projects (new project approval)");
-		$this->waitForPageToLoad("30000");
-		$this->click("document.forms['approve.projecta'].submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Home");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("ProjectA"));
-		$this->click("link=ProjectA");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("This is the public description for project A."));
-		$this->assertTrue($this->isTextPresent("This project has not yet categorized itself"));
+
+		$this->login('admin');
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", $prj);
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Your project has been submitted");
+		$this->assertTextPresent("you will receive notification of their decision and further instructions");
+		$this->clickAndWait("link=Site Admin");
+		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("document.forms['approve.$prj'].submit");
+		$this->clickAndWait("link=Home");
+		$this->assertTextPresent("$prj");
+		$this->clickAndWait("link=$prj");
+		$this->assertTextPresent("This is the public description for $prj.");
+		$this->assertTextPresent("This project has not yet categorized itself");
+
+		// Test with an empty Unix name
+		$prj = "";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Invalid Unix name");
+
+		// Test with a too short Unix name
+		$prj = "ab";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Invalid Unix name");
+
+		// Test with a Unix name containing a space
+		$prj = "wrong name";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Invalid Unix name");
+
+		// Test with a Unix name containing a dot
+		$prj = "foo.bar";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertFalse($this->isTextPresent("Invalid Unix name"));
+
+		// Test with a Unix name containing a quote
+		$prj = "foo'bar";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Invalid Unix name");
+
+		// Test with a Unix name containing illegal characters
+		$prj = "père";
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "Full Name");
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Invalid Unix name");
 	}
 
 	function testCharsCreateTestCase()
 	{
-		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
-		$this->type("form_loginname", "admin");
-		$this->type("form_pw", "myadmin");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=My Page");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Register Project");
-		$this->waitForPageToLoad("30000");
-		$this->type("full_name", "Project ' & B");
-		$this->type("purpose", "This is a & été simple description for project B");
-		$this->type("description", "This is & été the public description for project B.");
-		$this->type("unix_name", "projectb");
-		$this->click("//input[@name='scm' and @value='scmsvn']");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Your project has been submitted"));
-		$this->assertTrue($this->isTextPresent("you will receive notification of their decision and further instructions"));
-		$this->click("link=Site Admin");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Pending projects (new project approval)");
-		$this->waitForPageToLoad("30000");
-		$this->click("document.forms['approve.projectb'].submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Home");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Project ' & B"));
-		$this->click("link=Project ' & B");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("This is & été the public description for project B."));
+		$prj = "projectb";
 
-		$this->click("link=Projects");
+		$this->open( ROOT );
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Project Tree");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Project List");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Project ' & B - This is & été the public description for project B."));
-		$this->click("link=My Page");
-		$this->waitForPageToLoad("30000");
-		$this->assertFalse($this->isTextPresent("Project ' &amp; B"));
+
+		$this->login('admin');
+
+		$this->clearMail();
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", "$prj ' & Z");
+		$this->type("purpose", "This is a & été simple description for $prj");
+		$this->type("description", "This is & été the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Your project has been submitted");
+		$this->assertTextPresent("you will receive notification of their decision and further instructions");
+		$this->clickAndWait("link=Site Admin");
+		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("document.forms['approve.$prj'].submit");
+		$this->clickAndWait("link=Home");
+		$this->assertTextPresent("$prj ' & Z");
+		$this->clickAndWait("link=$prj ' & Z");
+		$this->assertTextPresent("This is & été the public description for $prj.");
+
+		// Verify generated mail
+		$mailRef = file_get_contents(dirname(__FILE__).'/mail1.txt');
+		$mailRef = str_replace('{site}', SITE, $mailRef);
+		$mail = $this->fetchMail();
+		$this->assertEquals($mailRef, $mail);
 	}
 
 	// Test removal of project.
@@ -140,18 +193,65 @@ class CreateProject extends FForge_SeleniumTestCase
 	{
 		$this->createProject('testal1');
 
-		$this->click("link=Site Admin");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Display Full Project List/Edit Projects");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=testal1");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Permanently Delete Project");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Site Admin");
+		$this->clickAndWait("link=Display Full Project List/Edit Projects");
+		$this->clickAndWait("link=testal1");
+		$this->clickAndWait("link=Permanently Delete Project");
 		$this->click("sure");
 		$this->click("reallysure");
 		$this->click("reallyreallysure");
-		$this->click("submit");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Project successfully deleted");
+	}
+
+	// Simple creation of a project by a normal user and
+	// approval of the creation just after.
+	// After creation, project is visible on the main page.
+	function testCreateWithAUser()
+	{
+		$prj = "projectb";
+
+		$this->open( ROOT );
+		$this->login('admin');
+
+		$this->createUser('uadmin', 103);
+		$this->switchUser('uadmin');
+
+		$this->clickAndWait("link=My Page");
+		$this->clickAndWait("link=Register Project");
+		$this->type("full_name", $prj);
+		$this->type("purpose", "This is a simple description for $prj");
+		$this->type("description", "This is the public description for $prj.");
+		$this->type("unix_name", $prj);
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Your project has been submitted");
+		$this->assertTextPresent("you will receive notification of their decision and further instructions");
+
+		$this->switchUser('admin');
+
+		$this->clickAndWait("link=Site Admin");
+		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("document.forms['approve.$prj'].submit");
+		$this->clickAndWait("link=Home");
+		$this->assertTextPresent("$prj");
+		$this->clickAndWait("link=$prj");
+		$this->clickAndWait("link=Project Summary");
+		$this->clickAndWait("link=View the 1 Member(s)");
+		$this->assertTextPresent("Admin");
+		$this->assertFalse($this->isTextPresent("Default"));
+	}
+
+	function testApproveTemplateProject()
+	{
+		$this->open( ROOT );
+
+		$this->login('admin');
+
+		$this->clickAndWait("link=Site Admin");
+		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("Approving Project: template");
+		$this->assertTextPresent("No Pending Projects to Approve");
 	}
 }
 ?>

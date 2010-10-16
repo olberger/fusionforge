@@ -9,28 +9,28 @@
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
- *
+ *      
  * FusionForge is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
+ *              
  * You should have received a copy of the GNU General Public License
  * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
- */
+ */             
 
-/*
+/*              
  * Standard Alcatel-Lucent disclaimer for contributing to open source
- *
+ *              
  * "The test suite ("Contribution") has not been tested and/or
  * validated for release as or in products, combinations with products or
  * other commercial use. Any use of the Contribution is entirely made at
  * the user's own responsibility and the user can not rely on any features,
  * functionalities or performances Alcatel-Lucent has attributed to the
  * Contribution.
- *
+ *              
  * THE CONTRIBUTION BY ALCATEL-LUCENT IS PROVIDED AS IS, WITHOUT WARRANTY
  * OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
  * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE,
@@ -49,76 +49,49 @@ class CreateTrackerWorkflow extends FForge_SeleniumTestCase
 {
 	function testWorkflow()
 	{
-		$this->createProject('ProjectA');
-			
 		// Testing extra-fields
-		$this->open( ROOT );
-		$this->click("link=ProjectA");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Tracker");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Bugs");
-		$this->waitForPageToLoad("30000");
+		$this->init();
+		$this->clickAndWait("link=Tracker");
+		$this->clickAndWait("link=Bugs");
 		$this->click("//a[contains(@href, '".ROOT. "/tracker/admin/?group_id=6&atid=101')]");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Custom Fields");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Manage Custom Fields");
 		$this->type("name", "MyStatus");
 		$this->type("alias", "mystatus");
 		$this->click("document.forms[2].field_type[6]");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->click("//tr[@id='field-mystatus']/td[3]/a[1]");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
+		$this->clickAndWait("link=Open [Edit]");
 		$this->type("name", "New");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Custom Fields");
-		$this->waitForPageToLoad("30000");
-		$this->click("//tr[@id='field-mystatus']/td[3]/a[3]");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
+		$this->clickAndWait("link=Administration");
+		$this->clickAndWait("link=Manage Custom Fields");
+		$this->clickAndWait("link=Closed [Edit]");
 		$this->type("name", "Analyse");
 		$this->select("status_id", "label=Open");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Workflow");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Custom Fields");
-		$this->waitForPageToLoad("30000");
-		$this->click("//a[contains(@href, '/tracker/admin/index.php?add_opt=1&boxid=22&group_id=6&atid=101')]");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
+		$this->clickAndWait("link=Administration");
+		$this->clickAndWait("link=Manage Custom Fields");
+		$this->clickAndWait("//a[contains(@href, '/tracker/admin/index.php?add_opt=1&boxid=22&group_id=6&atid=101')]");
 		$this->type("name", "Candidate");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Custom Fields");
-		$this->waitForPageToLoad("30000");
-		$this->click("//a[contains(@href, '/tracker/admin/index.php?add_opt=1&boxid=22&group_id=6&atid=101')]");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Open");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Resolved");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Validated");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Verified");
 		$this->select("status_id", "label=Closed");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Duplicated");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Postponed");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
 		$this->type("name", "Closed");
 		$this->select("status_id", "label=Closed");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Workflow");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("post_changes");
+		$this->clickAndWait("link=Administration");
+		$this->clickAndWait("link=Configure Workflow");
 		$this->click("wk[157][159]");
 		$this->click("wk[157][160]");
 		$this->click("wk[157][161]");
@@ -225,9 +198,8 @@ class CreateTrackerWorkflow extends FForge_SeleniumTestCase
 		$this->click("wk[166][163]");
 		$this->click("wk[166][164]");
 		$this->click("wk[166][165]");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Workflow saved"));
+		$this->clickAndWait("post_changes");
+		$this->assertTextPresent("Workflow saved");
 		
 		// Ensure that it is not possible to configure the workflow without initial state.
 		$this->click("wk[100][157]");
@@ -240,10 +212,9 @@ class CreateTrackerWorkflow extends FForge_SeleniumTestCase
 		$this->click("wk[100][164]");
 		$this->click("wk[100][165]");
 		$this->click("wk[100][166]");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("ERROR: Initial values not saved"));
-		$this->assertTrue($this->isTextPresent("Workflow saved"));
+		$this->clickAndWait("post_changes");
+		$this->assertTextPresent("ERROR: Initial values not saved");
+		$this->assertTextPresent("Workflow saved");
 	}
 }
 ?>

@@ -1,0 +1,23 @@
+Return-Path: noreply@gforge.org
+Date: Mon, 23 Mar 2009 11:00:36 -0400
+Message-Id: <200903231500.n2NF0aN3008256@vm12.gforgegroup.com>
+To: aljeux@free.fr
+From: "Admin" <admin@debug.log>
+Reply-To: "GForge" <gforge-gateway@gforge.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Subject: [projecta-open-discussion][4] RE: Message1
+
+Read and respond to this message at:
+http://acap.nmu.alcatel.fr/forum/message.php?msg_id=5
+Or by replying to this e-mail entering your response between the following markers:
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+Answer to message1
+Hello guys.
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+
+
+By: ACOS Forge Admin
+
+this is a new message
+

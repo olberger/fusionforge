@@ -1,0 +1,1 @@
+../../../gforge/www/wiki/schemas/psql-initialize-gforge.sql

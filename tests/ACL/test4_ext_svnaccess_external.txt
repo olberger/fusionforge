@@ -1,0 +1,14 @@
+[groups]
+27 = external
+
+[/]
+* = 
+
+[projecta:/third-parties]
+@27 = rw
+
+[projecta:/third-parties/read]
+@27 = r
+
+[projecta:/third-parties/secret]
+@27 = 

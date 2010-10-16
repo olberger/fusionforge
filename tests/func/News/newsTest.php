@@ -47,89 +47,110 @@ require_once dirname(dirname(__FILE__)).'/Testing/SeleniumGforge.php';
 
 class CreateNews extends FForge_SeleniumTestCase
 {
-	function testMyTestCase()
+	function testMonitorProjectNews()
 	{
-		$this->createProject('ProjectA');
+		$this->init();
+
+		// Create initial news.
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
+		$this->type("summary", "Initial news");
+		$this->type("details", "We need an initial news before monitoring.");
+		$this->clickAndWait("submit");
+
+		// Monitor project news
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Monitor News");
+		$this->assertTextPresent("News monitoring started");
 
 		// Create a simple news.
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Submit");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Submit");
 		$this->type("summary", "First news");
 		$this->type("details", "This is a simple news.");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("First news"));
-		$this->click("link=First news");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("First news"));
-		$this->assertTrue($this->isTextPresent("This is a simple news."));
+		$this->clickAndWait("submit");
 
-		// Create a second news.
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Submit");
-		$this->waitForPageToLoad("30000");
+		// Stop monitoring project news
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Stop monitoring News");
+		$this->assertTextPresent("News monitoring deactivated");
+
+		// Create a simple news.
+		$this->clickAndWait("link=Submit");
 		$this->type("summary", "Second news");
 		$this->type("details", "This is another text");
-		$this->click("submit");
+		$this->clickAndWait("submit");
+
+		// Create a news with funny characters
+		$this->clickAndWait("link=Submit");
+		$this->type("summary", "title: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+		$this->type("details", "body: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+		$this->clickAndWait("submit");
+
+		// Read the news with funny characters
+		$this->clickAndWait("link=News");
+		$this->click("link=title: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Second news");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Second news"));
-		$this->assertTrue($this->isTextPresent("This is another text"));
+		$this->assertTextPresent("body: L'année à Noël, 3 < 4, 中国 \" <em>, père & fils");
+	}
+
+	function testMyTestCase()
+	{
+		// Create a simple news.
+		$this->init();
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
+		$this->type("summary", "First news");
+		$this->type("details", "This is a simple news.");
+		$this->clickAndWait("submit");
+		$this->clickAndWait("link=News");
+		$this->assertTextPresent("First news");
+		$this->clickAndWait("link=First news");
+		$this->assertTextPresent("First news");
+		$this->assertTextPresent("This is a simple news.");
+
+		// Create a second news.
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
+		$this->type("summary", "Second news");
+		$this->type("details", "This is another text");
+		$this->clickAndWait("submit");
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Second news");
+		$this->assertTextPresent("Second news");
+		$this->assertTextPresent("This is another text");
 		
 		// Check that news are visible in the activity
 		// TODO: Not implemented in gforge-4.6
-//		$this->click("link=Activity");
+//		$this->click("link=Project Activity");
 //		$this->waitForPageToLoad("30000");
-//		$this->assertTrue($this->isTextPresent("First news"));
-//		$this->assertTrue($this->isTextPresent("Second news"));
+//		$this->assertTextPresent("First news");
+//		$this->assertTextPresent("Second news");
 		
 		// Check modification of a news.
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=News");
 		$this->click("//a[contains(@href, '" . ROOT . "/news/admin/?group_id=6')]");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Second news");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Second news");
 		$this->type("details", "This is another text (corrected)");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Second news");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Second news");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("This is another text (corrected)"));
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Submit");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("submit");
+		$this->clickAndWait("link=Second news");
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Second news");
+		$this->assertTextPresent("This is another text (corrected)");
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
 		$this->type("summary", "Test3");
 		$this->type("details", "Special ' chars \"");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Test3");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Special ' chars \""));
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("submit");
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Test3");
+		$this->assertTextPresent("Special ' chars \"");
+		$this->clickAndWait("link=News");
 		$this->click("//a[contains(@href, '". ROOT . "/news/admin/?group_id=6')]");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Test3");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Test3");
 		$this->click("document.forms[2].status[1]");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("submit");
 
 	}
 
@@ -138,33 +159,27 @@ class CreateNews extends FForge_SeleniumTestCase
 	 */
 	function testAcBug4100()
 	{
-		$this->createProject('ProjectA');
-
 		// Create a simple news.
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Submit");
-		$this->waitForPageToLoad("30000");
+		$this->init();
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
 		$this->type("summary", "Multi line news");
 		$this->type("details", "<p>line1</p><p>line2</p><p>line3</p><br />hello<p>line5</p>\n");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Multi line news"));
-		$this->assertTrue($this->isTextPresent("line1"));
-		$this->assertTrue($this->isTextPresent("line2"));
-		$this->assertTrue($this->isTextPresent("line3"));
-		$this->assertTrue($this->isTextPresent("hello"));
+		$this->clickAndWait("submit");
+		$this->clickAndWait("link=News");
+		$this->assertTextPresent("Multi line news");
+		$this->assertTextPresent("line1");
+		$this->assertTextPresent("line2");
+		$this->assertTextPresent("line3");
+		$this->assertTextPresent("hello");
 		// $this->assertFalse($this->isTextPresent("line5"));
-		$this->click("link=Multi line news");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Multi line news"));
-		$this->assertTrue($this->isTextPresent("line1"));
-		$this->assertTrue($this->isTextPresent("line2"));
-		$this->assertTrue($this->isTextPresent("line3"));
-		$this->assertTrue($this->isTextPresent("hello"));
-		$this->assertTrue($this->isTextPresent("line5"));
+		$this->clickAndWait("link=Multi line news");
+		$this->assertTextPresent("Multi line news");
+		$this->assertTextPresent("line1");
+		$this->assertTextPresent("line2");
+		$this->assertTextPresent("line3");
+		$this->assertTextPresent("hello");
+		$this->assertTextPresent("line5");
 	}
 	
 	/*
@@ -173,24 +188,20 @@ class CreateNews extends FForge_SeleniumTestCase
 	 */
 	function skiptestPreventMultiplePost()
 	{
-		$this->createProject('ProjectA');
-
 		// Create a simple news.
-		$this->click("link=News");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Submit");
-		$this->waitForPageToLoad("30000");
+		$this->init();
+		$this->clickAndWait("link=News");
+		$this->clickAndWait("link=Submit");
 		$this->type("summary", "My ABC news");
 		$this->type("details", "hello DEF with a long detail.\n");
-		$this->click("submit");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("News Added.")); 
+		$this->clickAndWait("submit");
+		$this->assertTextPresent("News Added."); 
 		$this->chooseOkOnNextConfirmation();
 		// Problem, a confirmation window is displayed and I didn't found
 		// the way to automatically click on the Ok button.
 		$this->refresh();
 		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Error - double submit")); 
+		$this->assertTextPresent("Error - double submit"); 
 	}
 	
 }

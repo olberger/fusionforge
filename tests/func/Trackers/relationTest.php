@@ -9,28 +9,28 @@
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
- *
+ *      
  * FusionForge is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
+ *              
  * You should have received a copy of the GNU General Public License
  * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
- */
+ */             
 
-/*
+/*              
  * Standard Alcatel-Lucent disclaimer for contributing to open source
- *
+ *              
  * "The test suite ("Contribution") has not been tested and/or
  * validated for release as or in products, combinations with products or
  * other commercial use. Any use of the Contribution is entirely made at
  * the user's own responsibility and the user can not rely on any features,
  * functionalities or performances Alcatel-Lucent has attributed to the
  * Contribution.
- *
+ *              
  * THE CONTRIBUTION BY ALCATEL-LUCENT IS PROVIDED AS IS, WITHOUT WARRANTY
  * OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
  * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE,
@@ -49,26 +49,18 @@ class CreateTrackerRelation extends FForge_SeleniumTestCase
 {
 	function testCreateRelation()
 	{
-		$this->createProject('ProjectA');
-					
 		// Testing extra-fields
-		$this->open( ROOT );
-		$this->click("link=ProjectA");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Tracker");
-		$this->waitForPageToLoad("30000");
-		$this->click("link=Bugs");
-		$this->waitForPageToLoad("30000");
+		$this->init();
+		$this->clickAndWait("link=Tracker");
+		$this->clickAndWait("link=Bugs");
 		$this->click("//a[contains(@href, '".ROOT. "/tracker/admin/?group_id=6&atid=101')]");
 		$this->waitForPageToLoad("30000");
-		$this->click("link=Manage Custom Fields");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Manage Custom Fields");
 		$this->type("name", "Depends on");
 		$this->type("alias", "depends_on");
 		$this->click("document.forms[2].field_type[7]");
-		$this->click("post_changes");
-		$this->waitForPageToLoad("30000");
-		$this->assertTrue($this->isTextPresent("Depends on"));
+		$this->clickAndWait("post_changes");
+		$this->assertTextPresent("Depends on");
 	}
 }
 ?>

@@ -1,0 +1,27 @@
+List of tests with description:
+
+Forums:
+  forums.php
+	testSimplePost: Post a simple message in a forum and verify that text is present.
+
+Site:
+  projects.php
+	testSimpleCreate: Create a simple project and check that it is created.
+  top.php
+	testWalkInTop: check several pages in /top/ (does not work, depends on a cron)
+	 
+Trackers:
+  trackers.php
+  	testSimpleCreate: test creation of a bug.
+  	                  test adding a comment & a second comment.
+  	                  test adding comment with special chars (& été).
+  	                  test updating an extra field.
+  	                  test updating the priority to 5
+  	                  
+NOTE:
+
+Most of the tests are also checking that pages does not contains sentence like:
+   Notice: 
+or Notice: Undefined variable:
+or Warning: 
+  	              

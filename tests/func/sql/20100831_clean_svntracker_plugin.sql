@@ -1,0 +1,1 @@
+DELETE FROM plugins WHERE plugin_name = 'svntracker';

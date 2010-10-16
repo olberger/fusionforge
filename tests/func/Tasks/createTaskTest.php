@@ -8,28 +8,28 @@
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
- *
+ *      
  * FusionForge is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
+ *              
  * You should have received a copy of the GNU General Public License
  * along with FusionForge; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
- */
+ */             
 
-/*
+/*              
  * Standard Alcatel-Lucent disclaimer for contributing to open source
- *
+ *              
  * "The test suite ("Contribution") has not been tested and/or
  * validated for release as or in products, combinations with products or
  * other commercial use. Any use of the Contribution is entirely made at
  * the user's own responsibility and the user can not rely on any features,
  * functionalities or performances Alcatel-Lucent has attributed to the
  * Contribution.
- *
+ *              
  * THE CONTRIBUTION BY ALCATEL-LUCENT IS PROVIDED AS IS, WITHOUT WARRANTY
  * OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
  * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE,
@@ -50,19 +50,19 @@ class CreateTask extends FForge_SeleniumTestCase
     {
         $this->setUpTasks();
         $this->createSomeTasks();
-        // $this->browseTasks();
+        $this->browseTasks();
         $this->setTaskPriority();
         $this->completeTask();
         $this->closeTask();
         $this->deleteTask();
-        // $this->assignTask();
+        $this->assignTask();
         $this->orderTask();
         $this->registerEmailAddressForNotification();
         // $this->createSubproject();
         // $this->createPrivateSubproject();
         $this->displayGANTT();
-        //$this->displayActivityReportByDeveloper();
-        //$this->displayActivityReportBySubproject();
+        $this->displayActivityReportByDeveloper();
+        $this->displayActivityReportBySubproject();
         $this->exportCSV();
     }
 
@@ -70,227 +70,192 @@ class CreateTask extends FForge_SeleniumTestCase
     {
         $this->init();
 
-        // Initialize "rep_time_tracking" table
-        $this->click("link=Reporting");
-        $this->waitForPageToLoad("30000");
-
-        $this->click("link=Initialize / Rebuild Reporting Tables");
-        $this->waitForPageToLoad("30000");
-        $this->click("im_sure");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-
-//        $this->switchUser('uadmin');
+        $this->switchUser('uadmin');
         $this->open( ROOT );
         $this->waitForPageToLoad("30000");
-        $this->click("link=ProjectA");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=ProjectA");
 
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("To Do"));
-        $this->assertTrue($this->isTextPresent("Next Release"));
-        $this->click("link=To Do");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("No Matching Tasks found"));
+        $this->clickAndWait("link=Tasks");
+        $this->assertTextPresent("To Do");
+        $this->assertTextPresent("Next Release");
+        $this->clickAndWait("link=To Do");
+        $this->assertTextPresent("No Matching Tasks found");
     }
 
     function createSomeTasks()
     {
         // Create a first task
-        $this->click("link=Add task");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Add Task");
         $this->type("summary", "Task1: Hello Paris");
         $this->type("details", "Details: Hello Paris");
         $this->type("hours", "10");
-        $this->click("//body/div[@id='maindiv']/form/table/tbody/tr[9]/td/input");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task Created Successfully"));
+        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->assertTextPresent("Task Created Successfully");
 
         // Create a second task
-        $this->click("link=Add task");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Add Task");
         $this->type("summary", "Task2: Hello France");
         $this->type("details", "Details: Hello France");
         $this->type("hours", "15");
-        $this->click("//body/div[@id='maindiv']/form/table/tbody/tr[9]/td/input");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task Created Successfully"));
+        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->assertTextPresent("Task Created Successfully");
 
         // Create a third task
-        $this->click("link=Add task");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Add Task");
         $this->type("summary", "Task3: Hello World");
         $this->type("details", "Details: Hello World");
         $this->type("hours", "20");
-        $this->click("//body/div[@id='maindiv']/form/table/tbody/tr[9]/td/input");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task Created Successfully"));
+        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->assertTextPresent("Task Created Successfully");
+
+        // Create a task with funny characters
+        $this->clickAndWait("link=Add Task");
+        $this->type("summary", "Task4: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
+        $this->type("details", "Details: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
+        $this->type("hours", "20");
+        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->assertTextPresent("Task Created Successfully");
+
+	// Delete this task
+	$this->clickAndWait("link=To Do");
+	$this->click("link=Task4: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
+	$this->waitForPageToLoad("30000");
+	$this->clickAndWait("link=Delete this task");
+	$this->click("confirm_delete");
+	$this->clickAndWait("submit");
+	$this->assertTextPresent("Task Successfully Deleted");
     }
 
     function browseTasks()
     {
         // Let us check that the 3 tasks appear on the list of tasks
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=To Do");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1: Hello Paris"));
-        $this->assertTrue($this->isTextPresent("Task2: Hello France"));
-        $this->assertTrue($this->isTextPresent("Task3: Hello World"));
+        $this->open("/pm/task.php?group_project_id=2&group_id=6&func=browse");
+        $this->clickAndWait("link=Tasks");
+        $this->clickAndWait("link=To Do");
+        $this->assertTextPresent("Task1: Hello Paris");
+        $this->assertTextPresent("Task2: Hello France");
+        $this->assertTextPresent("Task3: Hello World");
 
         // Let us assign tasks to users so that we can filter by assignee
-        $this->click("link=exact:Task1: Hello Paris");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=exact:Task1: Hello Paris");
         $this->removeSelection("assigned_to[]", "label=None");
         $this->addSelection("assigned_to[]", "label=ucoredev Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=exact:Task2: Hello France");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
+        $this->clickAndWait("link=exact:Task2: Hello France");
         $this->removeSelection("assigned_to[]", "label=None");
         $this->addSelection("assigned_to[]", "label=ucontrib Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=exact:Task3: Hello World");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
+        $this->clickAndWait("link=exact:Task3: Hello World");
         $this->removeSelection("assigned_to[]", "label=None");
         $this->addSelection("assigned_to[]", "label=ucontrib Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         // There should not be unassigned tasks
         $this->select("_assigned_to", "label=Unassigned");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("No Matching Tasks found"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("No Matching Tasks found");
 
         // Tasks 2 and 3 should be assigned to ucontrib
         $this->select("_assigned_to", "label=ucontrib Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task2:"));
-        $this->assertTrue($this->isTextPresent("Task3:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task2:");
+        $this->assertTextPresent("Task3:");
 
         // Task 1 should be assigned to ucoredev
         $this->select("_assigned_to", "label=ucoredev Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
 
         // "Any" should show the 3 tasks
         $this->select("_assigned_to", "label=Any");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
-        $this->assertTrue($this->isTextPresent("Task2:"));
-        $this->assertTrue($this->isTextPresent("Task3:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
+        $this->assertTextPresent("Task2:");
+        $this->assertTextPresent("Task3:");
 
         // Let use close a task to sort by status
-        $this->click("link=exact:Task1: Hello Paris");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=exact:Task1: Hello Paris");
         $this->click("status_id");
         $this->select("status_id", "label=Closed");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         // Select open tasks
         $this->select("_status", "label=Open");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task2:"));
-        $this->assertTrue($this->isTextPresent("Task3:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task2:");
+        $this->assertTextPresent("Task3:");
 
         // Select closed tasks
         $this->select("_status", "label=Closed");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
 
         // Select "Any" status
         $this->select("_status", "label=Any");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
-        $this->assertTrue($this->isTextPresent("Task2:"));
-        $this->assertTrue($this->isTextPresent("Task3:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
+        $this->assertTextPresent("Task2:");
+        $this->assertTextPresent("Task3:");
 
         // Let us add categories to sort by category
-        $this->click("link=Admin");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Add/Edit Categories");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Administration");
+        $this->clickAndWait("link=Add/Edit Categories");
         $this->type("name", "mycategory");
-        $this->click("post_changes");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Category Inserted"));
+        $this->clickAndWait("post_changes");
+        $this->assertTextPresent("Category Inserted");
         $this->type("name", "yourcategory");
-        $this->click("post_changes");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Category Inserted"));
-        $this->assertTrue($this->isTextPresent("mycategory"));
-        $this->assertTrue($this->isTextPresent("yourcategory"));
+        $this->clickAndWait("post_changes");
+        $this->assertTextPresent("Category Inserted");
+        $this->assertTextPresent("mycategory");
+        $this->assertTextPresent("yourcategory");
 
         // Set Task1 to mycategory
-        $this->click("link=To Do: Browse tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=exact:Task1: Hello Paris");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=To Do");
+        $this->clickAndWait("link=exact:Task1: Hello Paris");
         $this->select("category_id", "label=mycategory");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         // Set Task2 to yourcategory
-        $this->click("link=To Do: Browse tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=exact:Task2: Hello France");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=To Do");
+        $this->clickAndWait("link=exact:Task2: Hello France");
         $this->select("category_id", "label=yourcategory");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         // Select "Any" category
         $this->select("_category_id", "label=Any");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
         $this->select("_order", "label=Task Summary");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
-        $this->assertTrue($this->isTextPresent("Task2:"));
-        $this->assertTrue($this->isTextPresent("Task3:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
+        $this->assertTextPresent("Task2:");
+        $this->assertTextPresent("Task3:");
 
         // Select "mycategory" category
         $this->select("_category_id", "label=mycategory");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1:"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task1:");
         $this->assertFalse($this->isTextPresent("Task2:"));
         $this->assertFalse($this->isTextPresent("Task3:"));
 
         // Select "yourcategory" category
         $this->select("_category_id", "label=yourcategory");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
         $this->assertFalse($this->isTextPresent("Task1:"));
-        $this->assertTrue($this->isTextPresent("Task2:"));
+        $this->assertTextPresent("Task2:");
         $this->assertFalse($this->isTextPresent("Task3:"));
 
         // Set Detail view to Detailed
-        $this->click("link=To Do: Browse tasks");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=To Do");
         $this->select("_category_id", "label=Any");
         $this->select("_view", "label=Detailed");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Details: Hello Paris"));
-        $this->assertTrue($this->isTextPresent("Details: Hello France"));
-        $this->assertTrue($this->isTextPresent("Details: Hello World"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Details: Hello Paris");
+        $this->assertTextPresent("Details: Hello France");
+        $this->assertTextPresent("Details: Hello World");
 
         // Set Detail view to Summary
         $this->select("_view", "label=Summary");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
         $this->assertFalse($this->isTextPresent("Details: Hello"));
 
     }
@@ -298,16 +263,13 @@ class CreateTask extends FForge_SeleniumTestCase
     function setTaskPriority()
     {
         // Set the priority of a task
-        $this->click("link=exact:Task2: Hello France");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=exact:Task2: Hello France");
         $this->select("priority", "label=5 - Highest");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         // Check the priority is OK
-        $this->click("link=exact:Task2: Hello France");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Highest"));
+        $this->clickAndWait("link=exact:Task2: Hello France");
+        $this->assertTextPresent("Highest");
     }
 
     function completeTask()
@@ -315,14 +277,12 @@ class CreateTask extends FForge_SeleniumTestCase
         // Set the completing value of a task
         $this->select("percent_complete", "label=45%");
         $this->click("//option[@value='45']");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task Updated Successfully"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task Updated Successfully");
 
         // Check the percentage is OK
-        $this->click("link=exact:Task2: Hello France");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("45%"));
+        $this->clickAndWait("link=exact:Task2: Hello France");
+        $this->assertTextPresent("45%");
     }
 
     function closeTask()
@@ -333,48 +293,39 @@ class CreateTask extends FForge_SeleniumTestCase
     function deleteTask()
     {
         // Delete a task
-        $this->click("link=To Do: Browse tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=exact:Task3: Hello World");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Delete this task");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=To Do");
+        $this->clickAndWait("link=exact:Task3: Hello World");
+        $this->clickAndWait("link=Delete this task");
         $this->click("confirm_delete");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task Successfully Deleted"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Task Successfully Deleted");
 
         // Let us check that Task3 no longer appears on the list of tasks
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=To Do");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Task1: Hello Paris"));
-        $this->assertTrue($this->isTextPresent("Task2: Hello France"));
+        $this->open("/pm/task.php?group_project_id=2&group_id=6&func=browse");
+        $this->clickAndWait("link=Tasks");
+        $this->clickAndWait("link=To Do");
+        $this->assertTextPresent("Task1: Hello Paris");
+        $this->assertTextPresent("Task2: Hello France");
         $this->assertFalse($this->isTextPresent("Task3: Hello World"));
     }
 
     function assignTask()
     {
         $this->open("/pm/task.php?group_id=6&group_project_id=2");
-        $this->click("link=exact:Task1: Hello Paris");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=exact:Task1: Hello Paris");
         $this->addSelection("assigned_to[]", "label=ucontrib Lastname");
         $this->removeSelection("assigned_to[]", "label=ucoredev Lastname");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("submit");
 
         $this->switchUser('ucontrib');
         $this->open( ROOT );
         $this->waitForPageToLoad("30000");
-        $this->click("link=ProjectA");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=My Page");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=ProjectA");
+        $this->clickAndWait("link=My Page");
         // You cannot click on "Assigned Tasks" tabs,
         // but the text is present in the page anyway.
         // $this->click("link=Assigned Tasks");
-        $this->assertTrue($this->isTextPresent("Task2: Hello France"));
+        $this->assertTextPresent("Task2: Hello France");
         $this->switchUser('uadmin');
         $this->open( ROOT );
         $this->waitForPageToLoad("30000");
@@ -391,53 +342,40 @@ class CreateTask extends FForge_SeleniumTestCase
     function createSubproject()
     {
         $this->open("/pm/task.php?group_id=6");
-        $this->click("link=Project Admin");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Tools");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Task Manager Admin");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Add a Subproject");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Project Admin");
+        $this->clickAndWait("link=Tools");
+        $this->clickAndWait("link=Tasks Admin");
+        $this->clickAndWait("link=Add a Subproject");
         $this->type("project_name", "public");
         $this->type("description", "This is a public subproject");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Subproject Inserted"));
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("This is a public subproject"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Subproject Inserted");
+        $this->clickAndWait("link=Tasks");
+        $this->assertTextPresent("This is a public subproject");
     }
 
     function createPrivateSubproject()
     {
         $this->open("/pm/task.php?group_id=6");
-        $this->click("link=Project Admin");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Tools");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Task Manager Admin");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=Add a Subproject");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Project Admin");
+        $this->clickAndWait("link=Tools");
+        $this->clickAndWait("link=Tasks Admin");
+        $this->clickAndWait("link=Add a Subproject");
         $this->click("//input[@name='is_public' and @value='0']");
         $this->type("project_name", "private");
         $this->type("description", "This is a private subproject");
-        $this->click("submit");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Subproject Inserted"));
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("This is a private subproject"));
+        $this->clickAndWait("submit");
+        $this->assertTextPresent("Subproject Inserted");
+        $this->clickAndWait("link=Tasks");
+        $this->assertTextPresent("This is a private subproject");
     }
 
     function displayGANTT()
     {
         // Display GANTT diagram
-        $this->click("link=Tasks");
-        $this->waitForPageToLoad("30000");
-        $this->click("link=To Do");
-        $this->waitForPageToLoad("30000");
+        $this->open("/pm/reporting/index.php?what=tech&span=&period=lifespan&group_id=6#b");
+        $this->clickAndWait("link=Tasks");
+        $this->clickAndWait("link=To Do");
         $this->click("link=Gantt Chart");
         $this->waitForPopUp("Gantt_Chart", "30000");
     }
@@ -445,13 +383,11 @@ class CreateTask extends FForge_SeleniumTestCase
     function displayActivityReportByDeveloper()
     {
         // Display activity report by developer
-        $this->click("link=Reporting");
-        $this->waitForPageToLoad("30000");
+        $this->clickAndWait("link=Reporting");
         $this->select("what", "label=Report by Assignee");
-        $this->click("//input[@value='Show']");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Tasks By Assignee"));
-        $this->assertTrue($this->isTextPresent("ucontrib"));
+        $this->clickAndWait("//input[@value='Show']");
+        $this->assertTextPresent("Tasks By Assignee");
+        $this->assertTextPresent("ucontrib");
         $this->assertFalse($this->isTextPresent("ucoredev"));
     }
 
@@ -459,14 +395,31 @@ class CreateTask extends FForge_SeleniumTestCase
     {
         // Display activity report by subproject
         $this->select("what", "label=Report by Subproject");
-        $this->click("//input[@value='Show']");
-        $this->waitForPageToLoad("30000");
-        $this->assertTrue($this->isTextPresent("Tasks By Category"));
-        $this->assertTrue($this->isTextPresent("To Do"));
+        $this->clickAndWait("//input[@value='Show']");
+        $this->assertTextPresent("Tasks By Category");
+        $this->assertTextPresent("To Do");
     }
 
     function exportCSV()
     {
     }
+
+    function testaddTimeTrackingOnTask()
+    {
+		$this->setUpTasks();
+
+		// Create a first task
+		$this->clickAndWait("link=Add Task");
+		$this->type("summary", "Task1: Hello Paris");
+		$this->type("details", "Details: Hello Paris");
+		$this->type("hours", "10");
+		$this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+		$this->assertTextPresent("Task Created Successfully");
+
+		$this->clickAndWait("link=exact:Task1: Hello Paris");
+		$this->clickAndWait("add");
+		$this->assertFalse($this->isTextPresent("INTERNAL ERROR:"));
+		$this->assertTextPresent("All Fields Are Required.");
+	}
 }
 ?>

@@ -54,38 +54,22 @@ class UserBlocks extends FForge_SeleniumTestCase
 	
     $this->init();
 
-    $this->click("link=Admin");
-    $this->waitForPageToLoad("30000");
-    $this->click("link=Tools");
-    $this->waitForPageToLoad("30000");
+    $this->clickAndWait("link=Project Admin");
+    $this->clickAndWait("link=Tools");
     $this->click("use_blocks");
-    $this->click("submit");
-    $this->waitForPageToLoad("30000");
-    $this->assertTrue($this->isTextPresent("Project information updated"));
-    $this->click("link=Blocks Admin");
-    $this->waitForPageToLoad("30000");
+    $this->clickAndWait("submit");
+    $this->assertTextPresent("Project information updated");
+    $this->clickAndWait("link=Blocks Admin");
     $this->click("activate[summary_description]");
-//    $this->click("activate[summary_right]");
-    $this->click("//input[@value='Save Blocks']");
-    $this->waitForPageToLoad("30000");
+    $this->clickAndWait("//input[@value='Save Blocks']");
 
     $this->open("/plugins/blocks/index.php?id=6&type=admin&pluginname=blocks");
-    $this->click("link=configure");
-    $this->waitForPageToLoad("30000");
+    $this->clickAndWait("link=configure");
     $this->type("body", "This is my nice block.");
-    $this->click("//input[@value='Save']");
-    $this->waitForPageToLoad("30000");
-//    $this->click("//div[@id='maindiv']/form/table/tbody/tr[2]/td[4]/a");
-//    $this->waitForPageToLoad("30000");
-//    $this->type("body", "{boxTop Project}\nThis is the summary block.\n{boxBottom}");
-//    $this->click("//input[@value='Save']");
-//    $this->waitForPageToLoad("30000");
-    $this->click("link=Summary");
-    $this->waitForPageToLoad("30000");
-//    $this->assertText("//td[@id='main']/table[1]/tbody/tr/td[1]", "This is my nice block.");
-//    $this->assertEquals("This is the summary block.", $this->getText("//td[@id='main']/table[1]/tbody/tr/td[2]/table[1]/tbody/tr[2]/td"));
-	$this->assertTrue($this->isTextPresent("This is my nice block."));
-//	$this->assertTrue($this->isTextPresent("This is the summary block."));
+    $this->clickAndWait("//input[@value='Save']");
+    $this->clickAndWait("link=Project Summary");
+    $this->assertTextPresent("This is my nice block.");
+    $this->assertFalse($this->isTextPresent("This is the public description for ProjectA."));
   }
   
   private function _activateBlocksPlugin() {

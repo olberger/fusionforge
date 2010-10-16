@@ -1,0 +1,64 @@
+From rg@alcatel-lucent.com  Fri Jul 16 17:26:05 2010
+Return-Path: <rg@alcatel-lucent.com>
+X-Original-To: projecta-open-discussion@acrg.nmu.alcatel.fr
+Delivered-To: projecta-open-discussion@acrg.nmu.alcatel.fr
+Received: from smail5.alcatel.fr (smail5.dc-m.alcatel-lucent.com [155.132.188.13])
+	by acrg.nmu.alcatel.fr (Postfix) with ESMTP id 59A9B798140
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Fri, 16 Jul 2010 17:26:05 +0400 (MSD)
+Received: from FRMRSSXCHHUB03.dc-m.alcatel-lucent.com (FRMRSSXCHHUB03.dc-m.alcatel-lucent.com [135.120.45.63])
+	by smail5.alcatel.fr (8.14.3/8.14.3/ICT) with ESMTP id o6GDQ4Eg015326
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NOT)
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Fri, 16 Jul 2010 15:26:05 +0200
+Received: from FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com ([135.120.45.34]) by
+ FRMRSSXCHHUB03.dc-m.alcatel-lucent.com ([135.120.45.63]) with mapi; Fri, 16
+ Jul 2010 15:26:05 +0200
+From: "Admin" <admin@debug.log>
+To: "projecta-open-discussion@acrg.nmu.alcatel.fr"
+	<projecta-open-discussion@acrg.nmu.alcatel.fr>
+Date: Fri, 16 Jul 2010 15:26:03 +0200
+Subject: =?iso-8859-1?Q?Et_re-voil=E0_le_p?=
+ =?iso-8859-1?Q?=E8re_no=EBl?=
+Thread-Topic: =?iso-8859-1?Q?[projecta-open-discussion][226]_RE:_et_re-voil=E0_le_p=E8r?=
+ =?iso-8859-1?Q?e_no=EBl?=
+Thread-Index: AcsiggaraC4/Qlz+Rm6AwxRq8X3KJwCaE0OA
+Message-ID: <C472E6A4C17FA14E90533C0369A4798B125DC38AC8@FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com>
+References: <forumpost225@acrg.nmu.alcatel.fr>
+ <forumpost226@acrg.nmu.alcatel.fr>
+In-Reply-To: <forumpost226@acrg.nmu.alcatel.fr>
+Accept-Language: en-US
+Content-Language: fr-FR
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 2.64 on 155.132.188.13
+
+
+
+-----Message d'origine-----
+De=A0: noreply@acrg.nmu.alcatel.fr [mailto:noreply@acrg.nmu.alcatel.fr]=20
+Envoy=E9=A0: mardi 13 juillet 2010 13:53
+=C0=A0: noreply@acrg.nmu.alcatel.fr
+Objet=A0: [projecta-open-discussion][226] RE: dsfg sdfg sdfg
+
+
+Read and respond to this message at:=20
+http://acrg.nmu.alcatel.fr/forum/message.php?msg_id=3D226
+Or by replying to this e-mail entering your response between the following =
+markers:=20
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+Voil=E0 le p=E8re no=EBl, et toujours en latin 1
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+
+
+By: Roger G.
+
+test
+
+______________________________________________________________________
+You are receiving this email because you elected to monitor this forum.
+To stop monitoring this forum, login to ACOS Forge and visit:=20
+http://acrg.nmu.alcatel.fr/forum/monitor.php?forum_id=3D1&group_id=3D6&stop=
+=3D1

@@ -1,0 +1,35 @@
+To: noreply@{site}
+From:  <projecta-bugs@{site}> 
+BCC: admin@debug.log
+Subject: [projecta-Bugs][2] Test monitor tracker
+
+Bugs item #2, was opened at {date} by ACOS Forge Admin
+You can respond by visiting: 
+http://{site}/tracker/?func=detail&atid=101&aid=2&group_id=6
+Or by replying to this e-mail entering your response between the following markers: 
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+(enter your response here, only in plain text format)
+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+
+Status: Open
+Priority: 3
+Submitted By: ACOS Forge Admin (admin)
+Assigned to: Nobody (None)
+Summary: Test monitor tracker 
+Hardware: None
+Product: None
+Operating System: None
+Component: None
+Version: None
+Severity: None
+Resolution: None
+URL: 
+
+
+Initial Comment:
+Body of test monitor tracker
+
+----------------------------------------------------------------------
+
+You can respond by visiting: 
+http://{site}/tracker/?func=detail&atid=101&aid=2&group_id=6

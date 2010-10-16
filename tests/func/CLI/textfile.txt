@@ -1,0 +1,7 @@
+Hi,
+
+This is just a simple text file for checking upload & download with CLI.
+Some chars for fun.
+& ' " été \n \\
+
+end.

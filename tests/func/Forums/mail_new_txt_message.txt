@@ -1,0 +1,34 @@
+From rg@alcatel-lucent.com Tue Jul 20 13:51:40 2010
+Received: from smail3.alcatel.fr (smail3.dc-m.alcatel-lucent.com [155.132.188.83])
+	by acrg.nmu.alcatel.fr (8.13.1/8.13.1) with ESMTP id o6K9peAH007431
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Tue, 20 Jul 2010 13:51:40 +0400
+Received: from FRMRSSXCHHUB04.dc-m.alcatel-lucent.com (FRMRSSXCHHUB04.dc-m.alcatel-lucent.com [135.120.45.64])
+	by smail3.alcatel.fr (8.14.3/8.14.3/ICT) with ESMTP id o6K9paIh021668
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NOT)
+	for <projecta-open-discussion@acrg.nmu.alcatel.fr>; Tue, 20 Jul 2010 11:51:38 +0200
+Received: from FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com ([135.120.45.38]) by
+ FRMRSSXCHHUB04.dc-m.alcatel-lucent.com ([135.120.45.64]) with mapi; Tue, 20
+ Jul 2010 11:51:38 +0200
+From: "Admin" <admin@debug.log>
+To: "projecta-open-discussion@acrg.nmu.alcatel.fr"
+	<projecta-open-discussion@acrg.nmu.alcatel.fr>
+Date: Tue, 20 Jul 2010 11:51:37 +0200
+Subject: New txt message (200720101152)
+Thread-Topic: New txt message (200720101152)
+Thread-Index: Acsn8FeqqT2M9muhTsGHHzhbUy4w1AAAKyhQ
+Message-ID: <C472E6A4C17FA14E90533C0369A4798B125E3F6E51@FRMRSSXCHMBSA1.dc-m.alcatel-lucent.com>
+References: <forumpost296@acrg.nmu.alcatel.fr>
+In-Reply-To: <forumpost296@acrg.nmu.alcatel.fr>
+Accept-Language: en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 2.64 on 155.132.188.83
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by acrg.nmu.alcatel.fr id o6K9peAH007431
+
+This is a new txt message (200720101152).
+
