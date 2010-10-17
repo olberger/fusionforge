@@ -382,7 +382,7 @@ class Navigation extends Error {
                         
                         // Project Admin
                         if (forge_check_perm ('project_admin', $group_id)) {
-                                $menu['titles'][] = _('Admin');
+                                $menu['titles'][] = _('Project Admin');
                                 $menu['urls'][] = util_make_url ('/project/admin/?group_id=' . $group_id);
                                 $menu['adminurls'][] = false;
                                 if ($toptab == "admin") {
