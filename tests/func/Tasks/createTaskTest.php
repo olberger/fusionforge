@@ -89,7 +89,7 @@ class CreateTask extends FForge_SeleniumTestCase
         $this->type("summary", "Task1: Hello Paris");
         $this->type("details", "Details: Hello Paris");
         $this->type("hours", "10");
-        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->clickAndWait("submit");
         $this->assertTextPresent("Task Created Successfully");
 
         // Create a second task
@@ -97,7 +97,7 @@ class CreateTask extends FForge_SeleniumTestCase
         $this->type("summary", "Task2: Hello France");
         $this->type("details", "Details: Hello France");
         $this->type("hours", "15");
-        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->clickAndWait("submit");
         $this->assertTextPresent("Task Created Successfully");
 
         // Create a third task
@@ -105,7 +105,7 @@ class CreateTask extends FForge_SeleniumTestCase
         $this->type("summary", "Task3: Hello World");
         $this->type("details", "Details: Hello World");
         $this->type("hours", "20");
-        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->clickAndWait("submit");
         $this->assertTextPresent("Task Created Successfully");
 
         // Create a task with funny characters
@@ -113,9 +113,11 @@ class CreateTask extends FForge_SeleniumTestCase
         $this->type("summary", "Task4: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
         $this->type("details", "Details: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
         $this->type("hours", "20");
-        $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+        $this->clickAndWait("submit");
         $this->assertTextPresent("Task Created Successfully");
 
+	$this->clickAndWait("link=Tasks");
+        
 	// Delete this task
 	$this->clickAndWait("link=To Do");
 	$this->click("link=Task4: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");

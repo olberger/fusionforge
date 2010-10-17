@@ -66,12 +66,12 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$this->setHost(SELENIUM_RC_HOST);
 	}
 
-	protected function waitForPageToLoad($timeout)
-	{
-		parent::waitForPageToLoad($timeout);
-		$this->assertElementPresent("//h1");
-		// $this->assertFalse($this->isElementPresent("//div[@id='ffErrors']"));
-	}
+//	protected function waitForPageToLoad($timeout)
+//	{
+//		parent::waitForPageToLoad($timeout);
+//		$this->assertElementPresent("//h1");
+//		// $this->assertFalse($this->isElementPresent("//div[@id='ffErrors']"));
+//	}
 
 	protected function db($sql)
 	{
@@ -148,7 +148,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 
 	protected function logout()
 	{
-		$this->clickAndWait("link=Log Out");
+		$this->clickAndWait("//a[contains(text(),'Log Out')]");
 	}
 
 	protected function switchUser($username)
