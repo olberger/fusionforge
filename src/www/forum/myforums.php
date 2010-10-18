@@ -34,11 +34,7 @@ require_once $gfcommon.'forum/ForumFactory.class.php';
 require_once $gfcommon.'forum/ForumMessageFactory.class.php';
 require_once $gfcommon.'forum/ForumMessage.class.php';
 
-
-
-if (!session_loggedin()) {
-    exit_permission_denied();
-}
+session_require_login();
 
 $user_id = user_getid();
 $group_id = getIntFromRequest("group_id");
@@ -82,7 +78,7 @@ $i = 0;
 $f = array();
 //CHECK : if we won't ever be needing to store each forum/fmf, etc for each pass, don't use an array and use the same variable like $fmf instead of $fmf[$i], etc
 for($i=0;$i<sizeof($monitored_forums);$i++) {
-	$g =& group_get_object($monitored_forums[$i]["group_id"]);
+	$g = group_get_object($monitored_forums[$i]["group_id"]);
 	if (!$g || !is_object($g) || $g->isError()) {
 		exit_no_group();
 	}

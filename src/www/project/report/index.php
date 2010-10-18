@@ -110,7 +110,7 @@ function GetTime ($timedifference) {
 //
 $group_id = getIntFromRequest('group_id');
 
-$group =& group_get_object($group_id);
+$group = group_get_object($group_id);
 if (!$group || !is_object($group)) {
         exit_no_group();
 }
@@ -122,12 +122,13 @@ if ($group->isError()) {
         }
 }
 
-
 if (!$group_id && $form_grp) {
 	$group_id = $form_grp;
 }
 
-site_project_header(array('title'=>_('Project Member List'),'group'=>$group_id,'toptab'=>'memberlist'));
+$title = _('Project Member List');
+site_project_header(array('title'=>$title,'group'=>$group_id,'toptab'=>'memberlist'));
+echo '<h1>' . $title . '</h1>';
 
 echo '<p>';
 echo _('If you would like to contribute to this project by becoming a developer, contact one of the project admins, designated in bold text below.');

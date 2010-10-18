@@ -31,7 +31,7 @@ require_once $gfwww.'include/role_utils.php';
 $group_id = getIntFromRequest('group_id');
 session_require_perm ('project_admin', $group_id) ;
 
-$group =& group_get_object($group_id);
+$group = group_get_object($group_id);
 if (!$group || !is_object($group)) {
     exit_no_group();
 } elseif ($group->isError()) {
@@ -65,11 +65,9 @@ if (getStringFromRequest('finished')) {
     session_redirect('/project/admin/massfinish.php?group_id='.$group_id.'&accumulated_ids='.implode(',',$accumulated_ids));
 }
 
-project_admin_header(array('title'=>_('Edit Role'),'group'=>$group_id));
-
+project_admin_header(array('title'=>_('Add Users From List'),'group'=>$group_id));
 
 echo '
-<h1>'._('Add Users From List').'</h1>
 <p>
 '._('Check the box next to the name of the user(s) you want to add. Your choices will be preserved if you click any of the letters below. When done, click "Finish" to choose the roles for the users you are adding.').'
 </p>
