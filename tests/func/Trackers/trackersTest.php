@@ -816,7 +816,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		// Approve the template project first
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.template'].submit");
 
 		$this->switchUser('uadmin');
