@@ -206,7 +206,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 	function testNewTrackerEntryNotLogged()
 	{
 		$this->init();
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->select("none", "label=projecta");
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Trackers");
@@ -255,7 +255,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->type("details", "Assigned to a tech");
 		$this->clickAndWait("submit");
 		$this->clickAndWait("link=Assigned to a tech");
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "ucoredev");
 		$this->type("form_pw", "password");
@@ -329,7 +329,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->assertTextPresent("Artifact Monitoring Deactivated");
 
 		// Monitoring an entire tracker while not being logged.
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->select("none", "label=projecta");
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Trackers");
