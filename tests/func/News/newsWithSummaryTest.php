@@ -50,8 +50,7 @@ class NewsWithSummary extends FForge_SeleniumTestCase
 	{
 		$this->init();
 		$this->switchUser('uadmin');
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=News");
 		$this->assertTextPresent("No News Found for ProjectA");
 
