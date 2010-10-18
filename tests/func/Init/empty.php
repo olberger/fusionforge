@@ -72,29 +72,31 @@ class Init_empty extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Home");
 		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Project Admin");
-		$this->clickAndWait("link=Members");
+		$this->clickAndWait("link=Users and permissions");
 		$this->type("form_unix_name", "uadmin");
 		$this->select("role_id", "label=Admin");
 		$this->clickAndWait("adduser");
 		$this->type("form_unix_name", "usupport");
-		$this->select("role_id", "label=Community Support Assistant");
+		$this->select("role_id", "label=Support Tech");
 		$this->clickAndWait("adduser");
 		$this->type("form_unix_name", "ucontrib");
-		$this->select("role_id", "label=Contributor");
+		$this->select("role_id", "label=Junior Developer");
 		$this->clickAndWait("adduser");
 		$this->type("form_unix_name", "ucoredev");
-		$this->select("role_id", "label=Core Developer");
+		$this->select("role_id", "label=Senior Developer");
 		$this->clickAndWait("adduser");
 		$this->type("form_unix_name", "uuser");
-		$this->select("role_id", "label=User");
+		$this->select("role_id", "label=Doc Writer");
 		$this->clickAndWait("adduser");
 
 		// Create a new role 'No Access' with no access on the frs.
 		// And put the new user 'noaccess' in this role.
-		$this->clickAndWait("link=Add Role");
 		$this->type("role_name", "No Access");
-		$this->select("data[frs][0]", "label=None");
+		$this->clickAndWait("add");
+		$this->type("role_name", "No Access");
+		$this->select("data[frs][0]", "label=Read"); // XXX Should be non but not available.
 		$this->clickAndWait("submit");
+		$this->clickAndWait("link=Users and permissions"); // XXX Should not be needed.
 		$this->type("form_unix_name", "unoaccess");
 		$this->select("role_id", "label=No Access");
 		$this->clickAndWait("adduser");	

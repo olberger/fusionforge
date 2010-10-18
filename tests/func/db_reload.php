@@ -61,19 +61,41 @@ if ( !CONFIGURED ) {
 	exit(1);
 }
 
+$opt_restart = true;
+if (isset($argv[1]) && $argv[1] == '-no-restart') {
+	$opt_restart = false;
+}
+
+// Search location of fusionforge main directory (gforge).
+$forge_root = dirname(dirname(dirname(__FILE__))).'/src';
+if (!file_exists($forge_root)) {
+	$forge_root = dirname(dirname(dirname(__FILE__))).'/gforge';
+	if (!file_exists($forge_root)) {
+		print "ERROR: Unable to guess location of fusionforge main directory (gforge), aborting.\n";
+		exit(1);
+	}
+}
+
 if ( DB_TYPE == 'mysql') {
 	// Reload a fresh database before running this test suite.
 	system("mysqladmin -f -u".DB_USER." -p".DB_PASSWORD." drop ".DB_NAME." &>/dev/null");
 	system("mysqladmin -u".DB_USER." -p".DB_PASSWORD." create ".DB_NAME);
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(dirname(__FILE__)))."/db/gforge-struct-mysql.sql");
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(dirname(__FILE__)))."/db/gforge-data-mysql.sql");
+	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-struct-mysql.sql");
+	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-data-mysql.sql");
 } elseif ( DB_TYPE == 'pgsql') {
 	if (!function_exists('pg_connect')) {
 		print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
 		exit;
 	}
-	system("psql -q -U".DB_USER." ".DB_NAME." -f ".dirname(dirname(dirname(__FILE__)))."/gforge/db/reset_schema.sql &>/tmp/fusionforge-import-reset.log");
-	system("psql -q -U".DB_USER." ".DB_NAME." -f ".dirname(dirname(dirname(__FILE__)))."/gforge/db/gforge.sql &>/tmp/fusionforge-import-load.log");
+	// Drop & create a fresh database before running this test suite.
+	if ($opt_restart) {
+		system("service httpd restart 2>&1 >/dev/null");
+	}
+	system("service postgresql restart 2>&1 >/dev/null");
+	system("su - postgres -c 'dropdb -q ".DB_NAME."'");
+	system("su - postgres -c 'createdb -q --encoding UNICODE ".DB_NAME."'");
+	system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/gforge-import.log 2>&1");
+	system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
 } else {
 	print "ERROR: Unsupported database type: ".DB_TYPE.", aborting.\n";
 	exit;
@@ -81,20 +103,20 @@ if ( DB_TYPE == 'mysql') {
 
 $sitename = 'ACOS Forge';
 $adminPassword = 'myadmin';
-$adminEmail = 'admin@debug.log';
+$adminEmail = 'nobody@nowhere.com';
 
 $session_hash = '000TESTSUITE000';
 
-set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
+//set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
 
-require_once 'www/env.inc.php';
-require_once $gfwww.'include/squal_pre.php';
+require_once '../../gforge/www/env.inc.php';    
+require_once $gfwww.'include/pre.php';
 
-$theme_id=5;
-
-// Add alcatel theme to the database.
-db_query_params ('INSERT INTO themes (theme_id, dirname, fullname, enabled) VALUES ($1, $2, $3, true)',
-		 array ($theme_id, 'alcatel-lucent', 'Alcatel-Lucent Theme'));
+// Install tsearch2 for phpwiki & patch it for safe backups.
+//system("psql -q -Upostgres ".DB_NAME." < /usr/share/pgsql/contrib/tsearch2.sql >/dev/null 2>&1");
+//system("psql -q -Upostgres ".DB_NAME." < /opt/gforge/acde/sql/20080408-regprocedure_update.sql");
+//system("echo \"GRANT SELECT ON pg_ts_dict, pg_ts_parser, pg_ts_cfg, pg_ts_cfgmap TO gforge;\" | psql -q -Upostgres ".DB_NAME);
+//system("echo \"UPDATE pg_ts_cfg set locale = 'en_US.UTF-8' WHERE ts_name = 'default';\" | psql -q -Upostgres ".DB_NAME);
 
 $files = glob(dirname(__FILE__)."/sql/*.sql");
 foreach ($files as $filename) {
@@ -108,10 +130,10 @@ system("echo \"VACUUM FULL ANALYZE;\" | psql -q -Upostgres ".DB_NAME);
 //
 $user = new GFUser();
 $user_id = $user->create('admin', $sitename, 'Admin', $adminPassword, $adminPassword,
-	$adminEmail, 1, 1, 1,'GMT','',0, 5,'', '','','','','','US',false, 'admin');
+	$adminEmail, 1, 1, 1,'GMT','',0, 1,'', '','','','','','US',false, 'admin');
 
 if (!$user_id) {
-	print "ERROR: Creating user: ".$user->getErrorMessage()."\n";
+	print "ERROR: Creating user: ".$user->getErrorMessage().':'.db_error()."\n";
 	exit(1);
 }
 

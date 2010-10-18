@@ -66,12 +66,12 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$this->setHost(SELENIUM_RC_HOST);
 	}
 
-	protected function waitForPageToLoad($timeout)
-	{
-		parent::waitForPageToLoad($timeout);
-		$this->assertElementPresent("//h1");
-		// $this->assertFalse($this->isElementPresent("//div[@id='ffErrors']"));
-	}
+//	protected function waitForPageToLoad($timeout)
+//	{
+//		parent::waitForPageToLoad($timeout);
+//		$this->assertElementPresent("//h1");
+//		// $this->assertFalse($this->isElementPresent("//div[@id='ffErrors']"));
+//	}
 
 	protected function db($sql)
 	{
@@ -148,7 +148,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 
 	protected function logout()
 	{
-		$this->clickAndWait("link=Log Out");
+		$this->clickAndWait("//a[contains(text(),'Log Out')]");
 	}
 
 	protected function switchUser($username)
@@ -173,7 +173,7 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$this->assertTextPresent("Your project has been submitted");
 		$this->assertTextPresent("you will receive notification of their decision and further instructions");
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.$unix_name'].submit");
 		$this->clickAndWait("link=Home");
 		$this->assertTextPresent($name);
@@ -188,7 +188,6 @@ class FForge_SeleniumTestCase extends PHPUnit_Extensions_SeleniumTestCase
 		$this->clickAndWait("link=Site Admin");
 		$this->clickAndWait("link=Register a New User");
 		$this->type("unix_name", $login);
-		$this->type("alt_user_name", $login);
 		$this->type("password1", "password");
 		$this->type("password2", "password");
 		$this->type("firstname", $login);

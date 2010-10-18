@@ -58,7 +58,7 @@ function pm_header($params) {
 		$labels[] = (($pg) ? $pg->getName() .': ' : '') ._('Browse tasks');
 		$links[]  = '/pm/task.php?group_id='.$group_id.'&amp;group_project_id='.$group_project_id.'&amp;func=browse';
 		if (session_loggedin()) {
-			$labels[] = _('Add task');
+			$labels[] = _('Add Task');
 			$links[]  = '/pm/task.php?group_id='.$group_id.'&amp;group_project_id='.$group_project_id.'&amp;func=addtask';
 		}
 		if ($group_project_id) {
