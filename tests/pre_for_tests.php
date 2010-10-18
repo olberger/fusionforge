@@ -15,6 +15,8 @@
  *
  */
 
+require_once $gfcommon.'include/config.php';
+
 ini_set('memory_limit', '32M');
 
 if (!isset($no_gz_buffer) || !$no_gz_buffer) {
@@ -22,6 +24,7 @@ if (!isset($no_gz_buffer) || !$no_gz_buffer) {
 }
 
 require_once('local.inc');
+require_once $gfcommon.'include/config-vars.php';
 
 require('common/include/constants.php');
 require_once('common/include/database.php');
@@ -43,12 +46,11 @@ require_once('squal_exit.php');
 //require_once('browser.php');
 
 //system library
-require_once('common/include/System.class.php');
-if (!$sys_account_manager_type) {
-        $sys_account_manager_type='UNIX';
-}
-require_once('common/include/system/'.$sys_account_manager_type.'.class.php');
-$SYS=new $sys_account_manager_type();
+require_once $gfcommon.'include/System.class.php';
+forge_define_config_item('account_manager_type', 'core', 'UNIX') ;
+require_once $gfcommon.'include/system/'.forge_get_config('account_manager_type').'.class.php';
+$amt = forge_get_config('account_manager_type') ;
+$SYS = new $amt();
 
 
 // #### Connect to db
