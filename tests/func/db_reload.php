@@ -109,7 +109,7 @@ $session_hash = '000TESTSUITE000';
 
 //set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
 
-require_once '../../gforge/www/env.inc.php';    
+require_once '../../gforge/www/env.inc.php';
 require_once $gfwww.'include/pre.php';
 
 // Install tsearch2 for phpwiki & patch it for safe backups.

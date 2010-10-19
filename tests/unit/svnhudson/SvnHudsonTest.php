@@ -1,5 +1,7 @@
 <?php
 
+global $gfcommon,$gfwww;
+
 require_once 'PHPUnit/Framework.php';
 require_once $gfcommon.'include/Group.class.php';
 require_once $gfcommon.'include/Plugin.class.php';
