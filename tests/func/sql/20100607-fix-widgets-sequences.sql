@@ -1,1 +1,1 @@
-../../../gforge/db/20100607-fix-widgets-sequences.sql
+../../../src/db/20100607-fix-widgets-sequences.sql

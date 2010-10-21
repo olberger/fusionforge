@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20060905-browse_list.sql
+../../../src/acde/sql/20060905-browse_list.sql

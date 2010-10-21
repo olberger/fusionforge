@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20061213_fix_missing_mimetype.sql
+../../../src/acde/sql/20061213_fix_missing_mimetype.sql

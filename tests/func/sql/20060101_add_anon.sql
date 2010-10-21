@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20060101_add_anon.sql
+../../../src/acde/sql/20060101_add_anon.sql

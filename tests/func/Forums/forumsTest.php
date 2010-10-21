@@ -128,9 +128,8 @@ class CreateForum extends FForge_SeleniumTestCase
 		$this->type("body", "Here is my 19823 reply");
 		$this->clickAndWait("submit");
 		$this->assertTextPresent("Message Posted Successfully");
-		$this->clickAndWait("//td[@id='main']/table[1]/tbody/tr/td[1]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/table[1]/tbody/tr/td[1]/a/strong");
 		$this->assertTextPresent("Here is my 19823 reply");
-
 	}
 	
 	/*

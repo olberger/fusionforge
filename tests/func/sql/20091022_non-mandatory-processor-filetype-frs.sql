@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20091022_non-mandatory-processor-filetype-frs.sql
+../../../src/acde/sql/20091022_non-mandatory-processor-filetype-frs.sql

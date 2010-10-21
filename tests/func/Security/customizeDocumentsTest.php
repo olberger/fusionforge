@@ -56,7 +56,7 @@ class CustomizeDocuments extends FForge_SeleniumTestCase
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Project Admin");
 		$this->clickAndWait("link=Members");
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->clickAndWait("submit");
 		$this->assertTextPresent("Successfully Updated Role");
@@ -99,7 +99,7 @@ class CustomizeDocuments extends FForge_SeleniumTestCase
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Project Admin");
 		$this->clickAndWait("link=Members");
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->select("data[docman][0]", "label=Admin");
 		$this->clickAndWait("submit");

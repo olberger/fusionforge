@@ -60,9 +60,9 @@ class AssignToMe extends FForge_SeleniumTestCase
 		$this->assertTextPresent("Item [#1] successfully created");
 		$this->clickAndWait("link=My Summary");
 		$this->assertTextPresent("My Detailed description");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[4]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[4]/a/strong");
 		$this->assertTextPresent("Tracker [#1] is now assigned to you");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[2]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[2]/a/strong");
 		$this->clickAndWait("add_to_task");
 		$this->assertTextPresent("Exiting with error");
 		$this->assertTextPresent("No Available Tasks Found");
@@ -70,7 +70,7 @@ class AssignToMe extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=My Summary");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[2]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[2]/a/strong");
 		$this->clickAndWait("new_task");
 		$this->type("details", "Task Details");
 		$this->clickAndWait("submit");
@@ -84,7 +84,7 @@ class AssignToMe extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=My Summary");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[2]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[2]/a/strong");
 		$this->clickAndWait("add_to_task");
 		$this->clickAndWait("done_adding");
 		$this->assertTextPresent("Successfully Added Tracker Relationship");

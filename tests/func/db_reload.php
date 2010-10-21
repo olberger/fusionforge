@@ -76,30 +76,17 @@ if (!file_exists($forge_root)) {
 	}
 }
 
-if ( DB_TYPE == 'mysql') {
-	// Reload a fresh database before running this test suite.
-	system("mysqladmin -f -u".DB_USER." -p".DB_PASSWORD." drop ".DB_NAME." &>/dev/null");
-	system("mysqladmin -u".DB_USER." -p".DB_PASSWORD." create ".DB_NAME);
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-struct-mysql.sql");
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < $forge_root/db/gforge-data-mysql.sql");
-} elseif ( DB_TYPE == 'pgsql') {
-	if (!function_exists('pg_connect')) {
-		print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
-		exit;
-	}
-	// Drop & create a fresh database before running this test suite.
-	if ($opt_restart) {
-		system("service httpd restart 2>&1 >/dev/null");
-	}
-	system("service postgresql restart 2>&1 >/dev/null");
-	system("su - postgres -c 'dropdb -q ".DB_NAME."'");
-	system("su - postgres -c 'createdb -q --encoding UNICODE ".DB_NAME."'");
-	system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/gforge-import.log 2>&1");
-	system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
-} else {
-	print "ERROR: Unsupported database type: ".DB_TYPE.", aborting.\n";
+if (!function_exists('pg_connect')) {
+	print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
 	exit;
 }
+
+system("echo \"DROP SCHEMA public CASCADE;CREATE SCHEMA public;\" | psql -q -Upostgres ".DB_NAME." > /var/log/fusionforge-init.log 2>&1");
+system("echo \"GRANT ALL ON SCHEMA public TO ".DB_USER.";\" | psql -q -Upostgres ".DB_NAME." >> /var/log/fusionforge-init.log 2>&1");
+
+system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/fusionforge-init.log 2>&1");
+
+system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
 
 $sitename = 'ACOS Forge';
 $adminPassword = 'myadmin';
@@ -107,9 +94,9 @@ $adminEmail = 'nobody@nowhere.com';
 
 $session_hash = '000TESTSUITE000';
 
-//set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
+set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
 
-require_once '../../gforge/www/env.inc.php';
+require_once $forge_root.'/www/env.inc.php';
 require_once $gfwww.'include/pre.php';
 
 // Install tsearch2 for phpwiki & patch it for safe backups.

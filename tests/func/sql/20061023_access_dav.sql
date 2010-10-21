@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20061023_access_dav.sql
+../../../src/acde/sql/20061023_access_dav.sql

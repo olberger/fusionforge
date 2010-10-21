@@ -1,1 +1,1 @@
-../../../gforge/db/20100505-alter-user-preference.sql
+../../../src/db/20100505-alter-user-preference.sql

@@ -415,7 +415,7 @@ class CreateTask extends FForge_SeleniumTestCase
 		$this->type("summary", "Task1: Hello Paris");
 		$this->type("details", "Details: Hello Paris");
 		$this->type("hours", "10");
-		$this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+		$this->clickAndWait("//div[@id='maindiv']/form/table/tbody/tr[9]/td/input");
 		$this->assertTextPresent("Task Created Successfully");
 
 		$this->clickAndWait("link=exact:Task1: Hello Paris");

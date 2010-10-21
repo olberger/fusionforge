@@ -59,7 +59,7 @@ class CustomizeProjectWide extends FForge_SeleniumTestCase
 
 		// Step 2: For a given role, change the project-wide admin permission to Admin. 
 		$this->clickAndWait("link=Members");
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=Core Developer");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=Core Developer");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->select("data[projectadmin][0]", "label=Admin");
 		$this->clickAndWait("submit");
@@ -81,7 +81,7 @@ class CustomizeProjectWide extends FForge_SeleniumTestCase
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Project Admin");
 		$this->clickAndWait("link=Members");
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=Core Developer");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=Core Developer");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->select("data[projectadmin][0]", "label=None");
 		$this->clickAndWait("submit");

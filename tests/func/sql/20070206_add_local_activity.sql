@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20070206_add_local_activity.sql
+../../../src/acde/sql/20070206_add_local_activity.sql

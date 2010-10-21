@@ -17,11 +17,10 @@ define ('SELENIUM_RC_DIR', 'D:');
 define ('SITE', 'pacap.nmu.alcatel.fr');
 define ('URL', 'http://'.SITE.'/');
 
-// Base URL where gforge is installed
+// Base URL where FusionForge is installed
 define ('ROOT', '');
 
 // Database connection parameters.
-define('DB_TYPE', 'pgsql');         // Values: mysql, pgsql
 define('DB_NAME', 'gforge');
 define('DB_USER', 'gforge');
 define('DB_PASSWORD', '@@GFDB_PASS@@');

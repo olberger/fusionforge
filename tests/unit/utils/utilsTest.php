@@ -54,7 +54,7 @@ class Utils_Tests extends PHPUnit_Framework_TestCase
 		$this->assertFalse(util_check_url('webdav://toto'), 'webdav://toto is not a valid URL.');
 
 		$this->assertFalse(util_check_url('fusionforge.org'), 'fusionforge.org is not a valid URL');
-}
+	}
 
 	/**
 	 * test the util_strip_accents() function.

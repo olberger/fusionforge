@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20100415_fix_phpwiki_rateit.sql
+../../../src/acde/sql/20100415_fix_phpwiki_rateit.sql

@@ -78,7 +78,7 @@ class ApplyMembership extends FForge_SeleniumTestCase
     $this->waitForPageToLoad("30000");
     $this->clickAndWait("link=Project Admin");
     $this->clickAndWait("link=Members");
-    $this->clickAndWait("//td[@id='main']/table/tbody/tr/td[2]/table/tbody/tr[2]/td/form[7]/table/tbody/tr/td[2]/input[2]");
+    $this->clickAndWait("//div[@id='maindiv']/table/tbody/tr/td[2]/table/tbody/tr[2]/td/form[7]/table/tbody/tr/td[2]/input[2]");
     $this->assertTextPresent("Member Removed Successfully");
 
     // "uuser" tries to join
@@ -128,7 +128,7 @@ class ApplyMembership extends FForge_SeleniumTestCase
     $this->clickAndWait("link=Blocks Admin");
     $this->click("activate[request_join]");
     $this->clickAndWait("//input[@value='Save Blocks']");
-    $this->clickAndWait("//td[@id='main']/form/table/tbody/tr[2]/td[4]/a");
+    $this->clickAndWait("//div[@id='maindiv']/form/table/tbody/tr[2]/td[4]/a");
     $this->type("body", "{boxHeader}Welcome to our project!{boxFooter}");
     $this->clickAndWait("//input[@value='Save']");
 

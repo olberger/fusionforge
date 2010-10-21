@@ -51,7 +51,7 @@ class Syntax_Tests extends PHPUnit_Framework_TestCase
 	    $this->assertEquals('', $output);
     }
 
-    /**
+	/**
      * Ensure all scripts use Unix-style line endings
      */
     public function testUnixLineEndings()
@@ -75,7 +75,7 @@ class Syntax_Tests extends PHPUnit_Framework_TestCase
 		$root = dirname(dirname(dirname(dirname(__FILE__))));
     	$output = `find $root/src $root/tests -name '*.php' -type f | while read i ; do [ -s \$i ] && [ -z "\$(tail -n 1 \$i)" ] && echo \$i ; done`;
 	    $this->assertEquals('', $output);
-    }
+	}
 
     /**
      * Validate syntax of gettextfiles
@@ -87,7 +87,7 @@ class Syntax_Tests extends PHPUnit_Framework_TestCase
 	    $this->assertEquals('', $output);
     }
 }
-	
+
 // Local Variables:
 // mode: php
 // c-file-style: "bsd"

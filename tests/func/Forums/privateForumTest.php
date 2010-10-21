@@ -59,7 +59,7 @@ class PrivateForum extends FForge_SeleniumTestCase
     $this->type("description", "Private forum description");
     $this->clickAndWait("submit");
     // Check creation
-    $this->assertTextPresent("Forum created successfully");
+    $this->assertTextPresent("Forum added successfully");
     // Check new forum is listed
     $this->clickAndWait("link=Forums");
     $this->assertTextPresent("Private forum description");

@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20061201-docdata_vw.sql
+../../../src/acde/sql/20061201-docdata_vw.sql

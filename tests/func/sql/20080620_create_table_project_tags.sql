@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20080620_create_table_project_tags.sql
+../../../src/acde/sql/20080620_create_table_project_tags.sql

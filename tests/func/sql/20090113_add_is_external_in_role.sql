@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20090113_add_is_external_in_role.sql
+../../../src/acde/sql/20090113_add_is_external_in_role.sql
