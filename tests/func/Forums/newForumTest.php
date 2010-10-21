@@ -77,7 +77,7 @@ class NewForum extends FForge_SeleniumTestCase
     $this->type("body", "My reply to the forum.");
     $this->clickAndWait("submit");
     $this->assertTextPresent("Message Posted Successfully");
-    $this->assertEquals("1", $this->getText("//div[@id='maindiv']/table[1]/tbody/tr[1]/td[3]"));
+	$this->assertEquals("1", $this->getText("//div[@id='maindiv']/table[1]/tbody/tr[1]/td[3]"));
 
     // Browse in flat mode
     $this->select("style", "label=Flat");

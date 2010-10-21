@@ -180,7 +180,7 @@ class Theme extends Layout {
 			$return .= ' selected';
 		}
 		$return .= '">
-            <tr>';
+            <thead><tr>';
 
 		$count=count($title_arr);
 		if ($links_arr) {
@@ -194,12 +194,12 @@ class Theme extends Layout {
                 <th scope="col"><strong>'.$title_arr[$i].'</strong></th>';
 			}
 		}
-		return $return.'</tr>';
+		return $return.'</tr></thead><tbody>';
 	}
 
 	function listTableBottom() {
 		return '
-            </table>';
+            </tbody></table>';
 	}
 
 
