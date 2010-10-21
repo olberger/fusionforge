@@ -12,10 +12,7 @@ else
     exit 1
 fi
 
-locales=$(ls translations/*.po \
-    | xargs -n1 -iFILE basename FILE .po \
-    | egrep '^[a-z][a-z](_[A-Z][A-Z]$)?' \
-    | sort)
+locales=$(cd translations; ls *.po | sed 's/.po$//' | sort)
 
 print_stats () {
     for l in $(echo $locales | xargs -n 1 | sort) ; do
@@ -44,7 +41,7 @@ case $1 in
 	    | grep -v -e {arch} -e svn-base \
 	    | grep -v ^./plugins/wiki \
 	    | LANG=C sort \
-	    | xargs xgettext -d gforge -o translations/gforge.pot -L PHP --from-code=iso-8859-1
+	    | xargs xgettext -d gforge -o translations/gforge.pot -L PHP --from-code=utf-8
 	    
 	for l in $locales ; do
 	    echo "Processing $l..."

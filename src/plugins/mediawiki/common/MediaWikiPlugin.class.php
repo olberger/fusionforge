@@ -45,6 +45,9 @@ class MediaWikiPlugin extends Plugin {
 		$this->hooks[] = "role_get";
 		$this->hooks[] = "role_normalize";
 		$this->hooks[] = "role_translate_strings";
+		$this->hooks[] = "role_has_permission";
+		$this->hooks[] = "role_get_setting";
+		$this->hooks[] = "list_roles_by_permission";
 		$this->hooks[] = "project_admin_plugins"; // to show up in the admin page for group
 	}
 
@@ -125,6 +128,8 @@ class MediaWikiPlugin extends Plugin {
 			$role =& $params['role'] ;
 
 			// Read access
+			$right = new PluginSpecificRoleSetting ($role,
+								'plugin_mediawiki_read') ;
 			$right->SetAllowedValues (array ('0', '1')) ;
 			$right->SetDefaultValues (array ('Admin' => '1',
 							 'Senior Developer' => '1',
@@ -170,18 +175,26 @@ class MediaWikiPlugin extends Plugin {
 			if (USE_PFO_RBAC) {
 				$projects = $role->getLinkedProjects() ;		
 				foreach ($projects as $p) {
-					$role->normalizePermsForSection ($new_pa, $section, $p->getID()) ;
+					$role->normalizePermsForSection ($new_pa, 'plugin_mediawiki_read', $p->getID()) ;
+					$role->normalizePermsForSection ($new_pa, 'plugin_mediawiki_edit', $p->getID()) ;
+					$role->normalizePermsForSection ($new_pa, 'plugin_mediawiki_upload', $p->getID()) ;
+					$role->normalizePermsForSection ($new_pa, 'plugin_mediawiki_admin', $p->getID()) ;
 				}
 			} else {
+				$role->normalizeDataForSection ($new_sa, 'plugin_mediawiki_read') ;
 				$role->normalizeDataForSection ($new_sa, 'plugin_mediawiki_edit') ;
+				$role->normalizeDataForSection ($new_sa, 'plugin_mediawiki_upload') ;
+				$role->normalizeDataForSection ($new_sa, 'plugin_mediawiki_admin') ;
 			}
 		} elseif ($hookname == "role_translate_strings") {
 			$right = new PluginSpecificRoleSetting ($role,
-							       'plugin_mediawiki_edit') ;
+							       'plugin_mediawiki_read') ;
 			$right->setDescription (_('Mediawiki read access')) ;
 			$right->setValueDescriptions (array ('0' => _('No reading'),
 							     '1' => _('Read access'))) ;
 
+			$right = new PluginSpecificRoleSetting ($role,
+							       'plugin_mediawiki_edit') ;
 			$right->setDescription (_('Mediawiki write access')) ;
 			$right->setValueDescriptions (array ('0' => _('No editing'),
 							     '1' => _('Edit existing pages only'), 
@@ -200,6 +213,125 @@ class MediaWikiPlugin extends Plugin {
 			$right->setDescription (_('Mediawiki administrative tasks')) ;
 			$right->setValueDescriptions (array ('0' => _('No administrative access'),
 							     '1' => _('Edit interface, import XML dumps'))) ;
+		} elseif ($hookname == "role_get_setting") {
+			$role = $params['role'] ;
+			$reference = $params['reference'] ;
+			$value = $params['value'] ;
+
+			switch ($params['section']) {
+			case 'plugin_mediawiki_read':
+				if ($role->hasPermission('project_admin', $reference)) {
+					$params['result'] = 1 ;
+				} else {
+					$params['result'] =  $value ;
+				}
+				break ;
+			case 'plugin_mediawiki_edit':
+				if ($role->hasPermission('project_admin', $reference)) {
+					$params['result'] = 3 ;
+				} else {
+					$params['result'] =  $value ;
+				}
+				break ;
+			case 'plugin_mediawiki_upload':
+				if ($role->hasPermission('project_admin', $reference)) {
+					$params['result'] = 2 ;
+				} else {
+					$params['result'] =  $value ;
+				}
+				break ;
+			case 'plugin_mediawiki_admin':
+				if ($role->hasPermission('project_admin', $reference)) {
+					$params['result'] = 1 ;
+				} else {
+					$params['result'] =  $value ;
+				}
+				break ;
+			}
+		} elseif ($hookname == "role_has_permission") {
+			switch ($params['section']) {
+			case 'plugin_mediawiki_read':
+				switch ($params['action']) {
+				case 'read':
+				default:
+					$params['result'] |= ($value >= 1) ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_edit':
+				switch ($params['action']) {
+				case 'editexisting':
+					$params['result'] |= ($value >= 1) ;
+					break ;
+				case 'editnew':
+					$params['result'] |= ($value >= 2) ;
+					break ;
+				case 'editmove':
+					$params['result'] |= ($value >= 3) ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_upload':
+				switch ($params['action']) {
+				case 'upload':
+					$params['result'] |= ($value >= 1) ;
+					break ;
+				case 'reupload':
+					$params['result'] |= ($value >= 2) ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_admin':
+				switch ($params['action']) {
+				case 'admin':
+				default:
+					$params['result'] |= ($value >= 1) ;
+					break ;
+				}
+				break ;
+			}
+		} elseif ($hookname == "list_roles_by_permission") {
+			switch ($params['section']) {
+			case 'plugin_mediawiki_read':
+				switch ($params['action']) {
+				case 'read':
+				default:
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 1') ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_edit':
+				switch ($params['action']) {
+				case 'editexisting':
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 1') ;
+					break ;
+				case 'editnew':
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 2') ;
+					break ;
+				case 'editmove':
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 3') ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_upload':
+				switch ($params['action']) {
+				case 'upload':
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 1') ;
+					break ;
+				case 'reupload':
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 2') ;
+					break ;
+				}
+				break ;
+			case 'plugin_mediawiki_admin':
+				switch ($params['action']) {
+				case 'admin':
+				default:
+					$params['qpa'] = db_construct_qpa ($params['qpa'], ' AND perm_val >= 1') ;
+					break ;
+				}
+				break ;
+			}
 		} else if ($hookname == "project_admin_plugins") {
 			$group_id = $params['group_id'];
 			$group = &group_get_object($group_id);

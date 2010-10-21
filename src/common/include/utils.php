@@ -1007,6 +1007,15 @@ function util_is_root_dir($dir) {
 }
 
 /**
+ * util_strip_accents() - Remove accents from given text.
+ * @param	string	Text
+ * @return 	string
+ */
+function util_strip_accents($text) {
+	return iconv ('UTF-8', 'US-ASCII//TRANSLIT', $text) ;
+}
+
+/**
  * Constructs the forge's URL prefix out of forge_get_config('url_prefix')
  * 
  * @return string

@@ -699,6 +699,16 @@ abstract class BaseRole extends Error {
 			}
 			return $value ;
 			break ;
+		default:
+			$hook_params = array ();
+			$hook_params['role'] = $this ;
+			$hook_params['section'] = $section ;
+			$hook_params['reference'] = $reference ;
+			$hook_params['value'] = $value ;
+			$hook_params['result'] = 0 ;
+			plugin_hook_by_reference ("role_get_setting", $hook_params);
+			return $hook_params['result'] ;
+			break ;
 		}
 	}
 
@@ -723,11 +733,6 @@ abstract class BaseRole extends Error {
 				return 0 ;
 			}
 		}
-	}
-
-	function setVal($section, $ref_id, $value) {
-		$this->setting_array[$section][$ref_id] = $value;
-		return $this->update( $this->getName(), $this->setting_array);
 	}
 
 	/**
@@ -874,11 +879,21 @@ abstract class BaseRole extends Error {
 				break ;
 			}
 			break ;
+		default:
+			$hook_params = array ();
+			$hook_params['section'] = $section ;
+			$hook_params['reference'] = $reference ;
+			$hook_params['action'] = $action ;
+			$hook_params['value'] = $value ;
+			$hook_params['result'] = false ;
+			plugin_hook_by_reference ("role_has_permission", $hook_params);
+			return $hook_params['result'] ;
+			break ;
 		}
 	}
 
 	/**
-	 *	update - update a new in the database.
+	 *	update - update a role in the database.
 	 *
 	 *	@param	string	The name of the role.
 	 *	@param	array	A multi-dimensional array of data in this format: $data['section_name']['ref_id']=$val
@@ -886,16 +901,13 @@ abstract class BaseRole extends Error {
 	 */
 	function update($role_name,$data) {
 		global $SYS;
-		//
-		//	Cannot update role_id=1
-		//
 		if (USE_PFO_RBAC) {
-			if ($this->Group == NULL) {
+			if ($this->getHomeProject() == NULL) {
 				if (!forge_check_global_perm ('forge_admin')) {
 					$this->setPermissionDeniedError();
 					return false;
 				}
-			} elseif (!forge_check_perm ('project_admin', $this->Group->getID())) {
+			} elseif (!forge_check_perm ('project_admin', $this->getHomeProject()->getID())) {
 				$this->setPermissionDeniedError();
 				return false;
 			}
@@ -905,6 +917,9 @@ abstract class BaseRole extends Error {
 				$this->setPermissionDeniedError();
 				return false;
 			}
+			//
+			//	Cannot update role_id=1
+			//
 			if ($this->getID() == 1) {
 				$this->setError('Cannot Update Default Role');
 				return false;

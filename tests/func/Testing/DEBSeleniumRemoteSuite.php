@@ -8,13 +8,9 @@ class DEBSeleniumRemoteSuite extends SeleniumRemoteSuite
 	{
 		parent::setUp();
 
-///		system("scp -r ../tests root@".HOST.":/usr/share");
-///		system("ssh root@".HOST." 'ln -s gforge /usr/share/src'");
-		
-///		system("scp -rp ~/fusionforge_repo root@".HOST.":");
-///		system("scp -rp ".dirname(__FILE__)."/../../../src/rpm-specific/dag-rpmforge.repo root@".HOST.":/etc/yum.repos.d/");
+		system("scp -r ../tests/preseed root@".HOST.":/root/");
+		system("ssh root@".HOST." 'cat /root/preseed/* | LANG=C debconf-set-selections'");
 
-//		system("scp -rp ".dirname(__FILE__)."/../../../src/rpm-specific/fusionforge-ci.repo root@".HOST.":/etc/yum.repos.d/");
 		if (getenv('FFORGE_DEB_REPO')) {
 			system("ssh root@".HOST." 'echo \"deb ".getenv('FFORGE_DEB_REPO')." ".getenv('DIST')." main\" > /etc/apt/sources.list.d/fusionforge.list'");
 		}
@@ -22,7 +18,9 @@ class DEBSeleniumRemoteSuite extends SeleniumRemoteSuite
 		sleep(5);
 		
 		system("ssh root@".HOST." 'apt-get update'");
-		system("ssh root@".HOST." 'UCF_FORCE_CONFFNEW=yes LANG=C apt-get -y --force-yes install fusionforge-minimal'");
+		system("ssh root@".HOST." 'UCF_FORCE_CONFFNEW=yes DEBIAN_FRONTEND=noninteractive LANG=C apt-get -y --force-yes install postgresql-contrib fusionforge-full'");
+		system("ssh root@".HOST." 'LANG=C a2dissite default'");
+		system("ssh root@".HOST." 'LANG=C invoke-rc.d apache2 reload'");
 	}
 }
 ?>
