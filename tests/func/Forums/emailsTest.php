@@ -54,9 +54,9 @@ class CreateEmails extends FForge_SeleniumTestCase
 	 */
 	function testReplyByEmail()
 	{
-		$php = "/usr/bin/php -d include_path=/opt/gforge/extras/htmlpurifier/library:.:/etc/gforge:/opt/gforge:/opt/gforge/www/include";
-		$forum = "/opt/gforge/cronjobs/forum_gateway.php";
 		$dir = dirname(__FILE__);
+		$php = "/usr/bin/php";
+		$forum = dirname(dirname(dirname($dir)))."/src/cronjobs/forum_gateway.php";
 
 		// Create the first message (Message1/Text1).
 		$this->init();

@@ -60,11 +60,11 @@ class moveThreadForum extends FForge_SeleniumTestCase
     $this->assertTextPresent("My Message.");
     $this->clickAndWait("//img[@alt='Move thread']");
     $this->assertTextPresent("Move thread from help forum to the following forum:");
-    $this->select("new_forum_id", "label=developers");
+    $this->select("new_forum_id", "label=developers-discussion");
     $this->clickAndWait("ok");
-    $this->assertTextPresent("Thread successfully moved from help forum to developers forum");
+    $this->assertTextPresent("Thread successfully moved from help forum to developers-discussion forum");
     $this->clickAndWait("link=Return to the thread");
-    $this->assertTextPresent("Forum: developers");
+    $this->assertTextPresent("Forum: developers-discussion");
     $this->assertTextPresent("My Message.");
     $this->clickAndWait("link=Forums");
     $this->clickAndWait("link=help");

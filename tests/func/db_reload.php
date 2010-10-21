@@ -90,7 +90,7 @@ system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1
 
 $sitename = 'ACOS Forge';
 $adminPassword = 'myadmin';
-$adminEmail = 'nobody@nowhere.com';
+$adminEmail = 'admin@debug.log';
 
 $session_hash = '000TESTSUITE000';
 

@@ -16,7 +16,7 @@ if ( !CONFIGURED ) {
 
 system("echo \"DROP SCHEMA public CASCADE;CREATE SCHEMA public;\" | psql -q -Upostgres ".DB_NAME." &>/tmp/gforge-init.log");
 system("echo \"GRANT ALL ON SCHEMA public TO ".DB_USER.";\" | psql -q -Upostgres ".DB_NAME);
-system("pg_restore ".dirname(__FILE__)."/gforge-init.csql | psql -q -U".DB_USER." ".DB_NAME." &>/tmp/gforge-import.log");
+system("psql -q -U".DB_USER." ".DB_NAME." -f ".dirname(__FILE__)."/gforge-init.sql &>/tmp/gforge-import.log");
 system("echo \"UPDATE groups SET homepage='".SITE."/www/projecta/', http_domain='".SITE."/www/projecta/', scm_box='".SITE."' WHERE group_id=6\" | psql -q -U".DB_USER." ".DB_NAME." &>/tmp/gforge-import2.log");
 system("echo \"VACUUM FULL ANALYZE;\" | psql -q -Upostgres ".DB_NAME);
 

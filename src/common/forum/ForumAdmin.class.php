@@ -208,7 +208,7 @@ class ForumAdmin extends Error {
 				form_release_key(getStringFromRequest("form_key"));
 				exit_error($f->getErrorMessage(),'forums');
 			} else {
-				$feedback = _('Forum created successfully');
+				$feedback = _('Forum added successfully');
 			}
 			return $feedback;
 		}
@@ -316,7 +316,7 @@ class ForumAdmin extends Error {
 			$title = array();
 			$title[] = _('Forum Name');
 			$title[] = _('Message');
-			$title[] = "Action";
+			$title[] = _('Action');
 			
 			$res = db_query_params ('SELECT msg_id,subject,pm.group_forum_id,gl.forum_name FROM forum_pending_messages pm, forum_group_list gl WHERE pm.group_forum_id=$1 AND pm.group_forum_id=gl.group_forum_id AND gl.group_forum_id=$2',
 			array ($forum_id,
@@ -326,7 +326,10 @@ class ForumAdmin extends Error {
 				return;			
 			}
 
-			$options = array("1" => "No action","2" => "Delete","3" => "Release"); //array with the supported actions
+			//array with the supported actions
+			$options = array("1" => _("No action"),
+                             "2" => _("Delete"),
+                             "3" => _("Release"));
 			//i'll make a hidden variable, helps to determine when the user updates the info, which action corresponds to which msgID
 			$ids='';
 			for($i=0;$i<db_numrows($res);$i++) {
@@ -391,7 +394,7 @@ class ForumAdmin extends Error {
 							break;
 						}
 						db_commit();
-						$feedback .= _('Forum deleted');
+						$feedback .= _('Pending message deleted');
 						break;
 					}
 					case 3 : { 

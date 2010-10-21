@@ -30,7 +30,7 @@ if (isset($argv[1])) {
 
 system("mkdir -p '$backupdir'");
 
-system("pg_dump -O ".DB_NAME." -Fc -f '$backupfile'");
+system("pg_dump -O ".DB_NAME." -f '$backupfile'");
 
 if (!isset($argv[1])) {
 	system("find '$backupdir' -name '.DB_NAME.-*.tar*' -mtime +7 -exec rm {} \\;");

@@ -46,7 +46,7 @@ function mail_header($params) {
 			if (forge_check_perm ('project_admin', $project->getID())) {
 				echo $HTML->subMenu(
 					array(
-						_('Admin')
+						_('Administration')
 					),
 					array(
 						'/mail/admin/?group_id='.$group_id
