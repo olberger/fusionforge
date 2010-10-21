@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20100521_switch_to_internal_fts.sql
+../../../src/acde/sql/20100521_switch_to_internal_fts.sql

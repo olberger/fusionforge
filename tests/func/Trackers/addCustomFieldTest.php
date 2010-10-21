@@ -73,7 +73,7 @@ class AddCustomField extends FForge_SeleniumTestCase
 		$this->type("details", "Detailed description");
 		$this->click("extra_fields[22]");
 		$this->type("extra_fields[22]", "V1.4");
-		$this->clickAndWait("//td[@id='main']/form/table/tbody/tr[14]/td/input");
+		$this->clickAndWait("//div[@id='maindiv']/form/table/tbody/tr[14]/td/input");
 		$this->assertTextPresent("regexp:Item \[#[0-9]+\] successfully created");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
@@ -92,7 +92,7 @@ class AddCustomField extends FForge_SeleniumTestCase
 		$this->type("name", "radio");
 		$this->click("//input[@name='field_type' and @value='3']");
 		$this->clickAndWait("post_changes");
-		$this->clickAndWait("//td[@id='main']/table/tbody/tr[8]/td[4]/a");
+		$this->clickAndWait("//div[@id='maindiv']/table/tbody/tr[8]/td[4]/a");
 		$this->type("name", "one");
 		$this->clickAndWait("post_changes");
 		$this->assertTextPresent("Element inserted");

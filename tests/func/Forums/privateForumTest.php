@@ -59,14 +59,13 @@ class PrivateForum extends FForge_SeleniumTestCase
     $this->type("description", "Private forum description");
     $this->clickAndWait("submit");
     // Check creation
-    $this->assertTextPresent("Forum created successfully");
+    $this->assertTextPresent("Forum added successfully");
     // Check new forum is listed
     $this->clickAndWait("link=Forums");
     $this->assertTextPresent("Private forum description");
-    // Log out
-    $this->clickAndWait("link=Log Out");
-    $this->select("none", "label=projecta");
-    $this->waitForPageToLoad("30000");
+
+    $this->logout();
+    $this->clickAndWait("link=ProjectA");
     $this->clickAndWait("link=Forums");
     // Check forum is not listed for anonymous user
     $this->assertFalse($this->isTextPresent("Private forum description"));

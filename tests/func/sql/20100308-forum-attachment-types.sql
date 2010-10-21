@@ -1,1 +1,1 @@
-../../../gforge/db/20100308-forum-attachment-types.sql
+../../../src/db/20100308-forum-attachment-types.sql

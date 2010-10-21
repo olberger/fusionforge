@@ -71,7 +71,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->assertTextPresent("Your project has been submitted");
 		$this->assertTextPresent("you will receive notification of their decision and further instructions");
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.$prj'].submit");
 		$this->clickAndWait("link=Home");
 		$this->assertTextPresent("$prj");
@@ -173,7 +173,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->assertTextPresent("Your project has been submitted");
 		$this->assertTextPresent("you will receive notification of their decision and further instructions");
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.$prj'].submit");
 		$this->clickAndWait("link=Home");
 		$this->assertTextPresent("$prj ' & Z");
@@ -230,7 +230,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->switchUser('admin');
 
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.$prj'].submit");
 		$this->clickAndWait("link=Home");
 		$this->assertTextPresent("$prj");
@@ -248,7 +248,7 @@ class CreateProject extends FForge_SeleniumTestCase
 		$this->login('admin');
 
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("submit");
 		$this->assertTextPresent("Approving Project: template");
 		$this->assertTextPresent("No Pending Projects to Approve");

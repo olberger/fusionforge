@@ -55,7 +55,7 @@ class Surveys extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Administration");
 
 		// Create some questions
-		$this->clickAndWait("link=Edit Questions");
+		$this->clickAndWait("link=Add Question");
 		$this->type("question", "This is my first question (radio) ?");
 		$this->clickAndWait("submit");
 		$this->type("question", "This is my second question (text area) ?");
@@ -75,7 +75,7 @@ class Surveys extends FForge_SeleniumTestCase
 		$this->clickAndWait("submit");
 
 		// Create survey
-		$this->clickAndWait("link=Edit Survey");
+		$this->clickAndWait("link=Add Survey");
 		$this->type("survey_title", "My first survey: L'année dernière à Noël, 3 < 4, 中国 \" <em>, père & fils");
 		$this->click("to_add[]");
 		$this->click("//input[@name='to_add[]' and @value='4']");
@@ -108,29 +108,29 @@ class Surveys extends FForge_SeleniumTestCase
 		$this->assertTextPresent("3 (1)");
 		$this->assertTextPresent("1, 2, 3, 4, 5");
 		// Check that the number of votes is 1
-		$this->assertEquals("1", $this->getText("//td[@id='main']/table/tbody/tr/td[5]"));
+		$this->assertEquals("1", $this->getText("//div[@id='maindiv']/table/tbody/tr/td[5]"));
 
 		// Now testing by adding new questions to the survey.
 		$this->clickAndWait("link=Surveys");
 		$this->clickAndWait("link=Administration");
-		$this->clickAndWait("link=Edit Survey");
-		$this->clickAndWait("link=Edit Questions");
+		$this->clickAndWait("link=Add Survey");
+		$this->clickAndWait("link=Add Question");
 		$this->type("question", "Another added question ?");
 		$this->clickAndWait("submit");
-		$this->clickAndWait("link=Edit Survey");
+		$this->clickAndWait("link=Add Survey");
 		$this->clickAndWait("link=Edit");
 		$this->click("to_add[]");
 		$this->clickAndWait("submit");
-		$this->clickAndWait("link=Edit Survey");
+		$this->clickAndWait("link=Add Survey");
 		$this->type("survey_title", "Q10 ?");
-		$this->clickAndWait("link=Edit Questions");
+		$this->clickAndWait("link=Add Question");
 		$this->type("question", "Q8 ?");
 		$this->clickAndWait("submit");
 		$this->type("question", "Q9 ?");
 		$this->clickAndWait("submit");
 		$this->type("question", "Q10 ?");
 		$this->clickAndWait("submit");
-		$this->clickAndWait("link=Edit Survey");
+		$this->clickAndWait("link=Add Survey");
 		$this->clickAndWait("link=Edit");
 		$this->click("to_add[]");
 		$this->click("//input[@name='to_add[]' and @value='8']");
@@ -151,7 +151,7 @@ class Surveys extends FForge_SeleniumTestCase
 		$this->open("/survey/?group_id=6");
 		$this->clickAndWait("link=Surveys");
 		$this->clickAndWait("link=Administration");
-		$this->clickAndWait("link=Edit Survey");
+		$this->clickAndWait("link=Add Survey");
 		$this->clickAndWait("link=Edit");
 		$this->click("//input[@name='is_public' and @value='0']");
 		$this->clickAndWait("submit");

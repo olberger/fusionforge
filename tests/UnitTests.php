@@ -51,15 +51,6 @@ if (!isset($no_debug) && $sys_install_type == 'development' || $sys_install_type
 require_once 'PHPUnit/Framework.php';
 require_once 'PHPUnit/TextUI/TestRunner.php';
 
-// Unit tests
-require_once 'Utils/AllTests.php';
-require_once 'unit/trackers/AllTests.php';
-require_once 'unit/svnhudson/AllTests.php';
-require_once 'unit/roles/AllTests.php';
-
-// Code tests
-require_once 'code/syntax/AllTests.php';
-
 // Exclude tests directorie.
 PHPUnit_Util_Filter::addDirectoryToFilter(dirname(__FILE__));
 
@@ -74,15 +65,9 @@ class AllTests
 	{
 		$suite = new PHPUnit_Framework_TestSuite('PHPUnit');
 
-		// Unit tests
-		$suite->addTest(Utils_AllTests::suite());
-		$suite->addTest(Trackers_AllTests::suite());
-		$suite->addTest(SvnHudson_AllTests::suite());
-		$suite->addTest(Roles_AllTests::suite());
-		
-		// Code tests
-		$suite->addTest(Syntax_AllTests::suite());
-		
+		$suite->addTestFiles(glob(dirname(__FILE__)."/code/*/*Test.php"));
+		$suite->addTestFiles(glob(dirname(__FILE__).'/unit/*/*Test.php'));
+
 		return $suite;
 	}
 }

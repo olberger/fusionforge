@@ -1,5 +1,7 @@
 <?php
 
+global $gfcommon,$gfwww;
+
 require_once 'PHPUnit/Framework.php';
 require_once $gfcommon.'include/Group.class.php';
 require_once $gfcommon.'tracker/Artifact.class.php';
@@ -10,6 +12,8 @@ class ArtifactTest extends PHPUnit_Framework_TestCase {
 
 	protected function setUp()
 	{
+		forge_define_config_item('sendmail_path', 'core', 'echo >/dev/null');
+
 		db_query_params('TRUNCATE user_session', array());
 		
 		$this->group = new Group(6);

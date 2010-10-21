@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20080625_add_csl.sql
+../../../src/acde/sql/20080625_add_csl.sql

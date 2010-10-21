@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20050801_alter_doc.sql
+../../../src/acde/sql/20050801_alter_doc.sql

@@ -109,7 +109,7 @@ class Lists extends FForge_SeleniumTestCase
 		$this->type("forum_name", "tutu");
 		$this->type("description", "Tutu forum");
 		$this->clickAndWait("submit");
-		$this->assertTextPresent("Forum created successfully");
+		$this->assertTextPresent("Forum added successfully");
 		$this->clickAndWait("link=Mailing Lists");
 		$this->clickAndWait("link=Administration");
 		$this->clickAndWait("link=Add Mailing List");

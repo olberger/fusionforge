@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20050803_create_table_doc_status.sql
+../../../src/acde/sql/20050803_create_table_doc_status.sql

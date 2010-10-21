@@ -1,5 +1,7 @@
 <?php
 
+global $gfcommon,$gfwww;
+
 require_once 'PHPUnit/Framework.php';
 require_once $gfcommon.'include/Group.class.php';
 require_once $gfcommon.'tracker/ArtifactType.class.php';
@@ -17,7 +19,7 @@ class ArtifactWorkflowTest extends PHPUnit_Framework_TestCase {
 		$ath = new ArtifactType($group,'101');
 		$efarr =& $ath->getExtraFields(ARTIFACT_EXTRAFIELDTYPE_STATUS);
 		if (empty($efarr)) {
-			$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=1', arrray());
+			$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=1', array());
 			$admin_id = db_result($res,0,'user_id');
 			session_set_new($admin_id);
 			

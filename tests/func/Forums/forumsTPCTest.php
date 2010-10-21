@@ -81,20 +81,27 @@ class ForumsTPC extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Forums");
 		$this->clickAndWait("link=help");
 		$this->clickAndWait("link=Start New Thread");
-		$this->type("subject", "Summary of message#1");
-		$this->type("body", "Detailed description of message#1");
+		$this->type("subject", "message#1 - tpc ok");
+		$this->type("body", "Message#1, access by tpc users");
 		$this->clickAndWait("submit");
 
-		// Add an attachement with a fake secret file to this artifact.
+		$this->clickAndWait("link=Forums");
+		$this->clickAndWait("link=open-discussion");
+		$this->clickAndWait("link=Start New Thread");
+		$this->type("subject", "message#2 - tpc no access");
+		$this->type("body", "Message#2, no access by tpc users");
+		$this->clickAndWait("submit");
+
+		// Add an attachement with a fake secret file to message#2.
 		$this->db("INSERT INTO forum_attachment (attachmentid, userid, dateline, filename, filedata, visible, counter, ".
 			"filesize, msg_id, filehash, mimetype) VALUES(1, 102, 1274302119, 'secret.txt','QSBTZWNyZXRGaWxlVGhlcmUgICEhISENCg==',".
-			"1, 0, 12, 4, 'XXXX', 'text/plain')");
+			"1, 0, 12, 5, 'XXXX', 'text/plain')");
 
 		// Access list of Messages.
 		// Check presence of warning banner
 		$this->open("/forum/forum.php?forum_id=2&group_id=6");
 		$this->waitForPageToLoad("30000");
-		$this->assertTextPresent("Summary of message#1");
+		$this->assertTextPresent("message#1 - tpc ok");
 		$this->assertTextPresent("This project is shared with third party users.");
 
 		// A TPC user is trying to access data in a forum (not allowed)
@@ -106,36 +113,36 @@ class ForumsTPC extends FForge_SeleniumTestCase
 		$this->assertTextPresent("help");
 		$this->assertFalse($this->isTextPresent("developers"));
 
-//		// Access to open-discussion forum is denied.
-//		$this->open("/forum/forum.php?forum_id=1&group_id=6");
-//		$this->waitForPageToLoad("30000");
-//		$this->assertTextPresent("Permission Denied.");
-//		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
-//
-//		// Access to open-discussion forum is denied (short URL).
-//		$this->open("/forum/forum.php?forum_id=1");
-//		$this->waitForPageToLoad("30000");
-//		$this->assertTextPresent("Permission Denied.");
-//		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
-//		
-//		// Access to developers forum is denied.
-//		$this->open("/forum/forum.php?forum_id=3&group_id=6");
-//		$this->waitForPageToLoad("30000");
-//		$this->assertTextPresent("Permission denied.");
-//		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
-//		
-//		// Direct access in a message from Bugs tracker.
-//		$this->open("/tracker/?func=detail&aid=1&group_id=6&atid=101");
-//		$this->waitForPageToLoad("30000");
-//		$this->assertFalse($this->isTextPresent("Summary of bug#1"));
-//		$this->assertTextPresent("Permission denied.");
-//
-//		// No access on an attached file.
-//		$this->open("/tracker/download.php/6/101/1/1/secret.txt");
-//		$this->waitForPageToLoad("30000");
-//		$this->assertFalse($this->isTextPresent("A SecretFileThere  !!!!"));
-//		$this->assertTextPresent("Permission denied.");
-//
+		// Access to open-discussion forum is denied.
+		$this->open("/forum/forum.php?forum_id=1&group_id=6");
+		$this->waitForPageToLoad("30000");
+		$this->assertTextPresent("Permission denied.");
+		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
+
+		// Access to open-discussion forum is denied (short URL).
+		$this->open("/forum/forum.php?forum_id=1");
+		$this->waitForPageToLoad("30000");
+		$this->assertTextPresent("Permission denied.");
+		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
+
+		// Access to developers forum is denied.
+		$this->open("/forum/forum.php?forum_id=3&group_id=6");
+		$this->waitForPageToLoad("30000");
+		$this->assertTextPresent("Permission denied.");
+		$this->assertFalse($this->isTextPresent("This project is shared with third party users."));
+
+		// Direct access in to message#2 => not allowed.
+		$this->open("/forum/forum.php?thread_id=4&forum_id=1&group_id=6");
+		$this->waitForPageToLoad("30000");
+		$this->assertTextPresent("Permission denied.");
+		$this->assertFalse($this->isTextPresent("message#2 - tpc no access"));
+
+		// No access on an attached file.
+		$this->open("/forum/attachment.php?attachid=1&group_id=6&forum_id=1");
+		$this->waitForPageToLoad("30000");
+		$this->assertFalse($this->isTextPresent("A SecretFile"));
+		$this->assertTextPresent("Permission denied.");
+
 //		// No access on the admin part of the tracker.
 //		$this->open("/tracker/admin/?group_id=6&atid=101");
 //		$this->waitForPageToLoad("30000");

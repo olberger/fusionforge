@@ -61,23 +61,32 @@ if ( !CONFIGURED ) {
 	exit(1);
 }
 
-if ( DB_TYPE == 'mysql') {
-	// Reload a fresh database before running this test suite.
-	system("mysqladmin -f -u".DB_USER." -p".DB_PASSWORD." drop ".DB_NAME." &>/dev/null");
-	system("mysqladmin -u".DB_USER." -p".DB_PASSWORD." create ".DB_NAME);
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(dirname(__FILE__)))."/db/gforge-struct-mysql.sql");
-	system("mysql -u".DB_USER." -p".DB_PASSWORD." ".DB_NAME." < ".dirname(dirname(dirname(__FILE__)))."/db/gforge-data-mysql.sql");
-} elseif ( DB_TYPE == 'pgsql') {
-	if (!function_exists('pg_connect')) {
-		print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
-		exit;
+$opt_restart = true;
+if (isset($argv[1]) && $argv[1] == '-no-restart') {
+	$opt_restart = false;
+}
+
+// Search location of fusionforge main directory (gforge).
+$forge_root = dirname(dirname(dirname(__FILE__))).'/src';
+if (!file_exists($forge_root)) {
+	$forge_root = dirname(dirname(dirname(__FILE__))).'/gforge';
+	if (!file_exists($forge_root)) {
+		print "ERROR: Unable to guess location of fusionforge main directory (gforge), aborting.\n";
+		exit(1);
 	}
-	system("psql -q -U".DB_USER." ".DB_NAME." -f ".dirname(dirname(dirname(__FILE__)))."/gforge/db/reset_schema.sql &>/tmp/fusionforge-import-reset.log");
-	system("psql -q -U".DB_USER." ".DB_NAME." -f ".dirname(dirname(dirname(__FILE__)))."/gforge/db/gforge.sql &>/tmp/fusionforge-import-load.log");
-} else {
-	print "ERROR: Unsupported database type: ".DB_TYPE.", aborting.\n";
+}
+
+if (!function_exists('pg_connect')) {
+	print "ERROR: Missing pgsql on PHP to run tests on PostgreSQL, aborting.\n";
 	exit;
 }
+
+system("echo \"DROP SCHEMA public CASCADE;CREATE SCHEMA public;\" | psql -q -Upostgres ".DB_NAME." > /var/log/fusionforge-init.log 2>&1");
+system("echo \"GRANT ALL ON SCHEMA public TO ".DB_USER.";\" | psql -q -Upostgres ".DB_NAME." >> /var/log/fusionforge-init.log 2>&1");
+
+system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/fusionforge-init.log 2>&1");
+
+system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
 
 $sitename = 'ACOS Forge';
 $adminPassword = 'myadmin';
@@ -87,7 +96,7 @@ $session_hash = '000TESTSUITE000';
 
 set_include_path(".:/opt/gforge/:/opt/gforge/www/include/:/etc/gforge/");
 
-require_once 'www/env.inc.php';
+require_once $forge_root.'/www/env.inc.php';
 require_once $gfwww.'include/squal_pre.php';
 
 $theme_id=5;
@@ -111,7 +120,7 @@ $user_id = $user->create('admin', $sitename, 'Admin', $adminPassword, $adminPass
 	$adminEmail, 1, 1, 1,'GMT','',0, 5,'', '','','','','','US',false, 'admin');
 
 if (!$user_id) {
-	print "ERROR: Creating user: ".$user->getErrorMessage()."\n";
+	print "ERROR: Creating user: ".$user->getErrorMessage().':'.db_error()."\n";
 	exit(1);
 }
 

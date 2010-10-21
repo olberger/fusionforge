@@ -1,1 +1,1 @@
-../../../gforge/db/20100517-add-project-widgets.sql
+../../../src/db/20100517-add-project-widgets.sql

@@ -9,14 +9,6 @@ class UnitGForge extends PHPUnit_Framework_TestCase
 {
 	function setUp()
 	{
-		global $sys_urlroot, $sys_dbhost, $sys_dbport, $sys_dbname, $sys_dbuser, $sys_dbpasswd,
-			$sys_ldap_passwd, $sys_jabber_pass, $sys_server, $conn,
-			$sys_var_path, $sys_plugins_path, $sys_session_key, $sys_session_expire, $session_hash,
-			$sys_use_shell, $sys_shell_host, $sys_scm_host,
-			$sys_default_domain, $sys_upload_dir, $sys_lists_host, $sys_name, $SYS,
-			$_sys_db_transaction_level, $sys_default_timezone, $sys_default_theme_id,
-			$sys_require_unique_email;
-
 		// Reload a fresh database before running this test suite.
 		system("php ".dirname(dirname(__FILE__))."/db_reload.php");
 
@@ -25,7 +17,7 @@ class UnitGForge extends PHPUnit_Framework_TestCase
 	
 	function createProject($name)
 	{
-		$res = db_query("SELECT user_id FROM user_group WHERE group_id=1");
+		$res = db_query_params('SELECT user_id FROM user_group WHERE group_id=1', array());
 		$admin_id = db_result($res,0,'user_id');
 		session_set_new($admin_id);
 

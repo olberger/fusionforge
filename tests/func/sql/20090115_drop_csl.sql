@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20090115_drop_csl.sql
+../../../src/acde/sql/20090115_drop_csl.sql

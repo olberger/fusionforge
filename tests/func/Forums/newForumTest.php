@@ -59,7 +59,7 @@ class NewForum extends FForge_SeleniumTestCase
     $this->type("description", "My new forum description");
     $this->clickAndWait("submit");
     // Check creation
-    $this->assertTextPresent("Forum created successfully");
+    $this->assertTextPresent("Forum added successfully");
     // Check new forum is listed
     $this->clickAndWait("link=Forums");
     $this->assertTrue($this->isElementPresent("link=my-new-forum"));
@@ -77,7 +77,7 @@ class NewForum extends FForge_SeleniumTestCase
     $this->type("body", "My reply to the forum.");
     $this->clickAndWait("submit");
     $this->assertTextPresent("Message Posted Successfully");
-    $this->assertEquals("1", $this->getText("//td[@id='main']/table[1]/tbody/tr[1]/td[3]"));
+    $this->assertEquals("1", $this->getText("//div[@id='maindiv']/table[1]/tbody/tr[1]/td[3]"));
 
     // Browse in flat mode
     $this->select("style", "label=Flat");
@@ -92,7 +92,7 @@ class NewForum extends FForge_SeleniumTestCase
     // Browse in ultimate mode
     $this->select("style", "label=Ultimate");
     $this->clickAndWait("submit");
-    $this->assertEquals("My Subject", $this->getText("//td[@id='main']/table[1]/tbody/tr[1]/td[1]"));
+    $this->assertEquals("My Subject", $this->getText("//div[@id='maindiv']/table[1]/tbody/tr[1]/td[1]"));
   }
 }
 ?>

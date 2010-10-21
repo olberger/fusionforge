@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20090914_license_for_frs.sql
+../../../src/acde/sql/20090914_license_for_frs.sql

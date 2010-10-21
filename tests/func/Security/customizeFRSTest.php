@@ -59,7 +59,7 @@ class CustomizeFRS extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Members");
 
 		// Step 2: For a given role, set the File Release System permission to Read and None.
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->select("data[frs][0]", "label=None");
 		$this->select("data[frspackage][1]", "label=Read");
@@ -81,7 +81,7 @@ class CustomizeFRS extends FForge_SeleniumTestCase
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Project Admin");
 		$this->clickAndWait("link=Members");
-		$this->select("//td[@id='main']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
+		$this->select("//div[@id='maindiv']/table/tbody/tr/td[1]/table/tbody/tr[7]/td/form/select", "label=User");
 		$this->clickAndWait("//input[@name='edit' and @value='Edit Role']");
 		$this->select("data[frs][0]", "label=None");
 		$this->select("data[frspackage][1]", "label=Write");

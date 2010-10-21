@@ -1,1 +1,1 @@
-../../../gforge/acde/sql/20100309_clean_unused.sql
+../../../src/acde/sql/20100309_clean_unused.sql

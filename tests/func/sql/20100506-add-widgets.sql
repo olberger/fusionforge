@@ -1,1 +1,1 @@
-../../../gforge/db/20100506-add-widgets.sql
+../../../src/db/20100506-add-widgets.sql

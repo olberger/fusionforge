@@ -150,7 +150,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->init();
 		$this->clickAndWait("link=Trackers");
 		// There are two links "Support"
-		$this->clickAndWait("//td[@id='main']/table/tbody/tr[2]/td[1]/a");
+		$this->clickAndWait("//div[@id='maindiv']/table/tbody/tr[2]/td[1]/a");
 		$this->clickAndWait("link=Submit New");
 		$this->type("summary", "Summary1");
 		$this->type("details", "Description1");
@@ -183,7 +183,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Administration");
-		$this->clickAndWait("link=New Tracker");
+		$this->clickAndWait("link=Add Tracker");
 		$this->type("name", "Meeting minutes");
 		$this->type("description", "Meeting minutes");
 		$this->click("is_public");
@@ -206,7 +206,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 	function testNewTrackerEntryNotLogged()
 	{
 		$this->init();
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->select("none", "label=projecta");
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Trackers");
@@ -255,7 +255,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->type("details", "Assigned to a tech");
 		$this->clickAndWait("submit");
 		$this->clickAndWait("link=Assigned to a tech");
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "ucoredev");
 		$this->type("form_pw", "password");
@@ -284,7 +284,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
 		$this->type("summary", "My tracker entry");
-		$this->click("//td[@id='main']/form/table/tbody/tr[10]/td/strong");
+		$this->click("//div[@id='maindiv']/form/table/tbody/tr[10]/td/strong");
 		$this->type("details", "My tracker entry description.");
 		$this->clickAndWait("submit");
 		$this->assertTextPresent("regexp:Item \[#[0-9]+\] successfully created");
@@ -302,7 +302,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
 		$this->type("summary", "Test monitor tracker");
-		$this->click("//td[@id='main']/form/table/tbody/tr[10]/td/strong");
+		$this->click("//div[@id='maindiv']/form/table/tbody/tr[10]/td/strong");
 		$this->type("details", "Body of test monitor tracker");
 		$this->clickAndWait("submit");
 		$this->assertTextPresent("regexp:Item \[#[0-9]+\] successfully created");
@@ -320,16 +320,16 @@ class CreateTracker extends FForge_SeleniumTestCase
 		// Monitor tracker entry
 		$this->clickAndWait("link=My tracker entry");
 		$this->assertTextPresent("[#1] My tracker entry");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[1]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[1]/a/strong");
 		$this->assertTextPresent("Now Monitoring Artifact");
 
 		// Stop monitoring tracker entry
 		$this->clickAndWait("link=My tracker entry");
-		$this->clickAndWait("//td[@id='main']/form/table[1]/tbody/tr/td[1]/a/strong");
+		$this->clickAndWait("//div[@id='maindiv']/form/table[1]/tbody/tr/td[1]/a/strong");
 		$this->assertTextPresent("Artifact Monitoring Deactivated");
 
 		// Monitoring an entire tracker while not being logged.
-		$this->clickAndWait("link=Log Out");
+		$this->logout();
 		$this->select("none", "label=projecta");
 		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Trackers");
@@ -673,7 +673,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		$this->clickAndWait("new_task");
 		$this->type("details", "Detail summary1 bug");
 		$this->type("hours", "5");
-		$this->clickAndWait("//td[@id='main']/form/table/tbody/tr[9]/td/input");
+		$this->clickAndWait("//div[@id='maindiv']/form/table/tbody/tr[9]/td/input");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Summary1");
@@ -790,11 +790,11 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		$this->clickAndWait("link=Manage Custom Fields");
 		$this->clickAndWait("link=[Add/Reorder choices]");
-		$this->clickAndWait("//td[@id='main']/form[1]/table/tbody/tr[2]/td[2]/a[2]/img");
+		$this->clickAndWait("//div[@id='maindiv']/form[1]/table/tbody/tr[2]/td[2]/a[2]/img");
 		$this->assertTextPresent("Tracker Updated");
-		$this->clickAndWait("//td[@id='main']/form[1]/table/tbody/tr[6]/td[2]/a[1]/img");
+		$this->clickAndWait("//div[@id='maindiv']/form[1]/table/tbody/tr[6]/td[2]/a[1]/img");
 		$this->assertTextPresent("Tracker Updated");
-		$this->clickAndWait("//td[@id='main']/form[1]/table/tbody/tr[5]/td[2]/a[1]/img");
+		$this->clickAndWait("//div[@id='maindiv']/form[1]/table/tbody/tr[5]/td[2]/a[1]/img");
 		$this->assertTextPresent("Tracker Updated");
 		$this->clickAndWait("post_changes_alphaorder");
 		$this->assertTextPresent("Tracker Updated");
@@ -816,7 +816,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		// Approve the template project first
 		$this->clickAndWait("link=Site Admin");
-		$this->clickAndWait("link=Pending (P) (New Project Approval)");
+		$this->clickAndWait("link=Pending projects (new project approval)");
 		$this->clickAndWait("document.forms['approve.template'].submit");
 
 		$this->switchUser('uadmin');
