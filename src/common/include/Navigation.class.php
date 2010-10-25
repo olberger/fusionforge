@@ -420,7 +420,7 @@ class Navigation extends Error {
                         
                         // Artifact Tracking
                         if ($group->usesTracker()) {
-                                $menu['titles'][] = _('Tracker');
+                                $menu['titles'][] = _('Trackers');
                                 $menu['urls'][] = util_make_url ('/tracker/?group_id=' . $group_id);
                                 if (forge_check_perm ('tracker_admin', $group_id)) {
                                         $menu['adminurls'][] = util_make_url('/tracker/admin/?group_id='.$group_id);

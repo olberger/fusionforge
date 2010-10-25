@@ -51,8 +51,7 @@ class ModifyDetailedDescription extends FForge_SeleniumTestCase
 		$this->init();
 		$this->switchUser('uadmin');
 
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");

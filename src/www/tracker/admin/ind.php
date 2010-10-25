@@ -89,7 +89,7 @@ site_project_header($params);
 echo $HTML->subMenu(
 	array(
 		_('Report'),
-		_('Admin')
+		_('Administration')
 	),
 	array(
 		'/tracker/reporting/?group_id='.$group_id,

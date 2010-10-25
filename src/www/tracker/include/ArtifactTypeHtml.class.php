@@ -59,7 +59,9 @@ class ArtifactTypeHtml extends ArtifactType {
 		$labels = array();
 		$links  = array();
 
-		$labels[] = $this->getName().': '._('Browse');
+		$labels[] = _("View Trackers");
+		$links[]  = '/tracker/?group_id='.$group_id;
+		$labels[] = $this->getName();
 		$links[]  = '/tracker/?func=browse&amp;group_id='.$group_id.'&amp;atid='. $this->getID();
 		$labels[] = _('Download .csv');
 		$links[]  = '/tracker/?func=downloadcsv&amp;group_id='.$group_id.'&amp;atid='. $this->getID();
@@ -80,7 +82,7 @@ class ArtifactTypeHtml extends ArtifactType {
   			}
 
 			if (forge_check_perm ('tracker', $this->getID(), 'manager')) {
-				$labels[] = _('Admin');
+				$labels[] = _('Administration');
 				$links[]  = '/tracker/admin/?group_id='.$group_id.'&amp;atid='.$this->getID();
 			}
 		} else {
@@ -117,7 +119,7 @@ class ArtifactTypeHtml extends ArtifactType {
 		$title_arr[]=_('Manage Workflow');
 
 		$links_arr[]='/tracker/admin/?group_id='.$group_id.'&amp;atid='.$this->getID().'&amp;customize_list=1';
-		$title_arr[]=_('Customize List');
+		$title_arr[]=_('Customize Browse List');
 
 		$links_arr[]='/tracker/admin/?group_id='.$group_id.'&amp;atid='.$this->getID().'&amp;add_canned=1';
 		$title_arr[]=_('Add/Update Canned Responses');

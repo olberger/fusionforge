@@ -145,7 +145,8 @@
 					$acr->clearError();
 				} else {
 					$feedback .= _('Canned Response Updated');
-					$next = 'add_canned';
+					$update_canned=false;
+					$add_canned=true;
 				}
 			}
 
@@ -229,7 +230,8 @@
 					$ac->clearError();
 				} else {
 					$feedback .= _('Custom Field updated');
-					$next = 'add_extrafield';
+					$update_box=false;
+					$add_extrafield=true;
 				}
 			}
 
@@ -260,7 +262,34 @@
 						$ao->clearError();
 					} else {
 						$feedback .= _('Element updated');
-						$next = 'add_extrafield';
+						$update_opt=false;
+						$add_extrafield=true;
+					}
+				}
+			}
+
+		} elseif (getStringFromRequest('delete_opt')) {
+			$id = getStringFromRequest('id');
+			$boxid = getStringFromRequest('boxid');
+
+			$ac = new ArtifactExtraField($ath,$boxid);
+			if (!$ac || !is_object($ac)) {
+				$error_msg .= 'Unable to create ArtifactExtraField Object';
+			} elseif ($ac->isError()) {
+				$error_msg .= $ac->getErrorMessage();
+			} else {
+				$ao = new ArtifactExtraFieldElement($ac,$id);
+				if (!$ao || !is_object($ao)) {
+					$error_msg .= 'Unable to create ArtifactExtraFieldElement Object';
+				} elseif ($ao->isError()) {
+					$error_msg .= $ao->getErrorMessage();
+				} else {
+					if (!$ao->delete()) {
+						$error_msg .= _('Error deleting a custom field').' : '.$ao->getErrorMessage();
+						$ao->clearError();
+					} else {
+						$feedback .= _('Element deleted');
+						$add_extrafield=true;
 					}
 				}
 			}
@@ -278,7 +307,7 @@
 				exit_error(_('Error cloning fields: ').$ath->getErrorMessage(),'tracker');
 			} else {
 				$feedback .= _('Successfully Cloned Tracker Fields ');
-				$next = '*main*';
+				$clone_tracker='';
 			}
 
 		//
@@ -418,7 +447,7 @@
 			} elseif ($ac->isError()) {
 				$error_msg .= $ac->getErrorMessage();
 			} else {
-				if (!$ac->alphaorderValues($id)) {
+				if (!$ac->alphaorderValues()) {
 					$error_msg .= _('Error updating a custom field').' : '.$ac->getErrorMessage();
 					$ac->clearError();
 				} else {
@@ -458,30 +487,5 @@
 			$atw = new ArtifactWorkflow($ath, $field_id);
     		$atw->saveAllowedRoles($from, $next, $role);
 			$feedback .= _('Workflow saved');
-		} elseif (getStringFromRequest('delete_opt')) {
-			$sure = getStringFromRequest('sure');
-			$really_sure = getStringFromRequest('really_sure');
-
-			$id = getStringFromRequest('id');
-			$boxid = getStringFromRequest('boxid');
-			$ab = new ArtifactExtraField($ath,$boxid);
-			if (!$ab || !is_object($ab)) {
-				$error_msg .= _('Unable to create ArtifactExtraField Object');
-			} elseif ($ab->isError()) {
-				$error_msg .= $ab->getErrorMessage();
-			} else {
-				$ao = new ArtifactExtraFieldElement($ab,$id);
-				if (!$ao || !is_object($ao)) {
-					$error_msg .= _('Unable to create ArtifactExtraFieldElement Object');
-				} else {
-					if (!$sure || !$really_sure || !$ao->delete()) {
-						$error_msg .= _('Error deleting an element').': '.$ao->getErrorMessage();
-						$ao->clearError();
-					} else {
-						$feedback .= _('Element deleted');
-						$next = 'add_extrafield';
-					}
-				}
-			}
 		}
 		?>

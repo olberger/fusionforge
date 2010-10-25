@@ -48,11 +48,8 @@ class AddCustomField extends FForge_SeleniumTestCase
 {
 	function testAddCustomField()
 	{
-		$this->init();
-		$this->switchUser('uadmin');
+		$this->init('ProjectA', 'uadmin');
 
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Administration");

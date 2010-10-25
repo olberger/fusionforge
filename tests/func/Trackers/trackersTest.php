@@ -207,8 +207,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 	{
 		$this->init();
 		$this->logout();
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
@@ -245,8 +244,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 	function testUpdateTrackerAssignedToYou()
 	{
 		$this->init();
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
@@ -277,9 +275,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 	function testMonitorTracker()
 	{
 		$this->init();
-		// Submit a tracker entry in Bugs
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
@@ -295,9 +291,9 @@ class CreateTracker extends FForge_SeleniumTestCase
 		
 		// Test mail when creating tracker
 		$this->clearMail();
+
 		// Creating tracker
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Submit New");
@@ -330,8 +326,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		// Monitoring an entire tracker while not being logged.
 		$this->logout();
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=My tracker entry");
@@ -521,8 +516,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		// Modify custom fields and check modifications are logged
 
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->clickAndWait("link=Summary1");
@@ -622,9 +616,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 		}
 
 		// Do a mass update
-
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		$this->clickAndWait("link=Trackers");
 		$this->clickAndWait("link=Bugs");
 		$this->open("/tracker/?func=browse&group_id=6&atid=101");
@@ -635,8 +627,7 @@ class CreateTracker extends FForge_SeleniumTestCase
 
 		// Logout so that value is displayed as text, not menu
 		$this->logout();
-		$this->select("none", "label=projecta");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=ProjectA");
 		// Check mass update has been done
 		for ($i=1; $i<=10; $i++) {
 			$this->clickAndWait("link=Trackers");

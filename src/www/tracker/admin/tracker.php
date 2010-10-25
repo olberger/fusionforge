@@ -50,7 +50,7 @@ echo _('Edit tracker workflow.') ;
 echo '</p>';
 
 echo '<p>' . util_make_link ('/tracker/admin/?group_id='.$group_id.'&amp;atid='.$ath->getID().'&amp;customize_list=1',
-			     '<strong>'._('Customize List').'</strong>').'<br />' ;
+			     '<strong>'._('Customize Browse List').'</strong>').'<br />' ;
 echo _('Customize display for the tracker.') ;
 echo '</p>';
 
