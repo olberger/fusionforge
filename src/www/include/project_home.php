@@ -79,10 +79,6 @@ if (session_loggedin()) {
 site_project_header(array('title'=>$title, 'h1' => '', 'group'=>$group_id, 'toptab' => 'home',
 	'submenu' => $params['submenu']));
 
-if ($project->getStatus() == 'H') {
-	print "<p>".sprintf(_('NOTE: This project entry is maintained by the %1$s staff. We are not the official site for this product. Additional copyright information may be found on this project\'s homepage.'), $GLOBALS['sys_name'])."</p>\n";
-}
-
 $lm = new WidgetLayoutManager();
 $lm->displayLayout($group_id, WidgetLayoutManager::OWNER_TYPE_GROUP);
 
