@@ -13,8 +13,6 @@ $ath->header(array ('title'=>_('Delete artifact').': [#'. $ah->getID(). '] ' . $
 
 ?>
 
-<h1><?php echo _('Delete artifact').': [#'. $ah->getID(). '] ' . $ah->getSummary(); ?></h1>
-
 <table>
 <tr>
 <td>

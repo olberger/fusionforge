@@ -315,7 +315,7 @@ if ($add_cat && $group_project_id) {
 
 	session_require_perm ('pm', $pg->getID(), 'manager') ;
 
-	pm_header(array('title'=>_('Update Subproject Tasks: ').$pg->getName()));
+	pm_header(array('title'=>_('Change Tasks Status')));
 
 	?>
 	<p><?php echo _('You can modify an existing subproject using this form. Please note that private subprojects can still be viewed by members of your project, but not the general public.') ?></p>

@@ -62,11 +62,11 @@ class WidgetLayoutManager {
 			$req = db_query_params($sql,array($owner_type,$owner_id));
 			if ($data = db_fetch_array($req)) {
 				$readonly = !$this->_currentUserCanUpdateLayout($owner_id, $owner_type);
-				if (!$readonly) {
-					echo '<p class="customize"><a href="/widgets/widgets.php?owner='. $owner_type.$owner_id .'&amp;layout_id='. $data['id'] .'">'. _("Customize") .'</a></p>';
-				} else if ($owner_type === self::OWNER_TYPE_GROUP) {
-					echo '<br />';
-				}
+//				if (!$readonly) {
+//					echo '<p class="customize"><a href="/widgets/widgets.php?owner='. $owner_type.$owner_id .'&amp;layout_id='. $data['id'] .'">'. _("Customize") .'</a></p>';
+//				} else if ($owner_type === self::OWNER_TYPE_GROUP) {
+//					echo '<br />';
+//				}
 				$layout = new WidgetLayout($data['id'], $data['name'], $data['description'], $data['scope']);
 				$sql = 'SELECT * FROM layouts_rows WHERE layout_id = $1 ORDER BY rank';
 				$req_rows = db_query_params($sql,array($layout->id));

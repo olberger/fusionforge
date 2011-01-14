@@ -22,16 +22,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-$ath->header(array 
-	     ('title' => _('Detail').': [#'.$ah->getID(). '] ' 
-	      . util_unconvert_htmlspecialchars($ah->getSummary()),
-	      'atid'=>$ath->getID()));
+use_javascript('/tabber/tabber.js');
+
+$ath->header(array ('title'=>'[#'. $ah->getID(). '] ' . $ah->getSummary(), 'atid'=>$ath->getID()));
 
 echo notepad_func();
 
 ?>
-	<h1>[#<?php echo $ah->getID(); ?>] <?php echo util_unconvert_htmlspecialchars($ah->getSummary()); ?></h1>
-
 	<form id="trackerdetailform" action="<?php echo getStringFromServer('PHP_SELF'); ?>?group_id=<?php echo $group_id; ?>&amp;atid=<?php echo $ath->getID(); ?>" method="post" enctype="multipart/form-data">
 
 <?php if (session_loggedin()) { ?>
@@ -96,7 +93,6 @@ echo notepad_func();
 			<?php echo $ah->showDetails(); ?>
 		</td></tr>
 </table>
-<script type="text/javascript" src="<?php echo util_make_uri('/tabber/tabber.js') ?>"></script>
 <div id="tabber" class="tabber">
 <div class="tabbertab" title="<?php echo _('Followups'); ?>">
 	<table border="0" width="80%">

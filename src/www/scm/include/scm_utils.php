@@ -40,27 +40,29 @@ function scm_header($params) {
 	if (!$project->usesSCM()) {
 		exit_disabled();
 	}
-	site_project_header(array('title'=>_('SCM Repository'),'group'=>$params['group'],'toptab'=>'scm',));
 	/*
 		Show horizontal links
 	*/
 	if (session_loggedin()) {
 		if (forge_check_perm ('project_admin', $project->getID())) {
-			echo $HTML->subMenu(
+			$params['submenu'] = $HTML->subMenu(
 				array(
 					_('View Source Code'),
-					_('Administration'),
-					_('Reporting')
+					_('Reporting'),
+					_('Administration')
 					),
 				array(
 					'/scm/?group_id='.$params['group'],
-					'/scm/admin/?group_id='.$params['group'],
-					'/scm/reporting/?group_id='.$params['group']
+					'/scm/reporting/?group_id='.$params['group'],
+					'/scm/admin/?group_id='.$params['group']
 					)
 				);
 		}
 	}
-	echo '<div class="scm">';
+
+	$params['toptab'] = 'scm';
+	site_project_header($params);
+	echo '<div id="scm" class="scm">';
 }
 
 function scm_footer() {

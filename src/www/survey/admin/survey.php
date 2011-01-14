@@ -70,7 +70,7 @@ if (getStringFromRequest('post')=="Y") {
 		$feedback = _('Update Successful');
     }  else {  /* Add */
 		$s->create($survey_title, $to_add, $is_active);
-		$feedback = _('Survey Inserted');
+		$feedback = _('Survey Added');
     }
 }
 
