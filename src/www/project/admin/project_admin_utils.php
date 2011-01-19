@@ -41,8 +41,6 @@ function project_admin_header($params) {
 		return;
 	}
 
-	site_project_header($params);
-	
 	$labels = array();
 	$links = array();
 	
