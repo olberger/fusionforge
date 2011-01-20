@@ -54,7 +54,6 @@ $sh = new  SurveyHtml();
 
 $title = _('Survey Results');
 $sh->header(array('title'=>$title));
-echo '<h1>' . $title . '</h1>';
 
 if (!session_loggedin() || !user_ismember($group_id,'A')) {
 	echo '<div class="error">'._('Permission denied').'</div>';

@@ -53,13 +53,12 @@ class ArtifactTypeHtml extends ArtifactType {
 		$params['toptab']='tracker';
 		$params['tabtext']=$this->getName();
 
-		site_project_header($params);
-		echo '<h1>' . $params['title'] . '</h1>';
-
 		$labels = array();
 		$links  = array();
 
-		$labels[] = $this->getName().': '._('Browse');
+		$labels[] = _("View Trackers");
+		$links[]  = '/tracker/?group_id='.$group_id;
+		$labels[] = $this->getName();
 		$links[]  = '/tracker/?func=browse&amp;group_id='.$group_id.'&amp;atid='. $this->getID();
 		$labels[] = _('Download .csv');
 		$links[]  = '/tracker/?func=downloadcsv&amp;group_id='.$group_id.'&amp;atid='. $this->getID();
@@ -80,7 +79,7 @@ class ArtifactTypeHtml extends ArtifactType {
   			}
 
 			if (forge_check_perm ('tracker', $this->getID(), 'manager')) {
-				$labels[] = _('Admin');
+				$labels[] = _('Administration');
 				$links[]  = '/tracker/admin/?group_id='.$group_id.'&amp;atid='.$this->getID();
 			}
 		} else {
@@ -88,7 +87,8 @@ class ArtifactTypeHtml extends ArtifactType {
 			$links[]  = '/tracker/?group_id='.$group_id.'&amp;atid='. $this->getID().'&amp;func=monitor&amp;start=1';	
 		}
 
-		echo $HTML->subMenu($labels,$links);
+		$params['submenu'] = $HTML->subMenu($labels,$links);
+		site_project_header($params);
 		
 		if ($this)
 			plugin_hook ("blocks", "tracker_".$this->getName());

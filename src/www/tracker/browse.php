@@ -150,6 +150,8 @@ if (!$art_arr && $af->isError()) {
 //build page title to make bookmarking easier
 //if a user was selected, add the user_name to the title
 //same for status
+use_javascript('/tabber/tabber.js');
+
 $ath->header(array('atid'=>$ath->getID(), 'title'=>$ath->getName()));
 
 /**
@@ -300,7 +302,6 @@ if ($ath->usesCustomStatuses()) {
 	}
 	$status_box = $ath->statusBox('_status',$_status,true,_('Any'));
 }
-echo '<script type="text/javascript" src="/tabber/tabber.js"></script>'."\n";
 
 // start of RDFa
 $proj_name = $group->getUnixName();

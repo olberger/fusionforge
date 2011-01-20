@@ -134,9 +134,14 @@ if ($group_id) {
 //	Form to add list
 //
 	if(getIntFromGet('add_list')) {
-		mail_header(array(
-			'title' => _('Add a Mailing List')));
-		printf(_('<p>Lists are named in this manner:<br /><strong>projectname-listname@%1$s</strong></p><p>It will take <span class="important">6-24 Hours</span> for your list to be created.</p>'), forge_get_config('lists_host'));
+		mail_header(array('title' => _('Add a Mailing List')));
+		print '<p>';
+		printf(_('Lists are named in this manner:<br /><strong>projectname-listname@%1$s</strong>'), forge_get_config('lists_host'));
+		print '</p>';
+
+		print '<p>';
+		print _('It will take <span class="important">6-24 Hours</span> for your list to be created.');
+		print '</p>';
 		
 		$mlFactory = new MailingListFactory($group);
 		if (!$mlFactory || !is_object($mlFactory) || $mlFactory->isError()) {
@@ -146,8 +151,7 @@ if ($group_id) {
 		$mlArray =& $mlFactory->getMailingLists();
 
 		if ($mlFactory->isError()) {
-			echo '<h1>'._('Error').' '._('Unable to get the lists') .'</h1>';
-			echo '<div class="error">'.$mlFactory->getErrorMessage().'</div>';
+			echo '<p class="error">'._('Error').' '._('Unable to get the lists') .$mlFactory->getErrorMessage().'</p>';
 			mail_footer(array());
 			exit;
 		}

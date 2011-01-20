@@ -32,14 +32,7 @@ function news_header($params) {
 
 	$params['toptab']='news';
 	$params['group']=$group_id;
-	/*
-		Show horizontal links
-	*/
-	if ($group_id && ($group_id != forge_get_config('news_group'))) {
-		site_project_header($params);
-	} else {
-		$HTML->header($params);
-	}
+
 	if ($group_id && ($group_id != forge_get_config('news_group'))) {
 		$menu_texts=array();
 		$menu_links=array();
@@ -52,12 +45,27 @@ function news_header($params) {
 			$project = group_get_object($params['group']);
 			if ($project && is_object($project) && !$project->isError()) {
 				if (forge_check_perm ('project_admin', $group_id)) {
-					$menu_texts[]=_('Admin');
+					$menu_texts[]=_('Administration');
 					$menu_links[]='/news/admin/?group_id='.$group_id;
 				}
 			}
 		}
-		echo $HTML->subMenu($menu_texts,$menu_links);
+		$params['submenu'] = $HTML->subMenu($menu_texts,$menu_links);
+	}
+	/*
+		Show horizontal links
+	*/
+	if ($group_id && ($group_id != forge_get_config('news_group'))) {
+		site_project_header($params);
+	} else {
+		$HTML->header($params);
+		if(isset($GLOBALS['error_msg']) && $GLOBALS['error_msg']) {
+			echo html_error_top($GLOBALS['error_msg']);
+		}
+		if (!empty($feedback)) {			
+			html_feedback_top($feedback);
+		}
+
 	}
 }
 

@@ -61,7 +61,7 @@ if (isset($group_id) && is_numeric($group_id) && $group_id) {
 						   'H'));
 		
 		// store subpage id for analyzing later
-		$subpage = @$expl_pathinfo[3];
+		$subpage  = isset($expl_pathinfo[3])?$expl_pathinfo[3]:'';
 		$subpage2 = isset($expl_pathinfo[4]) ? $expl_pathinfo[4] : '';
 
 		//set up the group_id

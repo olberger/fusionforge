@@ -54,8 +54,7 @@ if (!$res_top || db_numrows($res_top)<1) {
 
 $HTML->header(array('title'=>_('Top users')));
 
-print '<h1>'._('Top users').'</h1>
-<br /><em>('._('Updated Daily').')</em>
+print '<br /><em>('._('Updated Daily').')</em>
 
 <p>'.util_make_link ('/top/','['._('View Other Top Categories').']').'</p>';
 
