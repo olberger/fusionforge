@@ -5,6 +5,7 @@
  * Copyright 1999-2001, VA Linux Systems, Inc.
  * Copyright 2009-2010, Roland Mas
  * Copyright 2010, Franck Villaume - Capgemini
+ * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *
@@ -54,7 +55,7 @@ $LICENSE_NAMES=array();
 function & group_get_licenses() {
 	global $LICENSE_NAMES;
 	if(empty($LICENSE_NAMES)) {
-		$result = db_query_params ('select * from licenses', array());
+		$result = db_query_params ('SELECT * FROM licenses', array());
 		while($data = db_fetch_array($result)) {
 			$LICENSE_NAMES[$data['license_id']] = $data['license_name'];
 		}
@@ -1622,7 +1623,7 @@ class Group extends Error {
 
 	function delete($sure,$really_sure,$really_really_sure) {
 		if (!$sure || !$really_sure || !$really_really_sure) {
-			$this->setMissingParamsError();
+			$this->setMissingParamsError(_('Please tick all checkboxes.'));
 			return false;
 		}
 		if ($this->getID() == forge_get_config('news_group') ||
@@ -3165,7 +3166,7 @@ function getAllProjectTags($onlyvisible = true) {
 			$result[$tag] = array();
 		}
 
-		if (!$only_visible || forge_check_perm('project_read', $group_id)) {
+		if (!$onlyvisible || forge_check_perm('project_read', $group_id)) {
 			$p = group_get_object($group_id);
 			$result[$tag][] = array('unix_group_name' => $p->getUnixName(),
 						'group_id' => $group_id);
