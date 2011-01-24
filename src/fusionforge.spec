@@ -574,9 +574,9 @@ if [ "$1" -eq "1" ]; then
 	%{__sed} -i -e "s|web_host =.*|web_host = $HOSTNAME|g" %{FORGE_CONF_DIR}/config.ini
 	%{__sed} -i -e "s!gforge.company.com!$HOSTNAME!g" /etc/httpd/conf.d/gforge.conf
 
-	/etc/init.d/httpd restart >/dev/null 2>&1
+	/etc/init.d/httpd restart >>/var/log/%{name}-install.log 2>&1
 
-	chkconfig postgresql on >/dev/null 2>&1
+	chkconfig postgresql on >>/var/log/%{name}-install.log 2>&1
 
 	# generate random hash for session_key
 	HASH=$(/bin/dd if=/dev/urandom bs=32 count=1 2>/dev/null | /usr/bin/sha1sum | cut -c1-40)
@@ -584,7 +584,7 @@ if [ "$1" -eq "1" ]; then
 
 	# add noreply mail alias
 	echo "noreply: /dev/null" >> /etc/aliases
-	/usr/bin/newaliases >/dev/null 2>&1
+	/usr/bin/newaliases >>/var/log/%{name}-install.log 2>&1
 
 	if [ $ret -ne 0 ] ; then
 		# display message about default admin account
