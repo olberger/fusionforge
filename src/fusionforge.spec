@@ -382,17 +382,14 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 # install restricted shell for cvs accounts
 %{__cp} -a plugins/scmcvs/bin/cvssh.pl $RPM_BUILD_ROOT/bin/
 
-# Fix configuration files entries (various sys_* variables)
-%{__cp} -a etc/local.inc.example $RPM_BUILD_ROOT/%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s!/path/to/gforge!%{FORGE_DIR}!g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s!/path/to/jpgraph!/var/www/jpgraph-1.19!g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s/\$sys_dbname=.*/\$sys_dbname='%{dbname}';/g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s/\$sys_dbuser=.*/\$sys_dbuser='%{dbuser}';/g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s/\$sys_apache_user=.*/\$sys_apache_user='%{httpduser}';/g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s/\$sys_apache_group=.*/\$sys_apache_group='%{httpdgroup}';/g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s|\$sys_plugins_path=.*|\$sys_plugins_path=\"%{FORGE_DIR}/plugins\";|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s|\$sys_upload_dir=.*|\$sys_upload_dir=\"\$sys_var_path/upload\";|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
-%{__sed} -i -e "s|\$sys_urlroot=.*|\$sys_urlroot=\"%{FORGE_DIR}/www\";|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/local.inc
+%{__cp} -a etc/config.ini-rpm $RPM_BUILD_ROOT/%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|source_path =.*|source_path = %{FORGE_DIR}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|config_path =.*|config_path = %{FORGE_CONF_DIR}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|data_path =.*|data_path = %{FORGE_VAR_LIB}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|apache_user =.*|apache_user = %{httpduser}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|apache_group =.*|apache_group = %{httpdgroup}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|database_name =.*|database_name = %{dbname}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
+%{__sed} -i -e "s|database_user =.*|database_user = %{dbuser}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini
 
 # Replace sys_localinc, sys_gfdbname, sys_gfdbuser
 %{__cp} -a etc/httpd.secrets.example $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
@@ -574,10 +571,8 @@ if [ "$1" -eq "1" ]; then
 	/usr/bin/php %{FORGE_DIR}/db/upgrade-db.php >>/var/log/%{name}-install.log 2>&1
 
 	HOSTNAME=`hostname -f`
-	%{__sed} -i -e "s!gforge.company.com!$HOSTNAME!g" %{FORGE_CONF_DIR}/local.inc
+	%{__sed} -i -e "s|web_host =.*|web_host = $HOSTNAME|g" %{FORGE_CONF_DIR}/config.ini
 	%{__sed} -i -e "s!gforge.company.com!$HOSTNAME!g" /etc/httpd/conf.d/gforge.conf
-
-	/usr/bin/php %{FORGE_DIR}/fusionforge-install-4-config.php >>/var/log/%{name}-install.log 2>&1
 
 	/etc/init.d/httpd restart >/dev/null 2>&1
 
@@ -585,7 +580,7 @@ if [ "$1" -eq "1" ]; then
 
 	# generate random hash for session_key
 	HASH=$(/bin/dd if=/dev/urandom bs=32 count=1 2>/dev/null | /usr/bin/sha1sum | cut -c1-40)
-	%{__sed} -i -e "s/sys_session_key = 'foobar'/sys_session_key = '$HASH'/g" %{FORGE_CONF_DIR}/local.inc
+	%{__sed} -i -e "s|session_key = foobar|session_key = $HASH|g" %{FORGE_CONF_DIR}/config.ini
 
 	# add noreply mail alias
 	echo "noreply: /dev/null" >> /etc/aliases
