@@ -318,16 +318,16 @@ function install()
 
 
 	show(' * Saving database configuration in FForge config file');
-	$data = file_get_contents("$fusionforge_etc_dir/local.inc");
+	$data = file_get_contents("$fusionforge_etc_dir/config.ini");
 	$lines = explode("\n",$data);
 	$config = '';
 	foreach ($lines as $l) {
-		$l = preg_replace("/^.sys_dbname\s*=\s*'(.*)'/", "\$sys_dbname='$gforge_db'", $l);
-		$l = preg_replace("/^.sys_dbuser\s*=\s*'(.*)'/", "\$sys_dbuser='$gforge_user'", $l);
+		$l = preg_replace("/^database_name\s*=(.*)/", "database_name = $gforge_db", $l);
+		$l = preg_replace("/^database_user\s*=(.*)/", "database_user = $gforge_user", $l);
 		$config .= $l."\n";
 	}
 
-	if ($fp = fopen("$fusionforge_etc_dir/local.inc", "w")) {
+	if ($fp = fopen("$fusionforge_etc_dir/config.ini", "w")) {
 		fwrite ($fp, $config);
 		fclose($fp);	
 	}
