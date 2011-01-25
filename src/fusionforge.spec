@@ -393,7 +393,7 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 
 # Replace sys_localinc, sys_gfdbname, sys_gfdbuser
 %{__cp} -a etc/httpd.secrets.example $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
-%{__sed} -i -e "s|sys_localinc.*$|sys_localinc %{FORGE_CONF_DIR}/local.inc|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
+%{__sed} -i -e "s|config_ini .*$|config_ini %{FORGE_CONF_DIR}/config.ini|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
 %{__sed} -i -e "s|sys_gfdbname.*$|sys_gfdbname %{dbname}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
 %{__sed} -i -e "s|sys_gfdbuser.*$|sys_gfdbname %{dbuser}|g" $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.secrets
 
@@ -634,7 +634,7 @@ fi
 %defattr(-, root, root)
 %doc AUTHORS* CHANGES COPYING INSTALL* NEWS README*
 %doc docs/*
-%attr(0660, %{httpduser}, gforge) %config(noreplace) %{FORGE_CONF_DIR}/local.inc
+%attr(0660, %{httpduser}, gforge) %config(noreplace) %{FORGE_CONF_DIR}/config.ini
 %attr(0640, %{httpduser}, %{httpdgroup}) %config(noreplace) %{_sysconfdir}/httpd/conf.d/gforge.conf
 %attr(0644, root, root) %{_sysconfdir}/cron.d/%{name}
 %attr(0775, %{httpduser}, %{httpdgroup}) %dir %{FORGE_VAR_LIB}/upload
