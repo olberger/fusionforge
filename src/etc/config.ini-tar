@@ -27,8 +27,8 @@ use_project_full_list = yes
 use_project_database = no
 use_project_multimedia = no
 use_project_vhost = no
+use_private_project = yes
 use_ratings = yes
-user_registration_restricted = no
 use_scm = yes
 use_shell = no
 use_snippet = no
@@ -37,8 +37,6 @@ use_survey = yes
 use_tracker = yes
 use_trove = yes
 
-account_manager_type = pgsql
-allow_project_without_template = yes
 default_country_code = US
 default_language = English
 default_theme = gforge
@@ -49,8 +47,12 @@ news_group = 2
 stats_group = 3
 peer_rating_group = 4
 template_group = 5
+user_registration_restricted = no
+user_registration_accept_conditions = no
 project_registration_restricted = yes
+allow_project_without_template = yes
 show_source = no
+account_manager_type = pgsql
 unix_cipher = MD5
 url_prefix = "/"
 
@@ -66,6 +68,7 @@ ldap_host = "ldap.test.local"
 ldap_port = 389
 ldap_version = 3
 session_key = foobar
+session_expire = 0
 
 ; Installation paths
 source_path = "/opt/gforge"
