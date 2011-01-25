@@ -9,6 +9,7 @@
 
 // Attempt to set up the include path, to fix problems with relative includes
 $fusionforge_basedir = dirname(dirname(dirname( __FILE__ ))) ;
+
 $include_path = join(PATH_SEPARATOR, 
 	array("/etc/gforge/custom", "/etc/gforge", ".", 
 		"$fusionforge_basedir/common", "$fusionforge_basedir/www",
@@ -43,6 +44,8 @@ if (getenv('sys_localinc')) {
 	$gfconfig = '/etc/gforge/';
 } elseif (file_exists('/etc/gforge/local.inc')) {
 	$gfcgfile = '/etc/gforge/local.inc';
+	$gfconfig = '/etc/gforge/';
+} elseif (file_exists('/etc/gforge/config.ini')) {
 	$gfconfig = '/etc/gforge/';
 } else {
 	$gfcgfile = 'local.inc';

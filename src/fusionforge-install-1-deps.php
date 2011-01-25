@@ -7,8 +7,6 @@
  * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
- * @version
- *
  * This file is part of GInstaller. It is be called by install.sh.
  *
  * FusionForge is free software; you can redistribute it and/or modify
@@ -112,7 +110,7 @@ function installArk() {
 }
 
 function addFusionForgeYumRepo() {
-	INFO("Adding FusionForge YUM repository\n");
+	INFO("Adding FusionForge YUM repository");
 
 	if (getenv('FFORGE_RPM_REPO')) {
 		$rpm_repo = getenv('FFORGE_RPM_REPO');
@@ -132,7 +130,7 @@ gpgcheck = 0';
 	file_put_contents('/etc/yum.repos.d/fusionforge.repo', $repo);
 }
 function addDagRPMForgeYumRepo() {
-	INFO("Adding Dag RPMForge YUM repository\n");
+	INFO("Adding Dag RPMForge YUM repository");
 	$repo = '
 # Name: RPMforge RPM Repository for Red Hat Enterprise 5 - dag
 # URL: http://rpmforge.net/
@@ -164,7 +162,7 @@ if (count($argv) < 2) {
 		exit();
 	} else {
 		$platform = $argv[1];
-		echo "setting up dependencies for $platform\n";
+		echo "Setting up dependencies for $platform\n";
 	}
 }
 

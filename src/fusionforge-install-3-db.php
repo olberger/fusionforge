@@ -6,8 +6,6 @@
  * Copyright 2006 GForge, LLC
  * http://fusionforge.org/
  *
- * @version
- *
  * This file is part of GInstaller, it is called by install.sh.
  *
  * FusionForge is free software; you can redistribute it and/or modify
@@ -175,8 +173,8 @@ function install()
 	}
 	run("echo \"# GFORGE\nlocal all all trust\" > $PGHBA");
 	show(' * Restarting PostgreSQL...');
-	run("$pgservice stop", true);
-	run("$pgservice start");
+	run("$pgservice stop >>/tmp/gforge-import.log 2>&1", true);
+	run("$pgservice start >>/tmp/gforge-import.log 2>&1");
 
 
 	show(" * Creating '$gforge_user' Group...");
@@ -209,11 +207,11 @@ function install()
 
 	if (preg_match('/^(7\.|8\.1|8\.2)/', $pgv)) {
 		show(" * Dumping tsearch2 Database Into '$gforge_db' DB");
-		run("su - postgres -c \"psql $gforge_db < $tsearch2_sql\" >> /tmp/gforge-import.log");
+		run("su - postgres -c \"psql $gforge_db < $tsearch2_sql\" >>/tmp/gforge-import.log 2>&1");
 
 		$tables = array('pg_ts_cfg', 'pg_ts_cfgmap', 'pg_ts_dict', 'pg_ts_parser');
 		foreach ($tables as $table) {
-			run('su - postgres -c "psql '.$gforge_db.' -c \\"GRANT ALL on '.$table.' TO '.$gforge_user.';\\""');
+			run('su - postgres -c "psql '.$gforge_db.' -c \\"GRANT ALL on '.$table.' TO '.$gforge_user.';\\"" >>/tmp/gforge-import.log 2>&1');
 		}
 //	} else {
 //		show(" * Creating FTS default configuation (Full Text Search)");
@@ -222,7 +220,7 @@ function install()
 
 
 	show(' * Dumping FusionForge DB');
-	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/gforge.sql\" >> /tmp/gforge-import.log");
+	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/gforge.sql\" >>/tmp/gforge-import.log 2>&1");
 
 //	show(' * Dumping FusionForge FTI DB');
 //	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI.sql\" >> /tmp/gforge-import.log");
@@ -317,17 +315,17 @@ function install()
 	}
 
 
-	show(' * Saving database configuration in FForge config file');
-	$data = file_get_contents("$fusionforge_etc_dir/local.inc");
+	show(' * Saving database configuration in FusionForge config file');
+	$data = file_get_contents("$fusionforge_etc_dir/config.ini");
 	$lines = explode("\n",$data);
 	$config = '';
 	foreach ($lines as $l) {
-		$l = preg_replace("/^.sys_dbname\s*=\s*'(.*)'/", "\$sys_dbname='$gforge_db'", $l);
-		$l = preg_replace("/^.sys_dbuser\s*=\s*'(.*)'/", "\$sys_dbuser='$gforge_user'", $l);
+		$l = preg_replace("/^database_name\s*=(.*)/", "database_name = $gforge_db", $l);
+		$l = preg_replace("/^database_user\s*=(.*)/", "database_user = $gforge_user", $l);
 		$config .= $l."\n";
 	}
 
-	if ($fp = fopen("$fusionforge_etc_dir/local.inc", "w")) {
+	if ($fp = fopen("$fusionforge_etc_dir/config.ini", "w")) {
 		fwrite ($fp, $config);
 		fclose($fp);	
 	}
