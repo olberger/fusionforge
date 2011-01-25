@@ -71,7 +71,7 @@ function setconfigfromoldsources ($sec, $var, $serv, $env, $glob) {
 	}
 }
 
-if (file_exists ($gfcgfile)) {
+if (isset($gfcgfile) && file_exists ($gfcgfile)) {
 	require_once $gfcgfile ;
 
 	setconfigfromoldsources ('core', 'database_host',
