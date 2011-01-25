@@ -1,0 +1,99 @@
+; Configuration variables for fusionforge
+;
+; Documentation at:
+; https://fusionforge.org/plugins/mediawiki/wiki/fusionforge/index.php/Configuration#Configuration_variables
+;
+
+[core]
+forge_name = MyForge
+web_host = "test.local"
+admin_email = "gforge@$core/web_host"
+
+use_docman = yes
+use_forum = yes
+use_frs = yes
+use_fti = no
+use_ftp = no
+use_ftp_uploads = no
+use_gateways = yes
+use_jabber = no
+use_mail = yes
+use_manual_uploads = no
+use_news = yes
+use_people = no
+use_pm = yes
+use_project_tags = yes
+use_project_full_list = yes
+use_project_database = no
+use_project_multimedia = no
+use_project_vhost = no
+use_ratings = yes
+user_registration_restricted = no
+use_scm = yes
+use_shell = no
+use_snippet = no
+use_ssl = no
+use_survey = yes
+use_tracker = yes
+use_trove = yes
+
+account_manager_type = pgsql
+allow_project_without_template = yes
+default_country_code = US
+default_language = English
+default_theme = gforge
+default_timezone = GMT
+default_trove_cat = 18
+force_login = no
+news_group = 2
+stats_group = 3
+peer_rating_group = 4
+template_group = 5
+project_registration_restricted = yes
+show_source = no
+unix_cipher = MD5
+url_prefix = "/"
+
+; Credentials
+database_name = gforge
+database_port = 5432
+database_user = gforge
+jabber_host = "jabber.test.local"
+jabber_port = 5222
+jabber_user = noreply
+ldap_base_dn = "dc=gforge,dc=company,dc=com"
+ldap_host = "ldap.test.local"
+ldap_port = 389
+ldap_version = 3
+session_key = foobar
+
+; Installation paths
+source_path = "/opt/gforge"
+data_path = "/var/lib/gforge"
+config_path = "/etc/gforge"
+plugins_path = "$core/source_path/plugins"
+log_path = /var/log/gforge
+url_root = "$core/source_path/www/"
+themes_root = "$core/source_path/www/themes"
+chroot = "$core/data_path/chroot"
+upload_dir = "$core/data_path/download"
+ftp_upload_dir = "$core/data_path/ftproot"
+scm_snapshots_path = "$core/data_path/scmsnapshots"
+scm_tarballs_path = "$core/data_path/scmtarballs"
+
+; External tools used
+sendmail_path = "/usr/sbin/sendmail"
+jpgraph_path = "/var/www/jpgraph-1.19"
+mailman_path = "/usr/lib/mailman"
+
+; Multi server setup
+scm_host = "$core/web_host"
+lists_host = "$core/web_host"
+users_host = "$core/web_host"
+forum_return_domain = "$core/web_host"
+
+; OS configuration
+apache_user = apache
+apache_group = apache
+
+extra_config_dirs = "$core/config_path/config.ini.d"
