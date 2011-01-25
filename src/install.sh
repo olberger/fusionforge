@@ -76,7 +76,6 @@ then
 	then
 		php fusionforge-install-3-db.php
 		php db/upgrade-db.php
-		php fusionforge-install-4-config.php
 
 		# Post installation fixes.
 		perl -spi -e "s/^#ServerName (.*):80/ServerName $hostname:80/" /etc/httpd/conf/httpd.conf
@@ -89,7 +88,7 @@ then
 		service iptables stop
 		msg="IMPORTANT: Service iptables (firewall) disabled, please reconfigure after"
 
-		cp packaging/cron.d/cron.fusionforge /etc/cron.d
+		cp packaging/cron.d/cron.fusionforge /etc/cron.d/fusionforge
 		cp plugins/*/etc/cron.d/* /etc/cron.d/
 		service crond reload
 	else
@@ -105,7 +104,6 @@ then
 	then
 		php fusionforge-install-3-db.php
 		php db/upgrade-db.php
-		php fusionforge-install-4-config.php
 
 		# Post installation fixes.
 		#perl -spi -e "s/^#ServerName (.*):80/ServerName $hostname:80/" /etc/apache2/httpd.conf
@@ -126,7 +124,7 @@ then
 		rcSuSEfirewall2 stop
 		msg="IMPORTANT: Service SuSEfirewall2 stopped, please reconfigure after"
 
-		cp packaging/cron.d/cron.fusionforge /etc/cron.d
+		cp packaging/cron.d/cron.fusionforge /etc/cron.d/fusionforge
 		cp plugins/*/etc/cron.d/* /etc/cron.d/
 		rccron reload
 	else
@@ -150,6 +148,6 @@ else
 	exit 1;
 fi
 
-echo "check /etc/gforge/local.inc for ${hostname} specific FusionForge settings"
+echo "Check /etc/gforge/config.ini for ${hostname} specific FusionForge settings"
 echo -e $msg;
 exit 0;

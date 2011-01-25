@@ -6,8 +6,6 @@
  * Copyright 2006 GForge, LLC
  * http://fusionforge.org/
  *
- * @version
- *
  * This file is part of GInstaller, it is called by install.sh.
  *
  * FusionForge is free software; you can redistribute it and/or modify
@@ -175,8 +173,8 @@ function install()
 	}
 	run("echo \"# GFORGE\nlocal all all trust\" > $PGHBA");
 	show(' * Restarting PostgreSQL...');
-	run("$pgservice stop", true);
-	run("$pgservice start");
+	run("$pgservice stop >>/tmp/gforge-import.log 2>&1", true);
+	run("$pgservice start >>/tmp/gforge-import.log 2>&1");
 
 
 	show(" * Creating '$gforge_user' Group...");
@@ -209,11 +207,11 @@ function install()
 
 	if (preg_match('/^(7\.|8\.1|8\.2)/', $pgv)) {
 		show(" * Dumping tsearch2 Database Into '$gforge_db' DB");
-		run("su - postgres -c \"psql $gforge_db < $tsearch2_sql\" >> /tmp/gforge-import.log");
+		run("su - postgres -c \"psql $gforge_db < $tsearch2_sql\" >>/tmp/gforge-import.log 2>&1");
 
 		$tables = array('pg_ts_cfg', 'pg_ts_cfgmap', 'pg_ts_dict', 'pg_ts_parser');
 		foreach ($tables as $table) {
-			run('su - postgres -c "psql '.$gforge_db.' -c \\"GRANT ALL on '.$table.' TO '.$gforge_user.';\\""');
+			run('su - postgres -c "psql '.$gforge_db.' -c \\"GRANT ALL on '.$table.' TO '.$gforge_user.';\\"" >>/tmp/gforge-import.log 2>&1');
 		}
 //	} else {
 //		show(" * Creating FTS default configuation (Full Text Search)");
@@ -222,7 +220,7 @@ function install()
 
 
 	show(' * Dumping FusionForge DB');
-	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/gforge.sql\" >> /tmp/gforge-import.log");
+	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/gforge.sql\" >>/tmp/gforge-import.log 2>&1");
 
 //	show(' * Dumping FusionForge FTI DB');
 //	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI.sql\" >> /tmp/gforge-import.log");
@@ -317,7 +315,7 @@ function install()
 	}
 
 
-	show(' * Saving database configuration in FForge config file');
+	show(' * Saving database configuration in FusionForge config file');
 	$data = file_get_contents("$fusionforge_etc_dir/config.ini");
 	$lines = explode("\n",$data);
 	$config = '';
