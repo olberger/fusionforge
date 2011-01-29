@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2010 Alain Peyrat, Alcatel-Lucent
+ * Copyright (C) 2010-2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *

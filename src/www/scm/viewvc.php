@@ -6,6 +6,7 @@
  * Portion of this file is inspired from the ViewCVS wrapper
  * contained in CodeX.
  * Copyright (c) Xerox Corporation, CodeX / CodeX Team, 2001,2002. All Rights Reserved.
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://codex.xerox.com
  *
  * Copyright 2010 (c), Franck Villaume

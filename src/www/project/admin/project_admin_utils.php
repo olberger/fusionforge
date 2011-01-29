@@ -4,6 +4,7 @@
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  * Copyright 2002-2004 (c) GForge Team
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.
@@ -86,12 +87,9 @@ function project_admin_header($params) {
 	$links[] = '/project/stats/?group_id='.$group_id;
 	plugin_hook("quota_link_project_admin");
 	
-	echo ($HTML->beginSubMenu());	
-	echo $HTML->printSubMenu($labels, $links);
-	plugin_hook ("groupadminmenu", $params) ;
-	echo ($HTML->endSubMenu());
-
 	$params['submenu'] = $HTML->subMenu($labels, $links);
+
+	plugin_hook ("groupadminmenu", $params) ;
 
 	site_project_header($params);
 }

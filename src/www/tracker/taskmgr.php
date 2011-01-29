@@ -3,6 +3,7 @@
  * Task Mgr And Tracker Integration
  *
  * Copyright 2003 GForge, LLC
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org
  *
  * This file is part of FusionForge.

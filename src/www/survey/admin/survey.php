@@ -4,7 +4,7 @@
  *
  * Copyright 2004 (c) GForge Team
  * Copyright 2010 (c) FusionForge Team
- * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
+ * Copyright (C) 2010-2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.

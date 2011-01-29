@@ -4,6 +4,7 @@
  *
  * Copyright 1999-2001 (c) VA Linux Systems - Sourceforge
  * Copyright 2010 (c) Fusionforge Team
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org
  *
  * This file is part of FusionForge.

@@ -3,6 +3,7 @@
  * Tracker Facility
  *
  * Copyright 1999-2001 (c) VA Linux Systems
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.

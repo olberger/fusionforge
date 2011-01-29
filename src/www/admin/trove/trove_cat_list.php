@@ -3,7 +3,7 @@
  * Site Admin: Trove Admin: browse entire Trove tree
  *
  * Copyright 1999-2001 (c) VA Linux Systems
- * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
+ * Copyright (C) 2010-2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *

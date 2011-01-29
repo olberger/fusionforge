@@ -3,6 +3,7 @@
  * Reporting System
  *
  * Copyright 2004 (c) GForge LLC
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  *
  * @version   index.php,v 1.11 2004/08/05 20:48:59 tperdue Exp
  * @author Tim Perdue tim@gforge.org

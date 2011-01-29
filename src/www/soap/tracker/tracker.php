@@ -3,6 +3,7 @@
  * SOAP Tracker Include - this file contains wrapper functions for the SOAP interface
  *
  * Copyright 2004 (c) GForge, LLC
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://gforge.org
  *
  * This file is part of FusionForge.

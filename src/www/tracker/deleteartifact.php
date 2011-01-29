@@ -3,6 +3,7 @@
  * FusionForge Project Management Facility
  *
  * Copyright 2002 GForge, LLC
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  */

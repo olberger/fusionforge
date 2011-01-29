@@ -1,6 +1,7 @@
 <?php
 /**
  * Copyright (c) Xerox Corporation, Codendi Team, 2001-2009. All rights reserved
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is a part of Codendi.
  *

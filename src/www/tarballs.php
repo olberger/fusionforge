@@ -6,6 +6,7 @@
  * Copyright 1999-2001 (c) VA Linux Systems
  * Copyright 2003-2004 (c) GForge
  * Copyright 2010 (c) Franck Villaume
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.
