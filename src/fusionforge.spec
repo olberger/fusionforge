@@ -540,14 +540,9 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 ### END OF PLUGIN SETUP ###
 
 %pre
-# we will need postgresql to be running. we start it, even if it already is running
-# this won't hurt anything, just ensure we have a running database
-/sbin/service postgresql start >>%{INSTALL_LOG} 2>&1
-
 if [ "$1" -eq "1" ]; then
 	# setup user/group for gforge
 	if [ `/usr/bin/getent passwd | /bin/cut -d: -f1 | /bin/grep -c %{gfuser}` -eq 0 ] ; then
-		echo "Did not find existing fusionforge user. Adding fusionforge group and user..." >>%{INSTALL_LOG} 2>&1
 		/usr/sbin/groupadd -r %{gfgroup}
 		/usr/sbin/useradd -r -g %{gfgroup} -d %{FORGE_DIR} -s /bin/bash -c "FusionForge User" %{gfuser}
 	fi

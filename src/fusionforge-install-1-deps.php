@@ -4,7 +4,7 @@
  * FusionForge Installation Dependency Setup
  *
  * Copyright 2006 GForge, LLC
- * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
+ * Copyright 2010-2011, Alain Peyrat
  * http://fusionforge.org/
  *
  * This file is part of GInstaller. It is be called by install.sh.
@@ -25,34 +25,22 @@
  * Francisco Gimeno
  */
 
-define ("VERBOSE", TRUE);
-define ("GREEN", "\033[01;32m" );
-define ("NORMAL", "\033[00m" );
-define ("RED", "\033[01;31m" );
+require_once dirname(__FILE__).'/install-common.inc' ;
 
 function printUsage() {
 	echo "Usage: fusionforge-install-1-deps [RHEL5|DEBIAN|FEDORA|CENTOS|ARK|SUSE|OPENSUSE]\n";
 }
 
-function INFO($message)
-{
-    global $depth, $myLog;
-    if(VERBOSE) for ($i=0; $i < $depth; $i++) echo " ";
-        if(VERBOSE) echo $message."\n";
-    for($i=0; $i < $depth; $i++ ) $myLog.=" ";
-    $myLog.=$message;
-}
-
 function installRedhat() {
 	addFusionForgeYumRepo();
 	addDagRPMForgeYumRepo();
-	INFO("Installing packages: Executing YUM. Please wait...\n\n\n");
+	show("Installing packages: Executing YUM. Please wait...");
 	passthru("yum -y install httpd php mailman cvs postgresql postgresql-libs postgresql-server postgresql-contrib perl-URI php-pgsql subversion mod_dav_svn postfix rcs php-gd mod_ssl wget openssh which liberation-fonts php-htmlpurifier php-mbstring php-jpgraph-1.5.2 poppler-utils php-pecl-zip php-pear-HTTP_WebDAV_Server antiword");
 }
 
 function installDebian() {
 
-	INFO("Installing Packages with apt-get");
+	show("Installing Packages with apt-get");
 	passthru("apt-get -y install apache2 php5 php5-cli php5-pgsql cvs postgresql postgresql-contrib libipc-run-perl liburi-perl libapache2-svn libapache2-mod-php5 subversion subversion-tools php5-curl curl ssh lsb-release php-htmlpurifier");
 	passthru("a2enmod headers");
 	passthru("a2enmod proxy");
@@ -60,57 +48,55 @@ function installDebian() {
 	passthru("a2enmod rewrite");
 	passthru("a2enmod vhost_alias");
 
-	INFO(RED."You Must Install Mailman Manually: apt-get install mailman postfix".NORMAL);
+	show(RED."You Must Install Mailman Manually: apt-get install mailman postfix".NORMAL);
 }
 
 function installSUSE() {
 
-	INFO("Installing Packages with yast");
+	show("Installing Packages with yast");
 	passthru("yast -i apache2-prefork php mailman cvs postgresql postgresql-libs postgresql-server postgresql-contrib perl-URI php4-pgsql subversion apache-mod_dav_svn ssh postfix rcs php4-gd mod_ssl perl-IPC-Run php4-curl wget subversion-server apache2-mod_php4");
 
-	INFO("Fixing php4 installation");
+	show("Fixing php4 installation");
 	passthru("cp /usr/lib/apache2-prefork/libphp4.so /usr/lib/apache2/mod_php.so");
 
-	INFO("Restarting APACHE");
-	passthru("/etc/init.d/apache2 start");
-	passthru("/etc/init.d/apache2 stop");
-
-	INFO("Restarting PostgreSQL");
+	show("Restarting PostgreSQL");
 	passthru("/etc/init.d/postgresql stop");
 	passthru("/etc/init.d/postgresql start");
 
-	INFO("Starting Apache");
+	show("Restarting APACHE");
 	passthru("/etc/init.d/apache2 start");
+	passthru("/etc/init.d/apache2 stop");
 
-	INFO(RED."You Must Install htmlpurifier manually.".NORMAL);
+	show(RED."You Must Install htmlpurifier manually.".NORMAL);
 }
 
 function installOPENSUSE() {
 
-	INFO("Installing Packages with yast");
+	show("Installing Packages with yast");
 	passthru("yast -i apache2-prefork apache2-mod_php5 cvs mailman perl-IPC-Run perl-URI php5 php5-curl php5-gd php5-gettext php5-pgsql postfix postgresql postgresql-contrib postgresql-libs postgresql-server rcs openssh subversion subversion-server wget viewvc");
 
-	INFO("Restarting PostgreSQL...");
+	show("Restarting PostgreSQL...");
 	passthru("rcpostgresql restart");
-	INFO("Restarting Apache...");
+
+	show("Restarting Apache...");
 	passthru("rcapache2 restart");
 
-	INFO(RED."You Must Install htmlpurifier manually.".NORMAL);
+	show(RED."You Must Install htmlpurifier manually.".NORMAL);
 }
 
 function installArk() {
-	INFO("Installing packages: Executing apt-get. Please wait...\n\n\n");
+	show("Installing packages: Executing apt-get. Please wait...\n\n\n");
 	passthru("apt-get update");
 	passthru("apt-get -y install httpd php mailman cvs postgresql postgresql-libs postgresql-server postgresql-contrib perl-URI php-pgsql subversion subversion-server-httpd postfix rcs mod_ssl wget ssh");
 
-	INFO("Restarting PostgreSQL\n");
+	show("Restarting PostgreSQL\n");
 	passthru("/sbin/service postgresql restart");
 
-	INFO(RED."You Must Install htmlpurifier manually.".NORMAL);
+	show(RED."You Must Install htmlpurifier manually.".NORMAL);
 }
 
 function addFusionForgeYumRepo() {
-	INFO("Adding FusionForge YUM repository");
+	show("Adding FusionForge YUM repository");
 
 	if (getenv('FFORGE_RPM_REPO')) {
 		$rpm_repo = getenv('FFORGE_RPM_REPO');
@@ -130,7 +116,7 @@ gpgcheck = 0';
 	file_put_contents('/etc/yum.repos.d/fusionforge.repo', $repo);
 }
 function addDagRPMForgeYumRepo() {
-	INFO("Adding Dag RPMForge YUM repository");
+	show("Adding Dag RPMForge YUM repository");
 	$repo = '
 # Name: RPMforge RPM Repository for Red Hat Enterprise 5 - dag
 # URL: http://rpmforge.net/
@@ -169,7 +155,7 @@ if (count($argv) < 2) {
 if ($platform == 'FEDORA' || $platform == 'CENTOS' || $platform == 'RHEL5') {
 	installRedhat();
 } elseif ($platform == 'DEBIAN') {
-	installDebian(); /* Debian and friends */
+	installDebian();
 } elseif ($platform == 'SUSE') {
 	installSUSE();
 } elseif ($platform == 'OPENSUSE') {
@@ -179,5 +165,3 @@ if ($platform == 'FEDORA' || $platform == 'CENTOS' || $platform == 'RHEL5') {
 } else {
 	echo 'UNSUPPORTED PLATFORM\n';
 }
-
-?>
