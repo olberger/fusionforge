@@ -63,6 +63,9 @@ Requires: php-pecl-zip
  
 # BuildRequires: sed, perl
 
+%define INSTALL_LOG       %{_var}/log/%{name}/install-%{version}.log
+%define UPGRADE_LOG       %{_var}/log/%{name}/upgrade-%{version}.log
+
 Provides: gforge = %{version}
 
 %description
@@ -361,6 +364,7 @@ mantisbt plugin for FusionForge.
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_VAR_LIB}/chroot/scmrepos/svn
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_VAR_LIB}/chroot/scmrepos/cvs
 %{__install} -m 755 -d $RPM_BUILD_ROOT/home/groups
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{_var}/log/%{name}
 # mock mediawiki directory because we symlink GForge skin to Monobook
 %{__install} -m 755 -d $RPM_BUILD_ROOT/usr/share/mediawiki/skins
 
@@ -538,12 +542,12 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 %pre
 # we will need postgresql to be running. we start it, even if it already is running
 # this won't hurt anything, just ensure we have a running database
-/sbin/service postgresql start >>/var/log/%{name}-install.log 2>&1
+/sbin/service postgresql start >>%{INSTALL_LOG} 2>&1
 
 if [ "$1" -eq "1" ]; then
 	# setup user/group for gforge
 	if [ `/usr/bin/getent passwd | /bin/cut -d: -f1 | /bin/grep -c %{gfuser}` -eq 0 ] ; then
-		echo "Did not find existing fusionforge user. Adding fusionforge group and user..." >>/var/log/%{name}-install.log 2>&1
+		echo "Did not find existing fusionforge user. Adding fusionforge group and user..." >>%{INSTALL_LOG} 2>&1
 		/usr/sbin/groupadd -r %{gfgroup}
 		/usr/sbin/useradd -r -g %{gfgroup} -d %{FORGE_DIR} -s /bin/bash -c "FusionForge User" %{gfuser}
 	fi
@@ -561,22 +565,22 @@ if [ "$1" -eq "1" ]; then
 	    FFORGE_ADMIN_USER=%{fforge_admin}
 	    FFORGE_ADMIN_PASSWORD=$(/bin/dd if=/dev/urandom bs=32 count=1 2>/dev/null | /usr/bin/sha1sum | cut -c1-8)
 	    export FFORGE_DB FFORGE_USER FFORGE_ADMIN_USER FFORGE_ADMIN_PASSWORD
-	    /usr/bin/php %{FORGE_DIR}/fusionforge-install-3-db.php >>/var/log/%{name}-install.log 2>&1
+	    /usr/bin/php %{FORGE_DIR}/fusionforge-install-3-db.php >>%{INSTALL_LOG} 2>&1
 	else
-	    echo "Database %{dbname} already exists. Will not proceed with database setup." >>/var/log/%{name}-install.log 2>&1
-	    echo "Please see %{FORGE_DIR}/fusionforge-install-3-db.php and run it manually" >>/var/log/%{name}-install.log 2>&1
-	    echo "if deemed necessary." >>/var/log/%{name}-install.log 2>&1
+	    echo "Database %{dbname} already exists. Will not proceed with database setup." >>%{INSTALL_LOG} 2>&1
+	    echo "Please see %{FORGE_DIR}/fusionforge-install-3-db.php and run it manually" >>%{INSTALL_LOG} 2>&1
+	    echo "if deemed necessary." >>%{INSTALL_LOG} 2>&1
 	fi
 
-	/usr/bin/php %{FORGE_DIR}/db/upgrade-db.php >>/var/log/%{name}-install.log 2>&1
+	/usr/bin/php %{FORGE_DIR}/db/upgrade-db.php >>%{INSTALL_LOG} 2>&1
 
 	HOSTNAME=`hostname -f`
 	%{__sed} -i -e "s|web_host =.*|web_host = $HOSTNAME|g" %{FORGE_CONF_DIR}/config.ini
 	%{__sed} -i -e "s!gforge.company.com!$HOSTNAME!g" /etc/httpd/conf.d/gforge.conf
 
-	/etc/init.d/httpd restart >>/var/log/%{name}-install.log 2>&1
+	/etc/init.d/httpd restart >>%{INSTALL_LOG} 2>&1
 
-	chkconfig postgresql on >>/var/log/%{name}-install.log 2>&1
+	chkconfig postgresql on >>%{INSTALL_LOG} 2>&1
 
 	# generate random hash for session_key
 	HASH=$(/bin/dd if=/dev/urandom bs=32 count=1 2>/dev/null | /usr/bin/sha1sum | cut -c1-40)
@@ -584,7 +588,7 @@ if [ "$1" -eq "1" ]; then
 
 	# add noreply mail alias
 	echo "noreply: /dev/null" >> /etc/aliases
-	/usr/bin/newaliases >>/var/log/%{name}-install.log 2>&1
+	/usr/bin/newaliases >>%{INSTALL_LOG} 2>&1
 
 	if [ $ret -ne 0 ] ; then
 		# display message about default admin account
@@ -602,7 +606,7 @@ if [ "$1" -eq "1" ]; then
 		sleep 10
 	fi
 else
-	/usr/bin/php %{FORGE_DIR}/db/upgrade-db.php >>/var/log/%{name}-upgrade.log 2>&1
+	/usr/bin/php %{FORGE_DIR}/db/upgrade-db.php >>%{UPGRADE_LOG} 2>&1
 fi
 
 %preun
@@ -726,6 +730,7 @@ fi
 %dir %{FORGE_VAR_LIB}/scmsnapshots
 %dir %{FORGE_VAR_LIB}/dumps
 %{FORGE_VAR_LIB}/homedirs
+%dir %{_var}/log/%{name}
 /home/groups
 /bin/cvssh.pl
 
