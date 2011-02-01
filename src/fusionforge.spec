@@ -364,7 +364,8 @@ mantisbt plugin for FusionForge.
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_VAR_LIB}/chroot/scmrepos/svn
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_VAR_LIB}/chroot/scmrepos/cvs
 %{__install} -m 755 -d $RPM_BUILD_ROOT/home/groups
-%{__install} -m 755 -d $RPM_BUILD_ROOT%{_var}/log/%{name}
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{_var}/log/gforge
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{_var}/log/fusionforge
 # mock mediawiki directory because we symlink GForge skin to Monobook
 %{__install} -m 755 -d $RPM_BUILD_ROOT/usr/share/mediawiki/skins
 
@@ -725,7 +726,8 @@ fi
 %dir %{FORGE_VAR_LIB}/scmsnapshots
 %dir %{FORGE_VAR_LIB}/dumps
 %{FORGE_VAR_LIB}/homedirs
-%dir %{_var}/log/%{name}
+%dir %{_var}/log/gforge
+%dir %{_var}/log/fusionforge
 /home/groups
 /bin/cvssh.pl
 
