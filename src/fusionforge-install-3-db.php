@@ -133,9 +133,9 @@ function install()
 
 	if (getenv('FFORGE_DB')) {
 		$forge_db = getenv('FFORGE_DB');
-		show("\n * Database Name: $forge_db");
+		show(" * Database Name: $forge_db");
 	} else {
-		show("\n * Enter the Database Name (gforge): ");
+		show(" * Enter the Database Name (gforge): ");
 		$forge_db = trim(fgets($STDIN));
 		if (strlen($forge_db) == 0) {
 			$forge_db = 'gforge';

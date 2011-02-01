@@ -47,12 +47,17 @@ require_once dirname(dirname(__FILE__)).'/Testing/SeleniumGforge.php';
 
 class LoginProcess extends FForge_SeleniumTestCase
 {
+	// Simple creation of a project by the admin user and
+	// approval of the creation just after.
+	// After creation, project is visible on the main page.
 	function testLogin()
 	{
 		// Test with a normal login.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		if (!$this->isTextPresent("Log In")) {
+			$this->logout();
+		}
+		$this->clickAndWait("link=Log In");
 
 		// Check that current URL's base is the same as ROOT
 		// If the forge redirects to other URL than the one
@@ -66,8 +71,7 @@ class LoginProcess extends FForge_SeleniumTestCase
 
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "myadmin");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("login");
 		$this->assertTrue($this->isTextPresent("Forge Admin"));
 		$this->assertTrue($this->isTextPresent("Log Out"));
 		$this->logout();
@@ -76,24 +80,20 @@ class LoginProcess extends FForge_SeleniumTestCase
 	
 		// Test with an empty password.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("login");
 		$this->assertTrue($this->isTextPresent("Missing Password Or Users Name"));
 		$this->assertFalse($this->isTextPresent("Forge Admin"));
 		$this->assertTrue($this->isTextPresent("Log In"));
 		
 		// Test with a wrong password.
 		$this->open( ROOT );
-		$this->click("link=Log In");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("link=Log In");
 		$this->type("form_loginname", "admin");
 		$this->type("form_pw", "awrongpassword");
-		$this->click("login");
-		$this->waitForPageToLoad("30000");
+		$this->clickAndWait("login");
 		$this->assertTrue($this->isTextPresent("Invalid Password Or User Name"));
 		$this->assertFalse($this->isTextPresent("Forge Admin"));
 		$this->assertTrue($this->isTextPresent("Log In"));
