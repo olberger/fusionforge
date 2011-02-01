@@ -26,10 +26,7 @@
 
 require_once dirname(__FILE__).'/install-common.inc' ;
 
-$STDOUT = fopen('php://stdout','w');
 $STDIN = fopen('php://stdin','r');
-
-show("\n-=# Welcome to FusionForge DB-Installer #=-");
 
 // Make sure the DB is initialized by starting postgresql service
 if (is_file('/etc/init.d/postgresql')) 
@@ -132,7 +129,7 @@ else
 function install()
 {
 	global $PGHBA, $fusionforge_src_dir, $fusionforge_etc_dir, $tsearch2_sql, $pgservice, 
-		$STDIN, $STDOUT, $fusionforge_log;
+		$STDIN, $fusionforge_log;
 
 	if (getenv('FFORGE_DB')) {
 		$forge_db = getenv('FFORGE_DB');
