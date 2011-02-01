@@ -27,6 +27,8 @@
 
 require_once dirname(__FILE__).'/install-common.inc' ;
 
+show("*** Welcome to FusionForge Installer ***");
+
 function printUsage() {
 	echo "Usage: fusionforge-install-1-deps [RHEL5|DEBIAN|FEDORA|CENTOS|ARK|SUSE|OPENSUSE]\n";
 }

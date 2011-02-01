@@ -38,7 +38,7 @@ if (empty($fusionforge_data_dir))
 $fusionforge_log = getenv('FUSIONFORGE_LOG');
 
 function show($text, $newLine = true) {
-	global $STDOUT, $fusionforge_log;
+	global $fusionforge_log;
 
 	if ($fusionforge_log) {
 		$hd = fopen ($fusionforge_log, 'a+');
@@ -49,7 +49,7 @@ function show($text, $newLine = true) {
 	if ($newLine) {
 		$text = GREEN.$text .NORMAL."\n";
 	}
-	fwrite($STDOUT, $text);
+	echo $text;
 }
 
 function mkdir_safe($dir, $mode=0777) {

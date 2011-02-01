@@ -30,54 +30,29 @@ require_once dirname(__FILE__).'/install-common.inc' ;
 $args = $_SERVER['argv'];
 $hostname = $args[1];
 
-echo "Validating arguments  ";
 if (count($args) != 4) {
-	echo "FAIL\n  Usage: $args[0] forge.company.com  apacheuser  apachegroup\n";
+	echo "ERROR: Usage: $args[0] forge.company.com  apacheuser  apachegroup";
 	exit(127);
 }
-echo "OK\n";
 
-//validate hostname
-echo "Validating hostname  ";
 if (!preg_match("/^([[:alnum:]._-])*$/" , $hostname)) {
-	echo "FAIL\n  invalid hostname\n";
+	echo "ERROR: Invalid hostname";
 	exit(2);
 }
-echo "OK\n";
 
-// #validate apache user
-//getent passwd $2 > /dev/null
-//found_apacheuser=$?
-//if [ $found_apacheuser -ne 0 ]; then
-//	echo 1>&2 "invalid apache user"
-//	exit 2
-//fi
-
-//ARREGLAR ESTO
-exec("getent passwd $args[2] > /dev/null", $arr, $t);
+exec("getent passwd $args[2] >/dev/null", $arr, $t);
 if ($t != 0) {
-	echo "invalid apache user\n";
+	echo "ERROR: Invalid apache user";
 	exit(2);
 }
 
-
-
-
-// #validate apache group
-//getent group $3 > /dev/null
-//found_apachegroup=$?
-//if [ $found_apachegroup -ne 0 ]; then
-//     echo 1>&2 "invalid apache group"
-//     exit 2
-//fi
-
-
-exec("getent group $args[3] > /dev/null", $arr, $t);
+exec("getent group $args[3] >/dev/null", $arr, $t);
 if ($t != 0) {
-	echo "invalid apache group";
+	echo "ERROR: Invalid apache group";
 	exit(2);
 }
 
+show(' * Installing FusionForge files in /opt/gforge...');
 mkdir_safe('/etc/gforge');
 mkdir_safe('/etc/gforge/plugins');
 mkdir_safe('/etc/gforge/httpd.conf.d');
@@ -119,9 +94,20 @@ chdir('/opt/gforge');
 system("cp plugins/scmcvs/bin/cvssh.pl /bin/");
 system("chmod 755 /bin/cvssh.pl");
 
-if (!is_file("/etc/gforge/httpd.conf")) {
-	system("cp etc/httpd.conf-opt /etc/gforge/httpd.conf");
+if (is_dir('/etc/httpd/conf.d')) {
+	$apacheconfdir='/etc/httpd/conf.d';
+} elseif (is_dir('/opt/csw/apache2/etc/httpd/conf.d')) {
+	$apacheconfdir='/opt/csw/apache2/etc/httpd/conf.d';
+} elseif (is_dir('/etc/apache2/conf.d')) {
+	$apacheconfdir='/etc/apache2/conf.d';
+} else {
+	$apacheconfdir='/etc/apache2/sites-enabled';
 }
+
+if (!is_file("$apacheconfdir/gforge.conf")) {
+	system("cp etc/httpd.conf-opt $apacheconfdir/gforge.conf");
+}
+
 $h = opendir ('etc/httpd.conf.d-opt') ;
 while (false !== ($file = readdir($h))) {
 	if ($file != "."
@@ -146,25 +132,6 @@ foreach( glob("*") as $plugin) {
 	$source = "/opt/gforge/plugins/$plugin/etc/plugins/$plugin";
 	if (is_dir($source)) {
 		system("cp -r $source /etc/gforge/plugins/");
-	}
-}
-
-$apacheconffiles=array();
-if (is_file('/etc/httpd/conf/httpd.conf')) {
-	$apacheconffiles[]='/etc/httpd/conf/httpd.conf';
-} elseif (is_file('/opt/csw/apache2/etc/httpd.conf')) {
-	$apacheconffiles[]='/opt/csw/apache2/etc/httpd.conf';
-} elseif (is_file('/etc/apache2/httpd.conf')) {
-	$apacheconffiles[]='/etc/apache2/httpd.conf';
-} else {
-	$apacheconffiles[]='/etc/apache2/sites-enabled/000-default';
-}
-
-foreach ($apacheconffiles as $apacheconffile) {
-	echo('Setting FusionForge Include For Apache...');
-	system("grep \"^Include $fusionforge_etc_dir/httpd.conf\" $apacheconffile > /dev/null", $ret);
-	if ($ret == 1) {
-		system("echo \"Include $fusionforge_etc_dir/httpd.conf\" >> $apacheconffile");
 	}
 }
 
