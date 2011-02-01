@@ -88,8 +88,8 @@ if ($opt_restart) {
 system("service postgresql restart 2>&1 >/dev/null");
 system("su - postgres -c 'dropdb -q ".DB_NAME."'");
 system("su - postgres -c 'createdb -q --encoding UNICODE ".DB_NAME."'");
-system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >> /var/log/gforge-import.log 2>&1");
-system("php $forge_root/db/upgrade-db.php >> /var/log/gforge-upgrade-db.log 2>&1");
+system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >>/var/log/gforge/db_reload.log 2>&1");
+system("php $forge_root/db/upgrade-db.php >>/var/log/gforge/db_reload.log 2>&1");
 
 $sitename = 'ACOS Forge';
 $adminPassword = 'myadmin';
