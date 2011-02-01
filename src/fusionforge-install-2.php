@@ -159,5 +159,3 @@ system("echo \"noreply:	/dev/null\" >> /etc/aliases");
 # Generate a random hash for the session_key
 $hash = md5(microtime());
 system("perl -spi -e \"s/session_key = foobar/session_key = $hash/\" /etc/gforge/config.ini");
-
-print "\n";
