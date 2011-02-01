@@ -381,19 +381,4 @@ function readMasked($prompt) {
 	return trim($text_entered);
 }
 
-function show($text, $newLine = true) {
-	global $STDOUT, $fusionforge_log;
-
-	if ($fusionforge_log) {
-		$hd = fopen ($fusionforge_log, 'a+');
-		fwrite($hd, "*** $text\n");
-		fclose($hd);
-	}
-
-	if ($newLine) {
-		$text = GREEN.$text .NORMAL."\n";
-	}
-	fwrite($STDOUT, $text);
-}
-
 install();
