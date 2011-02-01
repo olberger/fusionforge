@@ -37,6 +37,21 @@ if (empty($fusionforge_data_dir))
 
 $fusionforge_log = getenv('FUSIONFORGE_LOG');
 
+function show($text, $newLine = true) {
+	global $STDOUT, $fusionforge_log;
+
+	if ($fusionforge_log) {
+		$hd = fopen ($fusionforge_log, 'a+');
+		fwrite($hd, "*** $text\n");
+		fclose($hd);
+	}
+
+	if ($newLine) {
+		$text = GREEN.$text .NORMAL."\n";
+	}
+	fwrite($STDOUT, $text);
+}
+
 function mkdir_safe($dir, $mode=0777) {
 	if (!mkdir ($dir, $mode, true)) {
 		echo "ERROR: mkdir $dir failed.\n";
