@@ -32,7 +32,8 @@ class RPMSeleniumRemoteSuite extends SeleniumRemoteSuite
 		// Disable ssl & install a fake sendmail to catch outgoing emails.
 		system("ssh root@".HOST." '(echo [core];echo use_ssl=no;echo sendmail_path=/usr/share/tests/scripts/catch_mail.php) > /etc/gforge/config.ini.d/zzz-buildbot.ini'");
 
-		system("ssh root@".HOST." 'service crond stop'");
+		// Disable cron to avoid conflicts with forge cron jobs & database restart
+		system("ssh root@".HOST." '[ -f /var/lock/subsys/crond ] && service crond stop'");
 	}
 }
 ?>
