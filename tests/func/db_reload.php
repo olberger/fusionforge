@@ -86,6 +86,7 @@ if ($opt_restart) {
 	system("service httpd restart 2>&1 >/dev/null");
 }
 system("service postgresql restart 2>&1 >/dev/null");
+sleep(1);
 system("su - postgres -c 'dropdb -q ".DB_NAME."'");
 system("su - postgres -c 'createdb -q --encoding UNICODE ".DB_NAME."'");
 system("psql -q -U".DB_USER." ".DB_NAME." -f $forge_root/db/gforge.sql >>/var/log/gforge/db_reload.log 2>&1");
