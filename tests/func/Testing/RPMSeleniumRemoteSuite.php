@@ -28,12 +28,12 @@ class RPMSeleniumRemoteSuite extends SeleniumRemoteSuite
 		system("ssh root@".HOST." 'yum install -y fusionforge fusionforge-plugin-scmsvn fusionforge-plugin-online_help fusionforge-plugin-extratabs fusionforge-plugin-ldapextauth fusionforge-plugin-scmgit fusionforge-plugin-blocks'");
 
 		system("scp -p root@".HOST.":/var/cache/yum/timedhosts.txt /tmp/timedhosts.txt");
-		system("ssh root@".HOST." '(echo [core];echo use_ssl=no) > /etc/gforge/config.ini.d/zzz-builbot.ini'");
 
-		// Install a fake sendmail to catch all outgoing emails.
-		system("ssh root@".HOST." 'perl -spi -e s#/usr/sbin/sendmail#/usr/share/tests/scripts/catch_mail.php# /etc/gforge/local.inc'");
+		// Disable ssl & install a fake sendmail to catch outgoing emails.
+		system("ssh root@".HOST." '(echo [core];echo use_ssl=no;echo sendmail_path=/usr/share/tests/scripts/catch_mail.php) > /etc/gforge/config.ini.d/zzz-buildbot.ini'");
 
-		system("ssh root@".HOST." 'service crond stop'");
+		// Disable cron to avoid conflicts with forge cron jobs & database restart
+		system("ssh root@".HOST." '[ -f /var/lock/subsys/crond ] && service crond stop'");
 	}
 }
 ?>

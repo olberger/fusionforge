@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 #
 # Simple wrapper for FusionForge installation
 #
@@ -66,6 +66,11 @@ else
 	echo "Installing FusionForge ...";
 fi
 
+mkdir -p /var/log/fusionforge
+FUSIONFORGE_LOG=/var/log/fusionforge/$mode.log
+export FUSIONFORGE_LOG
+echo "Saving $mode log in $FUSIONFORGE_LOG";
+
 if [ "$type" = "redhat" ]
 then
 	yum -y install php
@@ -104,9 +109,6 @@ then
 	then
 		php fusionforge-install-3-db.php
 		php db/upgrade-db.php
-
-		# Post installation fixes.
-		#perl -spi -e "s/^#ServerName (.*):80/ServerName $hostname:80/" /etc/apache2/httpd.conf
 
 		chkconfig -s apache2 on
 		chkconfig -s postgresql on

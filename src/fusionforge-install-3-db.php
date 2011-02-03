@@ -24,20 +24,9 @@
  * Francisco Gimeno
  */
 
-define ('GREEN', "\033[01;32m" );
-define ('NORMAL', "\033[00m" );
-define ('RED', "\033[01;31m" );
+require_once dirname(__FILE__).'/install-common.inc' ;
 
-$STDOUT = fopen('php://stdout','w');
 $STDIN = fopen('php://stdin','r');
-
-show("\n-=# Welcome to FusionForge DB-Installer #=-");
-
-//TO DO: add dependency check
-//if (!run("php check-deps.php", true)) {
-//	echo RED.'Not all the necessary dependencies were found. aborting.'.NORMAL."\n";
-//	exit(1);
-//}
 
 // Make sure the DB is initialized by starting postgresql service
 if (is_file('/etc/init.d/postgresql')) 
@@ -68,14 +57,12 @@ else
 # Fedora9 (an maybe newer) requires running initdb
 if ($pgservice == '/etc/init.d/postgresql') {
 	if (!is_dir("/var/lib/pgsql/data/base")) {
-		run("service postgresql initdb &>/dev/null", true);
+		system("service postgresql initdb &>/dev/null");
 	}
 }
 
 // Might fail if it's already running, so we'll ingnore the result
-run("$pgservice start", true);
-
-require_once 'install-common.inc' ;
+run_safe("$pgservice start", true);
 
 if (!is_dir($fusionforge_src_dir))
 {
@@ -141,94 +128,96 @@ else
 
 function install()
 {
-	global $PGHBA, $fusionforge_src_dir, $fusionforge_etc_dir, $tsearch2_sql, $pgservice, $STDIN, $STDOUT;
-
-	show("\n * Enter the Database Name (gforge): ");
+	global $PGHBA, $fusionforge_src_dir, $fusionforge_etc_dir, $tsearch2_sql, $pgservice, 
+		$STDIN, $fusionforge_log;
 
 	if (getenv('FFORGE_DB')) {
-		$gforge_db = getenv('FFORGE_DB');
+		$forge_db = getenv('FFORGE_DB');
+		show(" * Database Name: $forge_db");
 	} else {
-		$gforge_db = trim(fgets($STDIN));
-		if (strlen($gforge_db) == 0) {
-			$gforge_db = 'gforge';
+		show(" * Enter the Database Name (gforge): ");
+		$forge_db = trim(fgets($STDIN));
+		if (strlen($forge_db) == 0) {
+			$forge_db = 'gforge';
 		}
+		show(" ...using '$forge_db'");
 	}
-	show(" ...using '$gforge_db'");
 
-	show(' * Enter the Database Username (gforge): ');
 
 	if (getenv('FFORGE_USER')) {
-		$gforge_user = getenv('FFORGE_USER');
+		$forge_user = getenv('FFORGE_USER');
+		show(' * Database Username: '.$forge_user);
 	} else {
-		$gforge_user = trim(fgets($STDIN));
-		if (strlen($gforge_user) == 0) {
-			$gforge_user = 'gforge';
+		show(' * Enter the Database Username (gforge): ');
+		$forge_user = trim(fgets($STDIN));
+		if (strlen($forge_user) == 0) {
+			$forge_user = 'gforge';
 		}
+		show(" ...using '$forge_user'");
 	}
-	show(" ...using '$gforge_user'");
 
 	show(" * Modifying DB Access Permissions...");
 	if (!file_exists("$PGHBA.fforge.backup")) {
-		run("cp $PGHBA $PGHBA.fforge.backup", true);
+		run_safe("cp $PGHBA $PGHBA.fforge.backup", true);
 	}
-	run("echo \"# GFORGE\nlocal all all trust\" > $PGHBA");
+	system("echo \"# GFORGE\nlocal all all trust\" > $PGHBA");
+
 	show(' * Restarting PostgreSQL...');
-	run("$pgservice stop >>/tmp/gforge-import.log 2>&1", true);
-	run("$pgservice start >>/tmp/gforge-import.log 2>&1");
+	run_safe("$pgservice stop", true);
+	run_safe("$pgservice start");
 
+	show(" * Creating '$forge_user' Group...");
+	run_safe("/usr/sbin/groupadd $forge_user", true);
 
-	show(" * Creating '$gforge_user' Group...");
-	run("/usr/sbin/groupadd $gforge_user", true);
-
-	show(" * Creating '$gforge_user' User...");
-	run("/usr/sbin/useradd -g $gforge_user $gforge_user", true);
+	show(" * Creating '$forge_user' User...");
+	run_safe("/usr/sbin/useradd -g $forge_user $forge_user", true);
 	
 	// Let's give some time for PostgreSQL to start
 	sleep(5);
 
-	show(" * Creating Database User '$gforge_user'...");
-	run("su - postgres -c \"createuser -A -R -d -E $gforge_user\"", true);
+	show(" * Creating Database User '$forge_user'...");
+	run_safe("su - postgres -c \"createuser -A -R -d -E $forge_user\"", true);
 
 	show(' * Creating Language...');
-	run("su - postgres -c \"createlang plpgsql template1\"", true);
+	run_safe("su - postgres -c \"createlang plpgsql template1\"", true);
 
-	if (!is_dir("/home/$gforge_user")) {
+	if (!is_dir("/home/$forge_user")) {
 	    $susufix = '';
 	} else {
 	    $susufix = '-';
 	}
 
-	show(" * Creating '$gforge_db' Database...");
-	run("su $susufix $gforge_user -c \"createdb --encoding UNICODE $gforge_db\"", true);
+	show(" * Creating '$forge_db' Database...");
+	run_safe("su $susufix $forge_user -c \"createdb --encoding UNICODE $forge_db\"", true);
 
 	# Detect postgresql version, load tsearch2 for pg < 8.3
 	$pg_version = explode(' ', shell_exec("postgres --version"));
 	$pgv = $pg_version[2];
 
 	if (preg_match('/^(7\.|8\.1|8\.2)/', $pgv)) {
-		show(" * Dumping tsearch2 Database Into '$gforge_db' DB");
-		run("su - postgres -c \"psql $gforge_db < $tsearch2_sql\" >>/tmp/gforge-import.log 2>&1");
+		show(" * Dumping tsearch2 Database Into '$forge_db' DB");
+		run_safe("su - postgres -c \"psql $forge_db < $tsearch2_sql\"");
 
 		$tables = array('pg_ts_cfg', 'pg_ts_cfgmap', 'pg_ts_dict', 'pg_ts_parser');
 		foreach ($tables as $table) {
-			run('su - postgres -c "psql '.$gforge_db.' -c \\"GRANT ALL on '.$table.' TO '.$gforge_user.';\\"" >>/tmp/gforge-import.log 2>&1');
+			run_safe('su - postgres -c "psql '.$forge_db.' -c \\"GRANT ALL on '.$table.' TO '.$forge_user.';\\""');
 		}
 //	} else {
 //		show(" * Creating FTS default configuation (Full Text Search)");
-//		run("su - postgres -c \"psql $gforge_db < $fusionforge_src_dir/db/FTS-20081108.sql\" >> /tmp/gforge-import.log");
+//		run_safe("su - postgres -c \"psql $forge_db < $fusionforge_src_dir/db/FTS-20081108.sql\"");
 	}
 
 
 	show(' * Dumping FusionForge DB');
-	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/gforge.sql\" >>/tmp/gforge-import.log 2>&1");
+	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/gforge.sql\"");
 
 //	show(' * Dumping FusionForge FTI DB');
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI.sql\" >> /tmp/gforge-import.log");
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI-20050315.sql\" >> /tmp/gforge-import.log");
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI-20050401.sql\" >> /tmp/gforge-import.log");
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI-20050530.sql\" >> /tmp/gforge-import.log");
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI-20060130.sql\" >> /tmp/gforge-import.log");
-//	run("su $susufix $gforge_user -c \"psql $gforge_db < $fusionforge_src_dir/db/FTI-20061025.sql\" >> /tmp/gforge-import.log");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI.sql\"");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI-20050315.sql\"");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI-20050401.sql\"");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI-20050530.sql\"");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI-20060130.sql\"");
+//	run_safe("su $susufix $forge_user -c \"psql $forge_db < $fusionforge_src_dir/db/FTI-20061025.sql\"");
 
 	show(" * Enter the Admin Username (fforgeadmin): ");
 	if (getenv('FFORGE_ADMIN_USER')) {
@@ -279,14 +268,14 @@ function install()
 		$pw_crypt = crypt($pwd1);
 		$pw_crypt = str_replace('$', '\\\\\\$', $pw_crypt);
 		//run(	'su - postgres -c "psql ' . 
-		//	$gforge_db . 
+		//	$forge_db . 
 		//	' -c \\"UPDATE \\\\\"user\\\\\" SET unix_name=\'' . 
 		//	$admin_user . '\', password_md5=\'' . 
 		//	$pw_md5 . '\', password_crypt=\'' . 
 		//	$pw_crypt . '\' WHERE user_id=101;\\""'); // MODIFIQUE ESTO
 
 		//run(	'su - postgres -c "psql ' . 
-		//	$gforge_db . 
+		//	$forge_db . 
 		//	' -c \\"UPDATE \\\\\"users\\\\\" SET user_name=\'' . 
 		//	$admin_user . '\', user_pw=\'' . 
 		//	$pw_md5 . '\', unix_pw=\'' . 
@@ -294,17 +283,16 @@ function install()
 //echo "BREAKPOINT 1\n";
 //$t = trim(fgets($STDIN));
 
-//	run("su - postgres -c \"psql $gforge_db -c \\\"INSERT INTO users (user_name, user_pw, unix_pw) VALUES ('$admin_user', '$pw_md5', '$pw_crypt')\\\"\"");
 		if (file_exists ('/tmp/fusionforge-use-pfo-rbac')) { // USE_PFO_RBAC
-			run("su - postgres -c \"psql $gforge_db -c \\\"INSERT INTO users (user_name, email, user_pw, unix_pw, status, theme_id) VALUES ('$admin_user', 'root@localhost.localdomain', '$pw_md5', '$pw_crypt', 'A', 1); INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A'); INSERT INTO pfo_user_role (user_id, role_id) VALUES (currval('users_pk_seq'), 3)\\\"\"");
+			run_safe("su - postgres -c \"psql $forge_db -c \\\"INSERT INTO users (user_name, email, user_pw, unix_pw, status, theme_id) VALUES ('$admin_user', 'root@localhost.localdomain', '$pw_md5', '$pw_crypt', 'A', 1); INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A'); INSERT INTO pfo_user_role (user_id, role_id) VALUES (currval('users_pk_seq'), 3)\\\"\"");
 		} else {
-			run("su - postgres -c \"psql $gforge_db -c \\\"INSERT INTO users (user_name, email, user_pw, unix_pw, status, theme_id) VALUES ('$admin_user', 'root@localhost.localdomain', '$pw_md5', '$pw_crypt', 'A', 1); INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A')\\\"\"");
+			run_safe("su - postgres -c \"psql $forge_db -c \\\"INSERT INTO users (user_name, email, user_pw, unix_pw, status, theme_id) VALUES ('$admin_user', 'root@localhost.localdomain', '$pw_md5', '$pw_crypt', 'A', 1); INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A')\\\"\"");
 		}
 
 //echo "BREAKPOINT 2\n";
 //$t = trim(fgets($STDIN));
 
-//	run("su - postgres -c \"psql $gforge_db -c \\\"INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A')\\\"\"" );
+//	run("su - postgres -c \"psql $forge_db -c \\\"INSERT INTO user_group (user_id, group_id, admin_flags) VALUES (currval('users_pk_seq'), 1, 'A')\\\"\"" );
 
 //echo "BREAKPOINT 3\n";
 //$t = trim(fgets($STDIN));
@@ -320,8 +308,8 @@ function install()
 	$lines = explode("\n",$data);
 	$config = '';
 	foreach ($lines as $l) {
-		$l = preg_replace("/^database_name\s*=(.*)/", "database_name = $gforge_db", $l);
-		$l = preg_replace("/^database_user\s*=(.*)/", "database_user = $gforge_user", $l);
+		$l = preg_replace("/^database_name\s*=(.*)/", "database_name = $forge_db", $l);
+		$l = preg_replace("/^database_user\s*=(.*)/", "database_user = $forge_user", $l);
 		$config .= $l."\n";
 	}
 
@@ -330,14 +318,15 @@ function install()
 		fclose($fp);	
 	}
 
-	show(' * Saving installation log in /tmp/gforge-import.log');
+	if ($fusionforge_log)
+		show(" * Saving installation log in $fusionforge_log");
 }
 /*
 function uninstall() {
-	global $PGHBA, $fusionforge_src_dir, $gforge_var_dir, $fusionforge_etc_dir, $gforge_db, $gforge_user, $tsearch2_sql;
+	global $PGHBA, $fusionforge_src_dir, $gforge_var_dir, $fusionforge_etc_dir, $gforge_db, $forge_user, $tsearch2_sql;
 
 	show(" * Removing DATABASE \n";
-	system("su - $gforge_user -c \"dropdb $gforge_db\"", $ret );
+	system("su - $forge_user -c \"dropdb $gforge_db\"", $ret );
 	show(" done . ($ret)\n";
 
 	show(" * Removing Language \n";
@@ -345,11 +334,11 @@ function uninstall() {
 	show(" done. ($ret)\n";
 
 	show(" * Removing GForge DATABASE User: \n";
-	system("su - postgres -c \"dropuser $gforge_user\"", $ret );
+	system("su - postgres -c \"dropuser $forge_user\"", $ret );
 	show(" done.($ret)");
 
 	show(" * Removing GForge User: \n";
-	system("userdel $gforge_user");
+	system("userdel $forge_user");
 	show(" done.");
 
 	show(" * Restoring $PGHBA file: ... ";
@@ -389,43 +378,4 @@ function readMasked($prompt) {
 	return trim($text_entered);
 }
 
-function finish() {
-	show(NORMAL."Done.\nYou are ready to run install-gforge-3.php");
-}
-
-function show($text, $newLine = true) {
-	global $STDOUT;
-
-	$hd = fopen ("/tmp/gforge-import.log", "a+");
-	fwrite($hd, "*** $text\n");
-	fclose($hd);
-
-	if ($newLine) {
-		$text = GREEN.$text .NORMAL."\n";
-	}
-	fwrite($STDOUT, $text);
-}
-
-function run($command, $ignore = false) {
-
-	$hd = fopen ("/tmp/gforge-import.log", "a+");
-	fwrite($hd, "CMD ".$command."\n");
-	fclose($hd);
-
-	system($command, $ret);
-	if ($ignore) {
-		if ($ret != 0) {
-			return false;
-		} else {
-			return true;
-		}
-	} else {
-		if ($ret != 0) {
-			echo RED.'An error ocurred running the last command... aborting.'.NORMAL."\n";
-			die();
-		}
-	}
-}
-
 install();
-?>
