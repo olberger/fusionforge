@@ -49,4 +49,4 @@ cd ..
 cp $WORKSPACE/reports/phpunit-selenium.xml $WORKSPACE/reports/phpunit-selenium.xml.org
 xalan -in $WORKSPACE/reports/phpunit-selenium.xml.org -xsl fix_phpunit.xslt -out $WORKSPACE/reports/phpunit-selenium.xml
 
-rsync -avz --delete $WORKSPACE/build/packages/ irc:/var/www/rpm/prod-51
+rsync -avz --delete $WORKSPACE/build/packages/ irc:/var/www/rpm/51-prod
