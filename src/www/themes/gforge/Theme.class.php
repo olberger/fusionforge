@@ -120,6 +120,7 @@ class Theme extends Layout {
                 echo '<div id="maindiv">
 ';
 //		        echo '<div class="printheader">'. forge_get_config('forge_name') . ' ' . util_make_url('/') .'</div>';
+
 				if(isset($GLOBALS['error_msg']) && $GLOBALS['error_msg']) {
 					echo $this->error_msg($GLOBALS['error_msg']);
 				}
@@ -129,6 +130,7 @@ class Theme extends Layout {
 				if(isset($GLOBALS['feedback']) && $GLOBALS['feedback']) {
 					echo $this->feedback($GLOBALS['feedback']);
 				}
+
 				if ($params['h1']) {
 					echo '<h1>'.$params['h1'].'</h1>';
 				} else {
