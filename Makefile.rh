@@ -6,21 +6,29 @@
 
 RPM_TMP=~/rpmbuild
 BUILDRESULT=~/fusionforge_repo
+BUILD_ID=
 
-version=$(shell LANG=C grep '>software_version' src/common/include/FusionForge.class.php | cut -d\' -f2)
+ver=$(shell LANG=C grep '>software_version' src/common/include/FusionForge.class.php | cut -d\' -f2)
+
 in_svn_repo:= $(wildcard .svn/)
-ifeq ($(strip $(in_svn_repo)),)
-	ifdef $(BUILD_NUMBER)
-		version=$(version).$(BUILD_NUMBER)
-	endif
-else
+ifneq ($(strip $(in_svn_repo)),)
+	version=$(ver)
 	id=$(shell LANG=C svnversion)
 	url=$(shell LANG=C svn info | grep 'Root:' | awk '{print $$3}')
 	tag=$(shell LANG=C svn log $(url) -r $(id) -l 1 2>/dev/null | awk '{ if ($$1=="Tag-Release") print $$1}')
 	ifeq ($(tag),)
-		version=$(version).$(id)
+		version=$(ver).$(id)
+	else
+		version=($ver)
+	endif
+else
+	ifneq ($(BUILD_ID),)
+		version=$(ver).$(BUILD_ID)
+	else
+		version=$(ver)
 	endif
 endif
+
 
 list:
 	@echo ======================================================================================
