@@ -86,6 +86,13 @@ class OSLCConnector {
 				$modelparams['filter']['where']=$filter;
 			}
 		}
+		// OSLC V1
+		else if(array_key_exists('oslc_cm_query', $params)) {
+		  $filter=parse_cql(urldecode($params['oslc_cm_query']));
+		  if($filter) {
+				$modelparams['filter']['where']=$filter;
+		  }
+		}
 		
 		if(array_key_exists('oslc_orderBy', $params))
 		{
@@ -234,8 +241,8 @@ class OSLCConnector {
 
 			$feedentry = $this->prepareChangeRequest($changerequest);
 
-			$feedentry['title'] = 'changerequest '.$identifier.' : '.$feedentry['resource']['dc:title'];
-			$feedentry['id']= $uri.$identifier;
+			$feedentry['title'] = 'changerequest '.$identifier.' : '.$feedentry['resource']['dcterms:title'];
+			$feedentry['id']= $uri.'/bug/'.$identifier;
 
 			$returned[] = $feedentry;
 		}
@@ -276,7 +283,7 @@ class OSLCConnector {
 					// TODO : use real RDF triples ?
 					$tokens = explode(':', $fieldname);
 					if( (count($tokens) == 1) && (in_array($fieldname,$dc_attr))) {
-						$fieldname = 'dc:'.$fieldname;
+						$fieldname = 'dcterms:'.$fieldname;
 					}
 					$preparedChangeRequest['resource'][$fieldname] = $value;
 					break;
