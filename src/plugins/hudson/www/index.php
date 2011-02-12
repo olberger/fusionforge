@@ -19,7 +19,7 @@
  */
 require_once('env.inc.php');
 require_once $gfcommon.'include/pre.php';
-require_once('preplugins.php');
+require_once $gfcommon.'include/preplugins.php';
 require_once('plugins_utils.php');
 
 $plugin_manager = PluginManager::instance();
@@ -28,7 +28,7 @@ $p = $plugin_manager->getPluginByName('hudson');
 if ($p && $plugin_manager->isPluginAvailable($p)) {
     $p->process();
 } else {
-    header('Location: '.get_server_url());
+	session_redirect(get_server_url());
 }
 
 ?>

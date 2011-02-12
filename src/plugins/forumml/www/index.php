@@ -98,9 +98,9 @@ $list = new MailmanList($group_id,$list_id);
 	}
 
 	$list_link = '<a href="/plugins/forumml/message.php?group_id='.$group_id.'&list='.$list_id.'">'.$list->getName().'</a>';
-	echo '<H2><b>'._('Mailing List ').$list_link._(' - New Thread').'</b></H2>
+	echo '<h2>'._('Mailing List ').$list_link.' - '._('New Thread').'</h2>
 	<a href="/plugins/forumml/message.php?group_id='.$group_id.'&list='.$list_id.'">['._('Browse Archives').']</a><br><br>
-	<H3><b>'._('Submit a new thread').'</b></H3>';
+	<h3>'._('Submit a new thread').'</h3>';
 
 	// New thread form
 	echo '<script type="text/javascript" src="scripts/cc_attach_js.php"></script>';
