@@ -227,7 +227,6 @@ class Forum extends Error {
 			}
 		}
 		db_commit();
-
 		return true;
 	}
 

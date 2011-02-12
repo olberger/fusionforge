@@ -3,6 +3,7 @@
  * FusionForge plugin system
  *
  * Copyright 2002, 2009, Roland Mas
+ * http://fusionforge.org
  *
  * This file is part of FusionForge.
  *

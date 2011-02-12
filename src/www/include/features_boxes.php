@@ -31,7 +31,7 @@ require_once $gfcommon.'include/Stats.class.php';
 
 function show_features_boxes() {
 	global $HTML;
-	
+
 	plugin_hook ("features_boxes_top", array());
 	$return = '<h2 class="skip">' . _('Features Boxes') . '</h2>';
 

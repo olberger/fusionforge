@@ -35,7 +35,7 @@ $pm = plugin_manager_get_object();
 
 if (getStringFromRequest('update')) {
 	$pluginname = getStringFromRequest('update');
-	
+
 	if ((getStringFromRequest('action')=='deactivate')) {
 
 		$res = db_query_params ('DELETE FROM user_plugin WHERE plugin_id = (SELECT plugin_id FROM plugins WHERE plugin_name = $1)',
@@ -59,7 +59,7 @@ if (getStringFromRequest('update')) {
 			exit_error(db_error(),'admin');
 		} else {
 			$feedback = sprintf(_('Plugin %1$s updated Successfully'), $pluginname);
-			
+
 			// Load the plugin and now get information from it.
 			$plugin = $pm->GetPluginObject($pluginname);
 			if (!$plugin || $plugin->isError()) {
@@ -81,9 +81,9 @@ if (getStringFromRequest('update')) {
 					$result = unlink(forge_get_config('config_path'). '/plugins/'.$pluginname); // the apache group or user should have write perms in forge_get_config('config_path')/plugins folder...
 					if (!$result) {
 						$feedback .= _('Success, config not deleted');
-					}			
+					}
 				}
-			}			
+			}
 		}
 	} else {
 

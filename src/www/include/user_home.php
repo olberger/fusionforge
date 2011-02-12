@@ -165,7 +165,7 @@ echo $user->getPhone();
 
 if (forge_get_config('use_diary')) {
 		echo $HTML->boxMiddle(_('Diary and Notes'), _('Diary and Notes'));
-	 
+
 		/*
 			Get their diary information
 		*/
@@ -185,7 +185,7 @@ if (forge_get_config('use_diary')) {
 		echo '</p>';
 		$hookparams['user_id'] = $user_id;
 		plugin_hook("user_personal_links",$hookparams);
-	}	
+	}
 	?>
 
 
