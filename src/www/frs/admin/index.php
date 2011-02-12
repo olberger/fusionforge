@@ -55,7 +55,6 @@ if (getStringFromRequest('submit')) {
 	$func = getStringFromRequest('func');
 	$package_id = getIntFromRequest('package_id');
 	$package_name = trim(getStringFromRequest('package_name'));
-	$status_id = getIntFromRequest('status_id');
 	$is_public = getStringFromRequest('is_public');
 
 	/*
@@ -101,6 +100,7 @@ if (getStringFromRequest('submit')) {
 		} elseif ($frsp->isError()) {
 			exit_error($frsp->getErrorMessage(),'frs');
 		}
+		$status_id = $frsp->getStatus();
 		if (!$frsp->update($package_name,$status_id)) {
 			exit_error($frsp->getErrorMessage(),'frs');
 		} else {

@@ -34,7 +34,7 @@ $pm = plugin_manager_get_object();
 
 if (getStringFromRequest('update')) {
 	$pluginname = getStringFromRequest('update');
-	
+
 	if ((getStringFromRequest('action')=='deactivate')) {
 
 		$res = db_query_params ('DELETE FROM user_plugin WHERE plugin_id = (SELECT plugin_id FROM plugins WHERE plugin_name = $1)',
@@ -58,7 +58,7 @@ if (getStringFromRequest('update')) {
 			exit_error(db_error(),'admin');
 		} else {
 			$feedback = sprintf(_('Plugin %1$s updated Successfully'), $pluginname);
-			
+
 			// Load the plugin and now get information from it.
 			$plugin = $pm->GetPluginObject($pluginname);
 			if (!$plugin || $plugin->isError()) {
@@ -80,9 +80,9 @@ if (getStringFromRequest('update')) {
 					$result = unlink(forge_get_config('config_path'). '/plugins/'.$pluginname); // the apache group or user should have write perms in forge_get_config('config_path')/plugins folder...
 					if (!$result) {
 						$feedback .= _('Success, config not deleted');
-					}			
+					}
 				}
-			}			
+			}
 		}
 	} else {
 
@@ -163,10 +163,15 @@ foreach ($filelist as $filename) {
 		if ($res) {
 			if (db_numrows($res)>0) {
 				$users = " ";
-				for($i=0;$i<db_numrows($res);$i++) {
+				$nb_users = db_numrows($res);
+				for($i=0;$i<$nb_users;$i++) {
 					$users .= db_result($res,$i,0) . " | ";
 				}
 				$users = substr($users,0,strlen($users) - 3); //remove the last |
+				// If there are too many users, replace the list with number of users
+				if ($nb_users > 100) {
+					$users = util_make_link("/admin/userlist.php?usingplugin=$filename", '<b>'.sprintf(_("%d users"), $nb_users).'</b>');
+				}
 			} else {
 				$users = _('None');
 			}
@@ -177,10 +182,15 @@ foreach ($filelist as $filename) {
 		if ($res) {
 			if (db_numrows($res)>0) {
 				$groups = " ";
-				for($i=0;$i<db_numrows($res);$i++) {
+				$nb_groups = db_numrows($res);
+				for($i=0;$i<$nb_groups;$i++) {
 					$groups .= db_result($res,$i,0) . " | ";
 				}
 				$groups = substr($groups,0,strlen($groups) - 3); //remove the last |
+				// If there are too many projects, replace the list with number of projects
+				if ($nb_groups > 100) {
+					$groups = util_make_link("/admin/grouplist.php?usingplugin=$filename", '<b>'.sprintf(_("%d projects"), $nb_groups).'</b>');
+				}
 			} else {
 				$groups = _('None');
 			}

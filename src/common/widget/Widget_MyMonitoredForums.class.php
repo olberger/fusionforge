@@ -106,8 +106,6 @@ class Widget_MyMonitoredForums extends Widget {
 					$class="bgcolor-grey";
 				}
 
-
-
 				$group_forum_id = db_result($result2,$i,'group_forum_id');
 
 				$html .= '
@@ -116,8 +114,8 @@ class Widget_MyMonitoredForums extends Widget {
 					stripslashes(db_result($result2,$i,'forum_name')).'</A></TD>'.
 					'<TD ALIGN="center"><A HREF="/my/stop_monitor.php?forum_id='.$group_forum_id.
 					'" onClick="return confirm(\''._("Stop monitoring this Forum?").'\')">'.
-					'<IMG SRC="'.$GLOBALS['HTML']->imgroot.'ic/trash.png" HEIGHT="16" WIDTH="16" '.
-					'BORDER=0 ALT="'._("STOP MONITORING").'"></A></TD></TR>';
+					'<img src="'.$GLOBALS['HTML']->imgroot.'ic/trash.png" height="16" width="16" '.
+					'border=0 alt="'._("Stop monitoring").'"></a></td></tr>';
 			}
 		}
 
@@ -130,7 +128,7 @@ class Widget_MyMonitoredForums extends Widget {
     }
 
     function getCategory() {
-	    return 'Forums';
+		return 'Forums';
     }
     function getDescription() {
 	    return _("List forums that you are currently monitoring, by project.<br />To cancel any of the monitored items just click on the trash icon next to the item label.");

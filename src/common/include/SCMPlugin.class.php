@@ -176,8 +176,8 @@ abstract class SCMPlugin extends Plugin {
 		if ($project->usesPlugin ($this->name)) {
 
 			// Table for summary info
-			print '<table width="100%"><tr valign="top"><td width="65%">' ;
-			print $this->getBlurb () ;
+			print '<table width="100%"><tr valign="top"><td width="65%">'."\n" ;
+			print $this->getBlurb ()."\n" ;
 
 			// Instructions for anonymous access
 			if ($project->enableAnonSCM()) {
@@ -191,7 +191,7 @@ abstract class SCMPlugin extends Plugin {
 			if ($this->browserDisplayable ($project)) {
 				print $this->getSnapshotPara ($project) ;
 			}
-			print '</td><td width="35%" valign="top">' ;
+			print '</td>'."\n".'<td width="35%" valign="top">'."\n" ;
 
 			// Browsing
 			echo $HTML->boxTop(_('Repository History'));
@@ -224,7 +224,7 @@ abstract class SCMPlugin extends Plugin {
 	function printAdminPage ($params) {
 		$group = group_get_object($params['group_id']);
 		if ( $group->usesPlugin ( $this->name ) && $group->isPublic()) {
-			print '<p><input type="checkbox" name="scm_enable_anonymous" value="1" '.$this->c($group->enableAnonSCM()).' /><strong>'._('Enable Anonymous Access').'</strong></p>';
+			print '<p><input type="checkbox" name="scm_enable_anonymous" value="1" '.$this->c($group->enableAnonSCM()).' /><strong>'._('Enable Anonymous Read Access').'</strong></p>';
 		}
 	}
 	
@@ -235,7 +235,7 @@ abstract class SCMPlugin extends Plugin {
 		}
 		
 		if ($project->usesPlugin ($this->name) ) {
-			if ($params['scm_enable_anonymous']) {
+			if (isset($params['scm_enable_anonymous']) && $params['scm_enable_anonymous']) {
 				$project->SetUsesAnonSCM(true);
 			} else {
 				$project->SetUsesAnonSCM(false);

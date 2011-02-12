@@ -233,11 +233,12 @@ class Plugin extends Error {
 		// this code actually activates/deactivates the plugin after the form was submitted in the project edit public info page
 		$group = group_get_object($params['group']);
 		$flag = strtolower('use_'.$this->name);
-		if ( getStringFromRequest($flag) == 1 ) {
+		if ( getIntFromRequest($flag) == 1 ) {
 			$group->setPluginUse ( $this->name );
 		} else {
 			$group->setPluginUse ( $this->name, false );
 		}
+		return true;
 	}
 
 	function userisactivecheckbox (&$params) {
@@ -261,7 +262,7 @@ class Plugin extends Error {
 		// this code actually activates/deactivates the plugin after the form was submitted in the user account manteinance page
 		$user = $params['user'];
 		$flag = strtolower('use_'.$this->name);
-		if ( getStringFromRequest($flag) == 1 ) {
+		if (getIntFromRequest($flag) == 1) {
 			$user->setPluginUse ( $this->name );
 		} else {
 			$user->setPluginUse ( $this->name, false );

@@ -602,7 +602,7 @@ function utils_requiredField() {
  * @param		string	The title of the graph
  *
  */
-Function GraphResult($result,$title) {
+function GraphResult($result, $title) {
 	$rows=db_numrows($result);
 
 	if ((!$result) || ($rows < 1)) {
@@ -634,7 +634,7 @@ Function GraphResult($result,$title) {
  * @param		string	The title of the graph
  *
  */
-Function GraphIt($name_string,$value_string,$title) {
+function GraphIt($name_string, $value_string, $title) {
 	GLOBAL $HTML;
 
 	$counter=count($name_string);
