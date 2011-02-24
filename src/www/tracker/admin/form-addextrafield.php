@@ -35,7 +35,6 @@ $ath->adminHeader(array ('title'=>$title));
 		$efarr = $ath->getExtraFields();
 		$eftypes=ArtifactExtraField::getAvailableTypes();
 		$keys=array_keys($efarr);
-		echo "<br />";
 		$rows=count($keys);
 		if ($rows > 0) {
 
