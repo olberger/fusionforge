@@ -6,23 +6,29 @@
 
 RPM_TMP=~/rpmbuild
 BUILDRESULT=~/fusionforge_repo
+BUILD_ID=
 
-VER=$(shell LANG=C grep '>software_version' src/common/include/FusionForge.class.php | cut -d\' -f2)
+ver=$(shell LANG=C grep '>software_version' src/common/include/FusionForge.class.php | cut -d\' -f2)
+
 in_svn_repo:= $(wildcard .svn/)
-ifeq ($(strip $(in_svn_repo)),)
-	ID=unknown
-	URL=unknown
-	TAG=unknown
+ifneq ($(strip $(in_svn_repo)),)
+	version=$(ver)
+	id=$(shell LANG=C svnversion)
+	url=$(shell LANG=C svn info | grep 'Root:' | awk '{print $$3}')
+	tag=$(shell LANG=C svn log $(url) -r $(id) -l 1 2>/dev/null | awk '{ if ($$1=="Tag-Release") print $$1}')
+	ifeq ($(tag),)
+		version=$(ver).$(id)
+	else
+		version=($ver)
+	endif
 else
-	ID=$(shell LANG=C svnversion)
-	URL=$(shell LANG=C svn info | grep 'Root:' | awk '{print $$3}')
-	TAG=$(shell LANG=C svn log $(URL) -r $(ID) -l 1 2>/dev/null | awk '{ if ($$1=="Tag-Release") print $$1}')
+	ifneq ($(BUILD_ID),)
+		version=$(ver).$(BUILD_ID)
+	else
+		version=$(ver)
+	endif
 endif
-ifeq ($(TAG),)
-	version=$(VER).$(ID)
-else
-	version=$(VER)
-endif
+
 
 list:
 	@echo ======================================================================================
