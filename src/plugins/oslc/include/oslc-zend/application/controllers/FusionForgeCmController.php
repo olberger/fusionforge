@@ -40,12 +40,28 @@ class FusionForgeCmController extends CmController {
 	 * @var array
 	 */
 	private static $supportedAcceptMimeTypes = array();
-
+	private static $fusionforgeSupportedAcceptMimeTypes = array(
+		'oslcServiceCatalogProject' => array(
+			'application/x-oslc-disc-service-provider-catalog+xml' => 'xml',
+		 	'application/xml' => 'xml',
+			'application/x-oslc-disc-service-provider-catalog+json' => 'json',
+			'application/json' => 'json',
+			'application/rdf+xml' => 'xml'
+		),
+	);
+	private $actionMimeType;
+	
+	public function setActionMimeType($action) {
+		if(!isset($this->actionMimeType)) {
+			$this->actionMimeType = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $action);
+		}
+	}
+	
 	/**
 	 * Init FusionForge REST controller.
 	 */
 	public function init(){
-		self::$supportedAcceptMimeTypes = parent::getSupportedAcceptMimeTypes();
+		self::$supportedAcceptMimeTypes = array_merge(parent::getSupportedAcceptMimeTypes(), self::$fusionforgeSupportedAcceptMimeTypes);
 		
 		// TODO : render this path configurable
 		//		$writer = new Zend_Log_Writer_Stream('/tmp/zend-log.txt');
@@ -57,22 +73,24 @@ class FusionForgeCmController extends CmController {
 		$req = $this->getRequest();
 		//print_r($req);
 
-		if(($req->getActionName()=='post')||($req->getActionName()=='put'))
+		$action = $req->getActionName();
+		
+		if(($action == 'post')||($action == 'put'))
 		{
 			$accept = $req->getHeader('Content-Type');
 		}
-		elseif($req->getActionName()=='get')
+		elseif($action =='get')
 		{
 			$accept = $req->getHeader('Accept');
 		}
 		
-		$action = $req->getActionName();
+		// Set the mime type for action.
+		$this->setActionMimeType($action);
 		
-		$mime = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $action);
-		if($mime) {
-			$accept = $mime;
+		if(isset($this->actionMimeType)) {
+		  $accept = $this->actionMimeType;
 		}
-
+		
 		// determine output format
 		if (isset(self::$supportedAcceptMimeTypes[$action])) {
 			if (isset(self::$supportedAcceptMimeTypes[$action][$accept])) {
@@ -115,13 +133,32 @@ class FusionForgeCmController extends CmController {
 
 		// handle OSLC services catalog access (http://open-services.net/bin/view/Main/OslcServiceProviderCatalogV1)
 		if ( isset($params['id']) && ($params['id'] == "oslc-services")) {
-			$this->_forward('oslcServiceCatalog');
+				$this->_forward('oslcServiceCatalog');
+				return;
+		}
+		
+		// Handle OSLC-CM services catalog for specific project
+		// An OSLC-CM services catalog in FusionForge lists all the trackers 
+		// of a specific project.
+		elseif (isset($params['oslc-cm-services'])){
+			$this->_forward('oslcServiceCatalogProject');
 			return;
 		}
 		
 		// handle OSLC-CM service document access
-		elseif (isset($params['oslc-cm-service'])) {
+		// An OSLC-CM service document describes capabilities of a FusionForge tracker.
+		elseif (isset($params['oslc-cm-service']) && isset($params['tracker'])) {
 			$this->_forward('oslcCmServiceDocument');
+			return;
+		}
+		// Handle creation UI access
+		elseif (isset($params['ui']) && $params['ui'] == 'creation' && isset($params['project']) && isset($params['tracker'])){
+			$this->_forward('showCreationUi');
+			return;
+		}
+		// Handle selection UI access 
+		elseif (isset($params['ui']) && $params['ui'] == 'selection' && isset($params['project']) && isset($params['tracker'])){
+			$this->_forward('showSelectionUi');
 			return;
 		}
 		
@@ -187,12 +224,17 @@ class FusionForgeCmController extends CmController {
 			$contenttype = $contenttype ? $contenttype : 'none';
 
 			switch($contenttype) {
+				case 'application/x-oslc-cm-change-request+xml; charset=UTF-8':
+				case 'application/x-oslc-cm-change-request+json; charset=UTF-8':
+				case 'application/xml; charset=UTF-8':
+				case 'application/json; charset=UTF-8':
 				case 'application/x-oslc-cm-change-request+xml':
 				case 'application/x-oslc-cm-change-request+json':
 				case 'application/xml':
+				case 'application/json':
 					break;
 				default:
-					throw new Exception('Unknown Content-Type for method put : '. $contenttype .' !');
+					throw new UnsupportedMediaTypeException('Unknown Content-Type for method put : '. $contenttype .' !');
 					break;
 			}
 
@@ -227,12 +269,17 @@ class FusionForgeCmController extends CmController {
 
 			// TODO: This should be done by $this->oslc
 			switch($contenttype) {
+				case 'application/x-oslc-cm-change-request+xml; charset=UTF-8':
+				case 'application/xml; charset=UTF-8':
 				case 'application/x-oslc-cm-change-request+xml':
 				case 'application/xml':
 					// extract values from XML
 					$newchangerequest = FusionForgeChangeRequest::CreateFusionForgeArrayFromXml($body);
 					break;
+				case 'application/x-oslc-cm-change-request+json; charset=UTF-8':
+				case 'application/json; charset=UTF-8':
 				case 'application/x-oslc-cm-change-request+json':
+				case 'application/json':
 					// extract values from JSON.
 					$newchangerequest = FusionForgeChangeRequest::CreateFusionForgeArrayFromJson($body);
 					break;
@@ -280,7 +327,10 @@ class FusionForgeCmController extends CmController {
 			case 'application/x-oslc-cm-change-request+xml':
 			case 'application/x-oslc-cm-change-request+xml; charset=UTF-8':
 			case 'application/x-oslc-cm-change-request+json':
+			case 'application/x-oslc-cm-change-request+json; charset=UTF-8':
 			case 'application/json':
+			case 'application/json; charset=UTF-8':
+			case 'application/xml; charset=UTF-8':
 			case 'application/xml':
 				break;
 			default:
@@ -300,12 +350,16 @@ class FusionForgeCmController extends CmController {
 			if (array_key_exists('tracker', $params)) {
 				// create a change request
 				switch($contenttype) {
-					case 'application/x-oslc-cm-change-request+xml':
-					case 'application/xml':
 					case 'application/x-oslc-cm-change-request+xml; charset=UTF-8':
+					case 'application/x-oslc-cm-change-request+xml':
+					case 'application/xml; charset=UTF-8':
+					case 'application/xml':
 						$newchangerequest = FusionForgeChangeRequest::CreateFusionForgeArrayFromXml($body);
 						break;
+					case 'application/x-oslc-cm-change-request+json; charset=UTF-8':
 					case 'application/x-oslc-cm-change-request+json':
+					case 'application/json; charset=UTF-8':
+					case 'application/json':
 						$newchangerequest = FusionForgeChangeRequest::CreateFusionForgeArrayFromJson($body);
 						break;
 				}
@@ -363,8 +417,8 @@ class FusionForgeCmController extends CmController {
 	public function readresourceAction() {
 		
 		$params = $this->getRequest()->getParams();
-		$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
-		if (! $content_type) {
+		//$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
+		if (!isset($this->actionMimeType)) {
 			$this->_forward('UnknownAcceptType','error');
 			return;
 		}
@@ -391,7 +445,7 @@ class FusionForgeCmController extends CmController {
 				$this->view->{$field} = $value;
 			}
 			
-			$this->getResponse()->setHeader('Content-Type', $content_type);
+			$this->getResponse()->setHeader('Content-Type', $this->actionMimeType);
 		}
 		else{
 			$this->view->missing_resource = $identifier;
@@ -400,16 +454,16 @@ class FusionForgeCmController extends CmController {
 	}
 	
 	public function readresourcecollectionAction()	{
-
-		$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
-		if (! $content_type) {
-		  //			print_r("error");
-		  throw new NotAcceptableException("Accept header ".$this->getRequest()->getHeader('Accept')." not supported!");
-		  return;
-		}
-		//exit;
 		$req = $this->getRequest();
 		$params = $req->getParams();
+		
+		//$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
+		// TODO: raise the correct error code according to the specs.
+		if (!isset($this->actionMimeType)) {
+		  //			print_r("error");
+		  throw new NotAcceptableException("Accept header ".$req->getHeader('Accept')." not supported!");
+		  return;
+		}
 		
 		// load the model. Will fetch requested change requests from the db.
 		$params = $this->oslc->init($params);
@@ -418,9 +472,6 @@ class FusionForgeCmController extends CmController {
 		$httpScheme = $this->getRequest()->getScheme();
 		$httpHost = $this->getRequest()->getHttpHost();
 		$requestUri = $this->getRequest()->getRequestUri();
-		$requestUri = str_replace('bugs','bug', $requestUri);
-		$requestUri = preg_replace("/project.*/", 'bug/', $requestUri);
-		$requestUri = $requestUri.(($requestUri[strlen($requestUri)-1]=='/')?'':'/');
 		$prefix = $httpScheme.'://'.$httpHost.$requestUri;
 
 		// get all resources
@@ -441,52 +492,93 @@ class FusionForgeCmController extends CmController {
 		}
 
 		//print_r($this->view);
-		$this->getResponse()->setHeader('Content-Type', $content_type);
+		$this->getResponse()->setHeader('Content-Type', $this->actionMimeType);
 		
 	}
 	
 	/**
-	 * Handle OSLC services catalog access (http://open-services.net/bin/view/Main/OslcServiceProviderCatalogV1)
+	 * Handle OSLC Core services provider catalog access (http://open-services.net/bin/view/Main/OslcCoreSpecification)
+	 * Will show the list of prjects.
+	 * 
 	 */
 	public function oslcservicecatalogAction() {
 		
-		$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
-		if (! $content_type) {
+		//$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
+		if (! isset($this->actionMimeType)) {
 		  //			print_r("error");
 		  $this->_forward('UnknownAcceptType','error');
 		  return;
 		}
-		
-		// each project will generate its own service description
+		// each project is considered as a service Provider.
 		$proj_arr = $this->oslc->getProjectsList();
 		
 		$this->view->projects = $proj_arr;
 		
-		$this->getResponse()->setHeader('Content-Type', $content_type);
+		$this->getResponse()->setHeader('Content-Type', $this->actionMimeType);
 	}
-
+	
 	/**
-	 * 
-	 * Handles OSLC service document (service document) access.
-	 * TODO: Implement service document details.
+	 * Handle OSLC services catalog access per project.
+	 * Accessed by uris like ".../cm/oslc-cm-services/x"
+	 * where x is a project id.
 	 */
-	public function oslccmservicedocumentAction() {
-		$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
-		if (! $content_type) {
-		  //			print_r("error");
-		  $this->_forward('UnknownAcceptType','error');
-		  return;
+	public function oslcservicecatalogprojectAction() {
+		//$content_type = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
+		if (! isset($this->actionMimeType)) {
+			$this->_forward('UnknownAcceptType','error');
+			return;
 		}
 		
 		$req = $this->getRequest();
 		$params = $req->getParams();
-		$project = $params['oslc-cm-service'];
+		
+		$project = $params['oslc-cm-services'];
+		$trackers = $this->oslc->getProjectTrackers($project);
+		
 		$this->view->project = $project;
+		$this->view->trackers = $trackers;
+		
+		$this->getResponse()->setHeader('Content-Type', $this->actionMimeType);
+	}
 
-		$this->getResponse()->setHeader('Content-Type', $content_type);
+	/**
+	 * 
+	 * Handles OSLC-CM service document access.
+	 */
+	public function oslccmservicedocumentAction() {
+		//$this->actionMimeType = parent::checkSupportedActionMimeType(self::$supportedAcceptMimeTypes, $this->getRequest()->getActionName());
+		if (! isset($this->actionMimeType)) {
+			$this->_forward('UnknownAcceptType','error');
+			return;
+		}
+		
+		$req = $this->getRequest();
+		$params = $req->getParams();
+
+		$this->view->project = $params['oslc-cm-service'];
+		$this->view->tracker = $params['tracker'];
+
+		$this->getResponse()->setHeader('Content-Type', $this->actionMimeType);
 
 	}
 
+	public function showselectionuiAction()	{
+		$req = $this->getRequest();
+		$params = $req->getParams();
+		$project = $params['project'];
+		$tracker = $params['tracker'];
+		$data = $this->oslc->getDataForSelectionUi($project, $tracker);
+		$this->view->data = $data;
+	}
+	
+	public function showcreationuiAction() {
+		$req = $this->getRequest();
+		$params = $req->getParams();
+		$project = $params['project'];
+		$tracker = $params['tracker'];
+		$data = $this->oslc->getDataForCreationUi($project, $tracker);
+		$this->view->data = $data;
+	}
 	
 		/**
 	 * Performs authentication according to the configured AUTH_TYPE configured
