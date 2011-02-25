@@ -63,10 +63,12 @@ echo notepad_func();
 			<td><strong><?php echo _('Priority') ?>:</strong><br /><?php echo $ah->getPriority(); ?></td>
 		</tr>
 
+		<?php if (!$ath->usesCustomStatuses()) { ?>
 		<tr>
 			<td><strong><?php echo _('State') ?>:</strong><br /><?php echo $ah->getStatusName(); ?></td>
 			<td></td>
 		</tr>
+		<?php } ?>
 		<tr>
 	        <td>
 			<strong><?php echo _('Submitted by') ?>:</strong><br />
