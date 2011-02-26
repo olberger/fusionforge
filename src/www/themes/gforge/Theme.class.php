@@ -52,10 +52,10 @@ class Theme extends Layout {
 	function bodyHeader($params) {
 		global $user_guide;
 
-		// Don't display the headers twice (when errors for example).
-		if ($this->header_displayed)
-			return;
-		$this->header_displayed=true;
+//		// Don't display the headers twice (when errors for example).
+//		if ($this->header_displayed)
+//			return;
+//		$this->header_displayed=true;
 		
 		// The root location for images
 		if (!isset($params['h1'])) {
