@@ -422,6 +422,9 @@ search_and_replace "/opt/gforge" "%{FORGE_DIR}"
 %{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/plugins/*/packaging
 %{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/plugins/*/*.spec
 
+# No packaging for the following plugins, too unstable.
+%{__rm} -fr $RPM_BUILD_ROOT/%{FORGE_DIR}/plugins/confluence
+
 ### Plugin setup ###
 %{__cp} $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/*/etc/*.ini $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/config.ini.d/
 %{__cp} $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/*/etc/cron.d/* $RPM_BUILD_ROOT%{_sysconfdir}/cron.d/
