@@ -685,7 +685,7 @@ function site_header($params) {
  * @param		array	Footer params array
  */
 function site_footer($params) {
-	GLOBAL $HTML;
+	global $HTML;
 	$HTML->footer($params);
 }
 
@@ -696,7 +696,7 @@ function site_footer($params) {
  *	@param params array() must contain $toptab and $group
  */
 function site_project_header($params) {
-	GLOBAL $HTML;
+	global $HTML;
 
 	/*
 		Check to see if active
@@ -747,9 +747,20 @@ function site_project_header($params) {
 		$params['h1'] = $h1;
 	}
 	
+	if ($project->getDescription()) {
+		$params['meta-description'] = $project->getDescription();
+	}
+
+	if (forge_get_config('use_project_tags')) {
+		$res = db_query_params('SELECT name FROM project_tags WHERE group_id = $1', array($group_id));
+		if ($res && db_numrows($res) > 0) {
+			while ($row = db_fetch_array($res)) {
+				$array[] = $row['name'];
+			}
+			$params['meta-keywords'] = join(', ', $array);
+		}
+	}
 	site_header($params);
-	
-//	echo $HTML->project_tabs($params['toptab'],$params['group'],$params['tabtext']);
 }
 
 /**
