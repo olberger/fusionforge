@@ -36,7 +36,7 @@ export CONFIGURED=true
 [ ! -d $WORKSPACE/reports ] || rm -fr $WORKSPACE/reports
 mkdir -p $WORKSPACE/build/packages $WORKSPACE/reports/coverage
 
-make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all
+make -f Makefile.rh BUILDRESULT=$WORKSPACE/build/packages all BUILD_ID=$BUILD_NUMBER
 
 cp gforge/rpm-specific/fusionforge.repo $WORKSPACE/build/packages/fusionforge.repo
 sed -i "s#http://fusionforge.org/#${HUDSON_URL}#" $WORKSPACE/build/packages/fusionforge.repo
