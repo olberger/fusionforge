@@ -185,7 +185,6 @@ if ($pending=="yes") {
 	$res = db_query_params ('SELECT * FROM forum_attachment WHERE attachmentid=$1',
 			array ($attachid));
 }
-
 if (!$res || !db_numrows($res) ) {
 	exit_error("Attachment Download error: ".db_error(),'forums');
 }
