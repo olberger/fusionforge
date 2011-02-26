@@ -204,7 +204,8 @@ class ArtifactFactory extends Error {
 					   'close_date',
 					   'assigned_to',
 					   'submitted_by',
-					   'priority') ;
+					   'priority',
+					   'last_modified_date') ;
 		$efarr = $this->ArtifactType->getExtraFields(array(ARTIFACT_EXTRAFIELDTYPE_TEXT,
 						    ARTIFACT_EXTRAFIELDTYPE_TEXTAREA,
 						    ARTIFACT_EXTRAFIELDTYPE_INTEGER,
