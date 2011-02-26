@@ -243,6 +243,7 @@ if ($add_cat && $group_project_id) {
 	session_require_perm ('pm', $pg->getID(), 'manager') ;
 
 	$title = sprintf(_('Modify a Category in: %s'), $pg->getName());
+	pm_header(array ('title'=>$title));
 
 	$ac = new ProjectCategory($pg,$id);
 	if (!$ac || !is_object($ac)) {
@@ -250,7 +251,6 @@ if ($add_cat && $group_project_id) {
 	} elseif ($ac->isError()) {
 		exit_error($ac->getErrorMessage(),'pm');
 	} else {
-	    pm_header(array ('title'=>$title));
 		?>
 		<p />
 		<form action="<?php echo getStringFromServer('PHP_SELF').'?group_id='.$group_id; ?>" method="post" />
@@ -281,26 +281,32 @@ if ($add_cat && $group_project_id) {
 	?>
 	<p><?php echo _('Add a new subproject to the Tasks. <strong>This is different than adding a task to a subproject.</strong>') ?></p>
 
-	<p />
 	<form action="<?php echo getStringFromServer('PHP_SELF')."?group_id=$group_id"; ?>" method="post">
+	<p>
 	<input type="hidden" name="addproject" value="y" />
 	<input type="hidden" name="post_changes" value="y" />
-	<p />
 	<strong><?php echo _('Is Public?')?></strong><br />
 	<input type="radio" name="is_public" value="1" checked="checked" /><?php echo _('Yes') ?><br />
-	<input type="radio" name="is_public" value="0" /><?php echo _('No') ?><p />
-	<p />
-	<h3><?php echo _('New Subproject Name').utils_requiredField() ?></h3>
-	<p />
+	<input type="radio" name="is_public" value="0" /><?php echo _('No') ?>
+	</p>
+	<p>
+	<strong><?php echo _('New Subproject Name')?></strong>
+	<br />
 	<input type="text" name="project_name" value="" size="15" maxlength="30" />
-	<p />
-	<strong><?php echo _('Description').utils_requiredField() ?></strong><br />
+	</p>
+	<p>
+	<strong><?php echo _('Description').utils_requiredField() ?></strong>
+	<br />
 	<input type="text" name="description" value="" size="40" maxlength="80" />
-	<p />
-	<strong><?php echo _('Send All Updates To')?>:</strong><br />
-	<input type="text" name="send_all_posts_to" value="" size="40" maxlength="80" /><br />
-	<p />
+	</p>
+	<p>
+	<strong><?php echo _('Send All Updates To')?></strong>
+	<br />
+	<input type="text" name="send_all_posts_to" value="" size="40" maxlength="80" />
+	</p>
+	<p>
 	<input type="submit" name="submit" value="<?php echo _('Submit') ?>" />
+	</p>
 	</form>
 	<?php
 	pm_footer(array());
@@ -400,14 +406,6 @@ if ($add_cat && $group_project_id) {
 	pm_footer(array());
 
 } else {
-
-	$pgf = new ProjectGroupFactory($g);
-	if (!$pgf || !is_object($pgf)) {
-		exit_error(_('Could Not Get Factory'),'pm');
-	} elseif ($pgf->isError()) {
-		exit_error($pgf->getErrorMessage(),'pm');
-	}
-
 	/*
 		Show main page
 	*/
@@ -419,10 +417,17 @@ if ($add_cat && $group_project_id) {
 	if (forge_check_perm ('pm_admin', $group_id)) {
 		?>
 		<p />
-		<a href="<?php echo getStringFromServer('PHP_SELF').'?group_id='.$group_id; ?>&amp;addproject=1"><?php echo _('Add a Subproject') ?></a><br />
+		<a href="<?php echo getStringFromServer('PHP_SELF').'?group_id='.$group_id; ?>&amp;addproject=1"><strong><?php echo _('Add a Subproject') ?></strong></a><br />
 		<?php echo _('Add a subproject, which can contain a set of tasks. This is different than creating a new task.') ?>
 		<p />
 		<?php
+	}
+
+	$pgf = new ProjectGroupFactory($g);
+	if (!$pgf || !is_object($pgf)) {
+		exit_error(_('Could Not Get Factory'),'pm');
+	} elseif ($pgf->isError()) {
+		exit_error($pgf->getErrorMessage(),'pm');
 	}
 
 	$pg_arr = $pgf->getProjectGroups();
