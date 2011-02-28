@@ -26,7 +26,7 @@ class TarSeleniumRemoteSuite extends SeleniumRemoteSuite
 		system("scp -p root@".HOST.":/var/cache/yum/timedhosts.txt /tmp/timedhosts.txt");
 
 		// Disable ssl & install a fake sendmail to catch outgoing emails.
-		system("ssh root@".HOST." '(echo [core];echo use_ssl=no;echo sendmail_path=/usr/share/tests/scripts/catch_mail.php) > /etc/gforge/config.ini.d/zzz-buildbot.ini'");
+		system("ssh root@".HOST." '(echo [core];echo use_ssl=no;echo sendmail_path=/opt/tests/scripts/catch_mail.php) > /etc/gforge/config.ini.d/zzz-buildbot.ini'");
 
 		// Disable cron to avoid conflicts with forge cron jobs & database restart
 		system("ssh root@".HOST." '[ -f /var/lock/subsys/crond ] && service crond stop'");
