@@ -685,7 +685,7 @@ function site_header($params) {
  * @param		array	Footer params array
  */
 function site_footer($params) {
-	GLOBAL $HTML;
+	global $HTML;
 	$HTML->footer($params);
 }
 
@@ -696,7 +696,7 @@ function site_footer($params) {
  *	@param params array() must contain $toptab and $group
  */
 function site_project_header($params) {
-	GLOBAL $HTML;
+	global $HTML;
 
 	/*
 		Check to see if active
@@ -747,9 +747,20 @@ function site_project_header($params) {
 		$params['h1'] = $h1;
 	}
 	
+	if ($project->getDescription()) {
+		$params['meta-description'] = $project->getDescription();
+	}
+
+	if (forge_get_config('use_project_tags')) {
+		$res = db_query_params('SELECT name FROM project_tags WHERE group_id = $1', array($group_id));
+		if ($res && db_numrows($res) > 0) {
+			while ($row = db_fetch_array($res)) {
+				$array[] = $row['name'];
+			}
+			$params['meta-keywords'] = join(', ', $array);
+		}
+	}
 	site_header($params);
-	
-//	echo $HTML->project_tabs($params['toptab'],$params['group'],$params['tabtext']);
 }
 
 /**
@@ -841,6 +852,29 @@ function html_clean_hash_string($hashstr) {
 	return $hashstr;
 }
 
+function relative_date ($date) {
+	$delta = time() - $date;
+	if ($delta<60)
+		return sprintf(ngettext('%d second ago', '%d seconds ago', $delta), $delta);
+
+	$delta = round($delta/60);
+	if ($delta<60)
+		return sprintf(ngettext('%d minute ago', '%d minutes ago', $delta), $delta);
+
+	$delta = round($delta/60);
+	if ($delta<24)
+		return sprintf(ngettext('%d hour ago', '%d hours ago', $delta), $delta);
+
+	$delta = round($delta/24);
+	if ($delta<7)
+		return sprintf(ngettext('%d day ago', '%d days ago', $delta), $delta);
+
+	$delta = round($delta/7);
+	if ($delta<4)
+		return sprintf(ngettext('%d week ago', '%d weeks ago', $delta), $delta);
+
+	return date(_('Y-m-d H:i'), $date);
+}
 // Local Variables:
 // mode: php
 // c-file-style: "bsd"

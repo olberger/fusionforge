@@ -217,7 +217,7 @@ else {
 	 * Do not get the reason of the report_header() in here. */
 
 	?>
-<h3><?php echo _('Choose A Week to Record Or Edit Your Time.'); ?></h3>
+<h2><?php echo _('Choose A Week to Record Or Edit Your Time.'); ?></h2>
 <p><?php echo _('After you choose a week, you will be prompted to choose a Project/Subproject in the Task Manager.'); ?>
 </p>
 <form action="<?php echo getStringFromServer('PHP_SELF'); ?>"

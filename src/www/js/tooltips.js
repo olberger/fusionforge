@@ -34,6 +34,19 @@ jQuery(function() {
 		jQuery('#tracker-comment').tipsy({gravity: 'w', delayIn: 1000, delayOut: 500, fade: true});
 		jQuery('#tracker-new_artifact_type_id').tipsy({gravity: 'w', html:true, delayIn: 1000, delayOut: 500, fade: true});
 
+		jQuery('.forum_monitor').tipsy({gravity: 'n', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_save_place').tipsy({gravity: 'n', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_start_thread').tipsy({gravity: 'n', html:true, delayIn: 1000, delayOut: 500, fade: true});
+
+		jQuery('.forum_reply').tipsy({gravity: 'n', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_move').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_edit').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_delete').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_attach').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_attach_add').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_attach_edit').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+		jQuery('.forum_attach_delete').tipsy({gravity: 'ne', html:true, delayIn: 1000, delayOut: 500, fade: true});
+
 		jQuery('select.trove-nodes').tipsy({gravity: 'w', html:true, delayIn: 1000, delayOut: 500, fade: true});
 		jQuery('span.trove-nodes').tipsy({gravity: 'n', html:true, delayIn: 1000, delayOut: 500, fade: true});
 	}

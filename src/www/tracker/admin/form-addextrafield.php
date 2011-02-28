@@ -35,7 +35,6 @@ $ath->adminHeader(array ('title'=>$title));
 		$efarr = $ath->getExtraFields();
 		$eftypes=ArtifactExtraField::getAvailableTypes();
 		$keys=array_keys($efarr);
-		echo "<br />";
 		$rows=count($keys);
 		if ($rows > 0) {
 
@@ -104,7 +103,7 @@ $ath->adminHeader(array ('title'=>$title));
 			
 			echo utils_requiredField().' '._('Indicates required fields.');
 		} else { 
-			echo "\n<strong>"._('You have not defined any custom fields')."</strong>";
+			echo "\n<p class=\"warning_msg\">"._('You have not defined any custom fields')."</p>";
 		}
 
 		echo "<h2>"._('Add New Custom Field')."</h2>";
