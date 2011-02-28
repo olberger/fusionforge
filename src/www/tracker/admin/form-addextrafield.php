@@ -141,7 +141,7 @@ $ath->adminHeader(array ('title'=>$title));
 			<input type="text" name="attribute2" value="80" size="2" maxlength="2" />
 		</p>
 		<p>
-		<div class="warning"><?php echo _('Warning: this add new custom field') ?></div>
+		<span class="warning"><?php echo _('Warning: this add new custom field') ?></span>
 		</p>
 		<p>
 		<input type="submit" name="post_changes" value="<?php echo _('Submit') ?>" />

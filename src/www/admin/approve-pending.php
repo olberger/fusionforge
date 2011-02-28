@@ -4,6 +4,7 @@
  *
  * Copyright 1999-2001 (c) VA Linux Systems
  * Copyright 2010 (c) Franck Villaume - Capgemini
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *
@@ -165,6 +166,7 @@ while ($row_grp = db_fetch_array($res_grp)) {
 	</table>
 
 	<p>
+
 	<?php
 
 		if (forge_get_config('use_shell')) {
