@@ -7,7 +7,7 @@
  * http://fusionforge.org/
  */
 
-if (posix_isatty(STDOUT) ) {
+if (posix_isatty(1) ) {
 	define ('GREEN', "\033[01;32m");
 	define ('NORMAL', "\033[00m");
 	define ('RED', "\033[01;31m");
