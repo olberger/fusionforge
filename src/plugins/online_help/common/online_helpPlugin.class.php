@@ -38,31 +38,31 @@ class online_helpPlugin extends Plugin {
 	}
 
 	function headermenu($params) {
-		$guide = util_make_uri('/plugins/online_help/guide/');
+		$guide = util_make_uri('/plugins/online_help/');
 
-			$user_guide = array(
-				'user' => 'ug_user.html',
-				'login' => 'ug_getting_started_login.html',
-				'trove' => 'ug_sitewide_trove.html',
-				'snippet' => 'ug_sitewide_snippet.html',
-				'people' => 'ug_sitewide_project_help.html',
-				'home' => 'ug_project.html',
-				'admin' => 'ug_project_project_admin.html',
-				'activity' => 'ug_project_activity.html',
-				'forums' => 'ug_project_forums.html',
-				'tracker' => 'ug_project_tracker.html',
-				'mail' => 'ug_project_mailing_lists.html',
+		$user_guide = array(
+			'user' => 'ug_user.html',
+			'login' => 'ug_getting_started_login.html',
+			'trove' => 'ug_sitewide_trove.html',
+			'snippet' => 'ug_sitewide_snippet.html',
+			'people' => 'ug_sitewide_project_help.html',
+			'home' => 'ug_project.html',
+			'admin' => 'ug_project_project_admin.html',
+			'activity' => 'ug_project_activity.html',
+			'forums' => 'ug_project_forums.html',
+			'tracker' => 'ug_project_tracker.html',
+			'mail' => 'ug_project_mailing_lists.html',
 			'pm' => 'ug_project_tasks.html',
-				'docman' => 'ug_project_docman.html',
-				'surveys' => 'ug_project_surveys.html',
-				'news' => 'ug_project_news.html',
-				'scm' => 'ug_project_subversion.html',
+			'docman' => 'ug_project_docman.html',
+			'surveys' => 'ug_project_surveys.html',
+			'news' => 'ug_project_news.html',
+			'scm' => 'ug_project_subversion.html',
 			'scmgit' => 'ug_project_scmgit.html',
 			'scmhg' => 'ug_project_scmhg.html',
-				'frs' => 'ug_project_file_releases.html',
-				'wiki' => 'ug_project_wiki.html',
+			'frs' => 'ug_project_file_releases.html',
+			'wiki' => 'ug_project_wiki.html',
 			'hudson' => 'ContinuousIntegrationIntroduction.html',
-			);
+		);
 
 		$uri = getStringFromServer('REQUEST_URI');
 
@@ -78,7 +78,7 @@ class online_helpPlugin extends Plugin {
 				$guide .= $user_guide['snippet'];
 		} elseif (strstr($uri,'/people/')) {
 				$guide .= $user_guide['people'];
-			} elseif (isset($params['toptab']) && isset($user_guide[ $params['toptab'] ])) {
+		} elseif (isset($params['toptab']) && isset($user_guide[ $params['toptab'] ])) {
 			$key = $params['toptab'];
 			if ($params['toptab'] == 'scm') {
 				$group = group_get_object($params['group']);
@@ -92,12 +92,12 @@ class online_helpPlugin extends Plugin {
 				}
 			}
 			$guide .= $user_guide[$key];
-			}
+		}
 			
-			$guide = '<a href="javascript:help_window(\''.$guide.'\')">'._('Get Help').'</a>';
+		$guide = '<a href="javascript:help_window(\''.$guide.'\')">'._('Get Help').'</a>';
 			
-			$template = isset($params['template']) ?  $params['template'] : ' | {menu}';
-			echo str_replace('{menu}', $guide, $template);
+		$template = isset($params['template']) ?  $params['template'] : ' | {menu}';
+		echo str_replace('{menu}', $guide, $template);
 	}
 }
 

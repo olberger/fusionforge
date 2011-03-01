@@ -35,8 +35,6 @@ function site_stats_day($year,$month,$day) {
 				array("$year$month",
 				      $day));
 
-
-
 	$rel = db_query_params ('INSERT INTO stats_site (month,day,uniq_users,sessions,total_users,new_users,new_projects) 
 	VALUES ($1,
 	$2,
