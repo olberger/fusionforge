@@ -142,7 +142,7 @@ class ArtifactType extends Error {
 	 *  @param	array	The associative array of data.
 	 *	@return boolean	success.
 	 */
-	function ArtifactType(&$Group,$artifact_type_id=false, $arr=false) {
+	function ArtifactType($Group,$artifact_type_id=false, $arr=false) {
 		$this->Error();
 		if (!$Group || !is_object($Group)) {
 			$this->setError('No Valid Group Object');
@@ -152,7 +152,7 @@ class ArtifactType extends Error {
 			$this->setError('ArtifactType: '.$Group->getErrorMessage());
 			return false;
 		}
-		$this->Group =& $Group;
+		$this->Group = $Group;
 		if ($artifact_type_id) {
 			if (!$arr || !is_array($arr)) {
 				if (!$this->fetchData($artifact_type_id)) {

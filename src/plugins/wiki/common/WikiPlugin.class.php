@@ -71,7 +71,7 @@ class GforgeWikiPlugin extends Plugin {
 			$group_id = $params['group_id'];
 			$group = group_get_object($group_id);
 			if ( $group->usesPlugin ( $this->name ) ) {
-				echo '<p><a href="/wiki/wikiadmin.php?id=' . $group->getID() . '&amp;type=admin&amp;pluginname=' . $this->name . '">' . _('Wiki Admin') . '</a></p>';
+				echo '<p><a href="/wiki/wikiadmin.php?group_id=' . $group->getID() . '&amp;type=admin&amp;pluginname=' . $this->name . '">' . _('Wiki Admin') . '</a></p>';
 			}
 		} elseif ($hookname == 'search_engines') {
 			// FIXME: when the hook is called, the group_id is not set.
@@ -88,7 +88,7 @@ class GforgeWikiPlugin extends Plugin {
 						SEARCH__TYPE_IS_WIKI,
 						new WikiSearchEngine(SEARCH__TYPE_IS_WIKI,
 								'WikiHtmlSearchRenderer', 
-						_("This projects's wiki"), $group_id)
+						_("This project's wiki"), $group_id)
 					);
 				}
 			}
@@ -110,11 +110,12 @@ class GforgeWikiPlugin extends Plugin {
 		} elseif ($hookname == 'cssfile') {
 			if (defined('PHPWIKI_BASE_URL')) {
 				use_stylesheet('/wiki/themes/fusionforge/fusionforge.css');
+				use_stylesheet('/wiki/themes/fusionforge/fusionforge-print.css', 'print');
+
 				echo '<link rel="alternate" type="application/x-wiki" title="Edit this page!" href="'.$_SERVER['PHP_SELF'].'?action=edit" />';
 				echo "\n".'<link rel="alternate stylesheet" type="text/css" href="/wiki/themes/fusionforge/fusionforge-fullscreen.css" media="screen" title="Fullscreen" />';
 				echo "\n".'<link rel="alternate stylesheet" type="text/css" href="/wiki/themes/fusionforge/fusionforge-autonumbering.css" title="Autonumbering" />';
 				echo "\n".'<link rel="alternate stylesheet" type="text/css" href="/wiki/themes/fusionforge/fusionforge-rereading.css" title="Rereading Mode" />';
-				echo "\n".'<link rel="stylesheet" type="text/css" href="/wiki/themes/fusionforge/fusionforge-print.css" media="print" />';
 				echo "\n".'<base href="'.PHPWIKI_BASE_URL.'" />';
 				echo "\n";
 			}
@@ -183,7 +184,7 @@ class GforgeWikiPlugin extends Plugin {
 						$arr['realname'] = $data['author'];
 						$arr['icon']=html_image("ic/wiki20g.png","20","20",array("alt"=>"Wiki"));
 						$arr['title'] = 'Wiki Page '.$arr['pagename'];
-						$arr['link'] = '/wiki/g/'.$group_name.'/'.urlencode($arr['pagename']);
+						$arr['link'] = '/wiki/g/'.$group_name.'/'.rawurlencode($arr['pagename']);
 						$arr['description']= $arr['title'];
 						$params['results'][] = $arr;
 					}

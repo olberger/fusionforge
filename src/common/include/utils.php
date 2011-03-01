@@ -91,6 +91,18 @@ function is_utf8($str) {
     return true;
 }
 
+function util_strip_unprintable(&$data) {
+	if (is_array($data)) {
+		foreach ($data as $key => &$value) {
+			util_strip_unprintable($value);
+		}
+	}
+	else {
+		$data = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $data);
+	}
+	return $data;
+}
+
 /**
  * removeCRLF() - remove any Carriage Return-Line Feed from a string. 
  * That function is useful to remove the possibility of a CRLF Injection when sending mail
@@ -602,7 +614,7 @@ function utils_requiredField() {
  * @param		string	The title of the graph
  *
  */
-Function GraphResult($result,$title) {
+function GraphResult($result, $title) {
 	$rows=db_numrows($result);
 
 	if ((!$result) || ($rows < 1)) {
@@ -634,7 +646,7 @@ Function GraphResult($result,$title) {
  * @param		string	The title of the graph
  *
  */
-Function GraphIt($name_string,$value_string,$title) {
+function GraphIt($name_string, $value_string, $title) {
 	GLOBAL $HTML;
 
 	$counter=count($name_string);

@@ -131,6 +131,7 @@ class AttachManager extends Error {
 			$pend = "";
 		}
 		
+		$attach = '';
 		$attachid = '';
 		if ($res && db_numrows($res)) {
 			$attachid = db_result($res,0,'attachmentid');

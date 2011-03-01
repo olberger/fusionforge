@@ -64,8 +64,7 @@ class pgsql extends System {
 	* sysUseUnixName() - Check if user/group used the unix_name
 	*
 	* @param		string   The unix_name to check
-	* @returns true if used/false is free
-	*
+	* @return	boolean	true if used/false is free
 	*/
 	function sysUseUnixName($unix_name) {
 		$res1 = db_query_params ('SELECT user_id FROM users
@@ -86,7 +85,7 @@ class pgsql extends System {
  	* sysCheckUser() - Check for the existence of a user
  	* 
  	* @param		int		The user ID of the user to check
- 	* @returns true on success/false on error
+ 	* @return	boolean	true on success/false on error
  	*
  	*/
 	function sysCheckUser($user_id) {
@@ -101,7 +100,7 @@ class pgsql extends System {
  	* sysCreateUser() - Create a user
  	*
  	* @param		int	The user ID of the user to create
- 	* @returns The return status
+ 	* @return	boolean	success or not
  	*
  	*/
 	function sysCreateUser($user_id) {
@@ -168,7 +167,7 @@ class pgsql extends System {
  	* sysCheckCreateUser() - Check that a user has been created
  	*
  	* @param		int		The ID of the user to check
- 	* @returns true on success/false on error
+ 	* @return	boolean	true on success/false on error
  	*
  	*/
 	function sysCheckCreateUser($user_id) {
@@ -179,7 +178,7 @@ class pgsql extends System {
  	* sysCheckCreateGroup() - Check that a group has been created
  	*
  	* @param		int		The ID of the user to check
- 	* @returns true on success/false on error
+ 	* @return	boolean	true on success/false on error
  	*
  	*/
 	function sysCheckCreateGroup($user_id) {
@@ -190,7 +189,7 @@ class pgsql extends System {
  	* sysRemoveUser() - Remove a user
  	*
  	* @param		int		The user ID of the user to remove
- 	* @returns true on success/false on failure
+ 	* @return	boolean	true on success/false on failure
  	*
  	*/
 	function sysRemoveUser($user_id) {
@@ -225,7 +224,7 @@ class pgsql extends System {
  	* @param		int		The user ID 
  	* @param		string	The attribute to set
  	* @param		string	The new value of the attribute
- 	* @returns true on success/false on error
+ 	* @return	boolean	true on success/false on error
  	*
  	*/
 	function sysUserSetAttribute($user_id,$attr,$value) {
@@ -240,7 +239,7 @@ class pgsql extends System {
  	* sysCheckGroup() - Check for the existence of a group
  	* 
  	* @param		int		The ID of the group to check
- 	* @returns true on success/false on error
+ 	* @return	boolean	true on success/false on error
  	*
  	*/
 	function sysCheckGroup($group_id) {
@@ -344,8 +343,7 @@ class pgsql extends System {
 	 * @param		int		The ID of the group two which the user will be added
 	 * @param		int		The ID of the user to add
 	 * @param		bool	ignored
-	 * @returns true on success/false on error
-	 *
+	 * @return	boolean	true on success/false on error
 	 */
 	function sysGroupAddUser($group_id,$user_id,$foo=NULL) {
 		return $this->sysGroupCheckUser($group_id,$user_id) ;
@@ -356,8 +354,7 @@ class pgsql extends System {
  	*
  	* @param		int		The ID of the group
  	* @param		int		The ID of the user
- 	* @returns true on success/false on error
- 	*
+ 	* @return	boolean	true on success/false on error
  	*/
 	function sysGroupCheckUser($group_id,$user_id) {
 		db_begin () ;
@@ -428,10 +425,10 @@ WHERE users.user_id=$2
  	*
  	* @param		int		The ID of the group from which to remove the user
  	* @param		int		The ID of the user to remove
- 	* @returns true on success/false on error
- 	*
+	* @param	boolean	Compatibility issue but not used : pgsql extends System...
+ 	* @return	boolean	true on success/false on error
  	*/
-	function sysGroupRemoveUser($group_id,$user_id) {
+	function sysGroupRemoveUser($group_id, $user_id, $unused = 0) {
 		$res = db_query_params ('DELETE FROM nss_usergroups WHERE user_id=$1 AND group_id=$2',
 					 array ($user_id,
 						$group_id)) ;

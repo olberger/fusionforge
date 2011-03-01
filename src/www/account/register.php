@@ -243,7 +243,7 @@ if (forge_get_config('use_jabber')) {
 <input type="submit" name="submit" value="<?php echo _('Register'); ?>" />
 </p>
 </form>
-<p><a href="pending-resend.php"><?php echo _('[Resend confirmation email to a pending account]'); ?></a></p>
+<p><a href="pending-resend.php"><?php echo _('Resend confirmation email to a pending account'); ?></a></p>
 
 <?php site_footer(array());
 

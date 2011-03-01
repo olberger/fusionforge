@@ -26,7 +26,7 @@
 require_once $gfcommon.'include/Error.class.php';
 require_once $gfcommon.'frs/FRSRelease.class.php';
 
-function &get_frs_packages($Group) {
+function get_frs_packages($Group) {
 	$ps = array();
 	$res = db_query_params ('SELECT * FROM frs_package WHERE group_id=$1',
 				array ($Group->getID())) ;

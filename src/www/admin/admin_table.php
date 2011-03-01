@@ -246,16 +246,12 @@ function admin_table_postedit($table, $unit, $primary_key, $id) {
 				 array ($id)) ;
 
 	if (db_query_qpa($qpa)) {
-        print('<p class="feedback">');
+		print('<p class="feedback">');
 		printf(_('%1$s successfully modified.'), ucfirst(getUnitLabel($unit)));
-        print('</p>');
+		print('</p>');
 	} else {
 		echo db_error();
 	}
-
-
-
-
 
 	$field_list = getStringFromRequest('__fields__');
 	$fields = explode(",", $field_list);
@@ -302,22 +298,22 @@ function admin_table_show($table, $unit, $primary_key) {
 		$cell_data[]=array(ucwords(getUnitLabel($unit)).' <a href="'.getStringFromServer('PHP_SELF').'?function=add">['._('add new').']</a>',
 			'colspan="'.($cols+1).'"');
 
-                echo '<table border="0" width="100%">';
+		echo '<table class="listing full">';
 		echo $HTML->multiTableRow('',$cell_data, TRUE);
 
-                echo '
-			<tr><td width="5%"></td>';
-                for ($i = 0; $i < $cols; $i++) {
+		echo '
+			<tr><td></td>';
+		for ($i = 0; $i < $cols; $i++) {
 			echo '<td><strong>'.db_fieldname($result,$i).'</strong></td>';
 		}
 		echo '</tr>';
 
-                for ($j = 0; $j < $rows; $j++) {
+		for ($j = 0; $j < $rows; $j++) {
 			echo '<tr '. $HTML->boxGetAltRowStyle($j) . '>';
 
-                        $id = db_result($result,$j,0);
-                        echo '<td><a href="'.getStringFromServer('PHP_SELF').'?function=edit&amp;id='.$id.'">['._('Edit').']</a>';
-                        echo '<a href="'.getStringFromServer('PHP_SELF').'?function=confirmdelete&amp;id='.$id.'">['._('Delete').']</a> </td>';
+			$id = db_result($result,$j,0);
+			echo '<td><a href="'.getStringFromServer('PHP_SELF').'?function=edit&amp;id='.$id.'">['._('Edit').']</a>';
+			echo '<a href="'.getStringFromServer('PHP_SELF').'?function=confirmdelete&amp;id='.$id.'">['._('Delete').']</a> </td>';
 			for ($i = 0; $i < $cols; $i++) {
 				echo '<td>'. db_result($result, $j, $i) .'</td>';
 			}

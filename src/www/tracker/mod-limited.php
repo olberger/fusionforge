@@ -187,7 +187,7 @@ if (session_loggedin()) {
 <div class="tabbertab" title="<?php echo _('Changes'); ?>">
 <table border="0" width="80%">
 	<tr><td colspan="2">
-		<h2><?php echo _('Change Log') ?>:</h2>
+		<h2><?php echo _('Changes') ?>:</h2>
 		<?php 
 			echo $ah->showHistory(); 
 		?>
