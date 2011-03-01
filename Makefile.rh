@@ -24,7 +24,7 @@ ifneq ($(strip $(in_svn_repo)),)
 else
 	is_git_repo:= $(wildcard .git/)
 	ifneq ($(strip $(is_git_repo)),)
-		id=$(shell git log --oneline | wc -l)
+		id=$(shell git log --pretty=format:%h | wc -l)
 		hash=$(shell git log -1 --pretty=format:%h)
 		version=$(ver).$(id).$(hash)
 	else
