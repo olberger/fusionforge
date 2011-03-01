@@ -5,7 +5,7 @@
  * Copyright 2005, Raphaël Hertzog
  * Copyright 2006-2009, Roland Mas
  * Copyright 2009-2010, Alain Peyrat
- * Copyright 2010, Franck Villaume
+ * Copyright 2010, Franck Villaume - Capgemini
  * Copyright (C) 2010 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
@@ -90,14 +90,12 @@ if (getStringFromRequest ('addtab') != '') {
 	}
 } elseif (getStringFromRequest ('delete') != '') {
 	$res = db_query_params ('DELETE FROM plugin_extratabs_main WHERE group_id=$1 AND index=$2',
-				array ($group_id,
-				       $index)) ;
+				array($group_id, $index));
 	if (!$res || db_affected_rows($res) < 1) {
 		$error_msg = sprintf (_('Cannot delete tab entry: %s'), db_error());
 	} else {
 		$res = db_query_params ('SELECT index FROM plugin_extratabs_main WHERE group_id=$1 AND index > $2 ORDER BY index ASC',
-					array ($group_id,
-					       $index)) ;
+					array($group_id, $index));
 		if (db_numrows($res) > 0) {
 			$todo = array () ;
 			while ($row = db_fetch_array($res)) {
@@ -105,8 +103,7 @@ if (getStringFromRequest ('addtab') != '') {
 			}
 			foreach ($todo as $i) {
 				$res = db_query_params ('UPDATE plugin_extratabs_main SET index = index - 1 WHERE group_id = $1 AND index = $2',
-							array ($group_id,
-							       $i)) ;
+							array($group_id, $i));
 			}
 		}
 		if ($res) {
@@ -119,8 +116,7 @@ if (getStringFromRequest ('addtab') != '') {
 	if ($index > 1) {
 		$previous = $index - 1;
 		$res = db_query_params('UPDATE plugin_extratabs_main SET index=0 WHERE group_id=$1 AND index=$2',
-				       array ($group_id,
-					      $index)) ;
+					array ($group_id, $index));
 		$res = db_query_params('UPDATE plugin_extratabs_main SET index=$1 WHERE group_id=$2 AND index=$3',
 				       array ($index,
 					      $group_id,

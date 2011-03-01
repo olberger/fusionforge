@@ -34,6 +34,8 @@ require_once $gfcommon.'include/PluginManager.class.php' ;
 // SCM-specific plugins subsystem
 require_once $gfcommon.'include/SCMPlugin.class.php' ;
 			 
+session_set_admin () ;
+
 setup_plugin_manager () ;
 
 $res = db_query_params ('SELECT group_id FROM groups WHERE status=$1 AND use_scm=1 ORDER BY group_id DESC',

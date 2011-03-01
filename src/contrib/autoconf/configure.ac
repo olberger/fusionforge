@@ -7,7 +7,7 @@ dnl
 AC_PREREQ(2.52)
 
 # package name, version, bug address
-AC_INIT(GForge,3.0,http://gforge.org/tracker/?group_id=1)
+AC_INIT(GForge,3.0,http://fusionforge.org/tracker/?group_id=1)
 
 # provide a unique file name so autoconf can check that its 
 # in the right place

@@ -166,7 +166,9 @@ function db_query($qstring,$limit='-1',$offset=0,$dbserver=NULL) {
 
 	$res = @pg_query($dbserver,$qstring);
 	if (!$res) {
-		error_log('SQL: '. preg_replace('/\n\t+/', ' ',$qstring));
+		$msg = "SQL error: ".preg_replace('/\n\t+/', ' ',$qstring);
+//		trigger_error($msg, E_USER_ERROR);
+		error_log('SQL: '. $msg);
 		error_log('SQL> '.db_error());
 	}
 	//echo "\n<br />|*| [$qstring]: ".db_error();
@@ -239,9 +241,19 @@ function db_query_params($qstring,$params,$limit='-1',$offset=0,$dbserver=NULL) 
 		$qstring=$qstring." LIMIT $limit OFFSET $offset";
 	}
 
+	$tstart = microtime();
 	$res = @pg_query_params($dbserver,$qstring,$params);
+	$tend = microtime();
+	$delta = (substr($tend,11)-substr($tstart,11))+(substr($tend,0,9)-substr($tstart,0,9));
+	// trigger_error('['.$res.']'. $qstring .' '.json_encode($params)." (time: $delta)");
+	// _dbg('info', $qstring .' '.json_encode($params)." (time: $delta)");
 	if (!$res) {
-		error_log('SQL: '. preg_replace('/\n\t+/', ' ',$qstring));
+		$msg = "SQL error: ".preg_replace('/\n\t+/', ' ',$qstring);
+		trigger_error($msg, E_USER_ERROR);
+		trigger_error('SQL: Arguments='.json_encode($params), E_USER_ERROR);
+		trigger_error('SQL> '.db_error(), E_USER_ERROR);
+		error_log('SQL: '. $msg);
+		error_log('SQL: Arguments='.json_encode($params));
 		error_log('SQL> '.db_error());
 	}
 	return $res;

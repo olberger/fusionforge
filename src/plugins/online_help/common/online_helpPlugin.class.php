@@ -37,55 +37,67 @@ class online_helpPlugin extends Plugin {
 		$this->hooks[] = "headermenu"; // to show up in the admin page fro group
 	}
 
-	function CallHook ($hookname, &$params) {
-		global $G_SESSION,$HTML;
-		if ($hookname == "headermenu") {
-			$guide = util_make_url('/plugins/online_help/');
+	function headermenu($params) {
+		$guide = util_make_uri('/plugins/online_help/');
 
-			$user_guide = array(
-				'user' => 'ug_user.html',
-				'login' => 'ug_getting_started_login.html',
-				'trove' => 'ug_sitewide_trove.html',
-				'snippet' => 'ug_sitewide_snippet.html',
-				'people' => 'ug_sitewide_project_help.html',
-				'home' => 'ug_project.html',
-				'admin' => 'ug_project_project_admin.html',
-				'activity' => 'ug_project_activity.html',
-				'forums' => 'ug_project_forums.html',
-				'tracker' => 'ug_project_tracker.html',
-				'mail' => 'ug_project_mailing_lists.html',
-				'pm' => 'ug_project_task_manager.html',
-				'docman' => 'ug_project_docman.html',
-				'surveys' => 'ug_project_surveys.html',
-				'news' => 'ug_project_news.html',
-				'scm' => 'ug_project_subversion.html',
-				'frs' => 'ug_project_file_releases.html',
-				'wiki' => 'ug_project_wiki.html',
-			);
+		$user_guide = array(
+			'user' => 'ug_user.html',
+			'login' => 'ug_getting_started_login.html',
+			'trove' => 'ug_sitewide_trove.html',
+			'snippet' => 'ug_sitewide_snippet.html',
+			'people' => 'ug_sitewide_project_help.html',
+			'home' => 'ug_project.html',
+			'admin' => 'ug_project_project_admin.html',
+			'activity' => 'ug_project_activity.html',
+			'forums' => 'ug_project_forums.html',
+			'tracker' => 'ug_project_tracker.html',
+			'mail' => 'ug_project_mailing_lists.html',
+			'pm' => 'ug_project_tasks.html',
+			'docman' => 'ug_project_docman.html',
+			'surveys' => 'ug_project_surveys.html',
+			'news' => 'ug_project_news.html',
+			'scm' => 'ug_project_subversion.html',
+			'scmgit' => 'ug_project_scmgit.html',
+			'scmhg' => 'ug_project_scmhg.html',
+			'frs' => 'ug_project_file_releases.html',
+			'wiki' => 'ug_project_wiki.html',
+			'hudson' => 'ContinuousIntegrationIntroduction.html',
+		);
 
-			if (strstr($_SERVER['REQUEST_URI'],'softwaremap')) {
+		$uri = getStringFromServer('REQUEST_URI');
+
+		if (strstr($uri,'softwaremap')) {
 				$guide .= $user_guide['trove'];
-			} elseif (strstr($_SERVER['REQUEST_URI'],'/my/')) {
+		} elseif (strstr($uri,'/my/')) {
 				$guide .= $user_guide['user'];
-			} elseif (strstr($_SERVER['REQUEST_URI'],'/account/login.php')) {
+		} elseif (strstr($uri,'/account/login.php')) {
 				$guide .= $user_guide['login'];
-			} elseif (strstr($_SERVER['REQUEST_URI'],'/account/')) {
+		} elseif (strstr($uri,'/account/')) {
 				$guide .= $user_guide['user'];
-			} elseif (strstr($_SERVER['REQUEST_URI'],'/snippet/')) {
+		} elseif (strstr($uri,'/snippet/')) {
 				$guide .= $user_guide['snippet'];
-			} elseif (strstr($_SERVER['REQUEST_URI'],'/people/')) {
+		} elseif (strstr($uri,'/people/')) {
 				$guide .= $user_guide['people'];
-			} elseif (isset($params['toptab']) && isset($user_guide[ $params['toptab'] ])) {
-				$guide .= $user_guide[ $params['toptab'] ];
-			} else {
-				$guide .= 'index.html';
+		} elseif (isset($params['toptab']) && isset($user_guide[ $params['toptab'] ])) {
+			$key = $params['toptab'];
+			if ($params['toptab'] == 'scm') {
+				$group = group_get_object($params['group']);
+				if ($group) {
+					if ($group->usesPlugin('scmgit')) {
+						$key = 'scmgit';
+					}
+					elseif ($group->usesPlugin('scmhg')) {
+						$key = 'scmhg';
+					}
+				}
 			}
+			$guide .= $user_guide[$key];
+		}
 			
-			$guide = '<a href="javascript:help_window(\''.$guide.'\')">'._('Get Help').'</a>';
+		$guide = '<a href="javascript:help_window(\''.$guide.'\')">'._('Get Help').'</a>';
 			
-			$template = isset($params['template']) ?  $params['template'] : ' | {menu}';
-			echo str_replace('{menu}', $guide, $template);
-		} 
+		$template = isset($params['template']) ?  $params['template'] : ' | {menu}';
+		echo str_replace('{menu}', $guide, $template);
 	}
 }
 
