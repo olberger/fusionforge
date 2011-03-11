@@ -7,6 +7,7 @@
  * The rest Copyright 2002-2004 (c) GForge Team
  * Copyright 2005 (c) - Daniel Perez
  * Copyright 2010 (c) Franck Villaume - Capgemini
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  * http://fusionforge.org/
  *
  * This file is part of FusionForge.

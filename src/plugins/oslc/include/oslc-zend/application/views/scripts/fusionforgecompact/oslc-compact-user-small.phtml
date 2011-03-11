@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 /**
  * This file is (c) Copyright 2010 by Sabri LABBENE, Institut
  * TELECOM
@@ -22,9 +21,24 @@
  * project with financial support of its funders.
  *
  */
+$user_real_name = $this->user->getRealName();
+$user_name = $this->user->getUnixName();
+$user_id = $this->user->getID();
+$user_uri = $this->serverUrl().'/users/'.$user_name;
+$user_title = $this->user->getTitle();
+$title = ($user_title ? $user_title .' ' :''). $user_real_name;?>
 
-  /* $Id$ */
-
-require('_service-catalog_xml.php');
-
-print projects_to_service_catalog($this->serverUrl().$this->baseUrl(), $this->projects);
+<html>
+<head>
+<title>User: <?php echo $user_real_name;?> (Idenntifier: <?php echo $user_id;?>)</title>
+<link rel="SHORTCUT ICON" href="oslc.png"></link>
+</head>
+<body>
+<i>Compact User Preview </i><br/>
+User Name: <?php echo $title;?><br/>
+Login Name: <?php echo $user_name;?> <br/>
+Identifier:  <?php echo $user_id;?> <br/>
+Member since: <?php print date(_('Y-m-d H:i'), $this->user->getAddDate()); ?><br/>
+<small>URI: <?php echo $user_uri;?></small><br/>
+</body>
+</html>

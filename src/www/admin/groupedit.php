@@ -97,7 +97,6 @@ $title = _('Site Admin: Project Info for ') . $group->getPublicName();
 site_admin_header(array('title'=>$title));
 ?>
 
-
 <h2><?php echo util_make_link("/project/admin/?group_id=$group_id", _('[Project Admin]')); ?></h2>
 <h2><?php echo util_make_link("/admin/groupdelete.php?group_id=$group_id", _('Permanently Delete Project')); ?></h2>
 

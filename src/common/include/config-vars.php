@@ -3,6 +3,7 @@
  * FusionForge configuration variables
  *
  * Copyright 2010, Roland Mas
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *

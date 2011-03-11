@@ -3,6 +3,7 @@
  * FusionForge source control management
  *
  * Copyright 2004-2009, Roland Mas
+ * Copyright (C) 2011 Alain Peyrat - Alcatel-Lucent
  *
  * This file is part of FusionForge.
  *

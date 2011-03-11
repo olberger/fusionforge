@@ -166,7 +166,6 @@ while ($row_grp = db_fetch_array($res_grp)) {
 	</table>
 
 	<p>
-
 	<?php
 
 		if (forge_get_config('use_shell')) {

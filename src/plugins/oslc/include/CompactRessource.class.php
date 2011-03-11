@@ -1,8 +1,8 @@
-<?php
-
+<?php 
 /**
- * This file is (c) Copyright 2010 by Sabri LABBENE, Institut
- * TELECOM
+ * This file is (c) Copyright 2011 by Sabri LABBENE, Institut TELECOM
+ *
+ * This file is part of FusionForge.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,8 +23,20 @@
  *
  */
 
-  /* $Id$ */
+class CompactRessource {
+	
+	public function __construct(){
 
-require('_service-catalog_xml.php');
-
-print projects_to_service_catalog($this->serverUrl().$this->baseUrl(), $this->projects);
+	}
+	
+	public function compactUserLink($username, $user_id) {
+		$ressource_uri = util_make_url('/plugins/oslc/compact/user/'.$username);
+		$url = '<a href="'. util_make_url_u ($username, $user_id) . '"' .
+		' onmouseover="hover(\''. $ressource_uri . '\', \'compact_user_' . $username . '\');" onmouseout="closeHover();">' . 
+		$username . '</a>';
+		// Add div that will contain the popup
+		$url .= '<div id="compact_user_'.$username.'"></div>';
+		return $url;
+	}
+}
+?>
