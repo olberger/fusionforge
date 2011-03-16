@@ -71,7 +71,7 @@ function make_user_link($username,$displayname='') {
 }
 
 /**
- * html_feedback_top() - Show the feedback output at the bottom of the page.
+ * html_feedback_bottom() - Show the feedback output at the bottom of the page.
  *
  * @param		string	The feedback.
  */
