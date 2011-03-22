@@ -499,7 +499,7 @@ function db_insertid($qhandle,$table_name,$pkey_field_name,$dbserver=NULL) {
  *	@return text error message.
  */
 function db_error($dbserver=NULL) {
-	return @pg_errormessage($dbserver);
+	return pg_last_error($dbserver);
 }
 
 /**
