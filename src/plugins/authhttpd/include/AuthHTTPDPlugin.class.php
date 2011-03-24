@@ -114,11 +114,12 @@ class AuthHTTPDPlugin extends ForgeAuthPlugin {
 	 * What GFUser is logged in?
 	 * @param unknown_type $params
 	 */
-	function fetchAuthUser(&$params) {
-		if ($this->saved_user && $this->isSufficient()) {
-			$params['results'] = $this->saved_user;
-		}
-	}
+	// FIXME : redundant to parent function, it seems
+	//function fetchAuthUser(&$params) {
+	//	if ($this->saved_user && $this->isSufficient()) {
+	//		$params['results'] = $this->saved_user;
+	//	}
+	//}
 
 	function closeAuthSession($params) {
 		// No way to close an HTTPD session from the server, unfortunately
