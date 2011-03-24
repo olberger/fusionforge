@@ -40,7 +40,7 @@ class AuthHTTPDPlugin extends ForgeAuthPlugin {
 		//$this->saved_login = '';
 		//$this->saved_user = NULL;
 
-		$this->declareConfigVars();
+		//$this->declareConfigVars();
 	}
 
 	private static $init = false;
@@ -124,6 +124,20 @@ class AuthHTTPDPlugin extends ForgeAuthPlugin {
 	function closeAuthSession($params) {
 		// No way to close an HTTPD session from the server, unfortunately
 		return true;
+	}
+	/**
+	 * TODO: Enter description here ...
+	 */
+	protected function declareConfigVars() {
+		parent::declareConfigVars();
+		
+		// Change vs default 
+		forge_define_config_item ('required', $this->name, 'yes');
+		forge_set_config_item_bool ('required', $this->name) ;
+
+		// Change vs default
+		forge_define_config_item ('sufficient', $this->name, 'yes');
+		forge_set_config_item_bool ('sufficient', $this->name) ;
 	}
 }
 

@@ -44,7 +44,7 @@ class AuthCASPlugin extends ForgeAuthPlugin {
 		//$this->saved_login = '';
 		//$this->saved_user = NULL;
 
-		$this->declareConfigVars();
+		//$this->declareConfigVars();
 	}
 
 	private static $init = false;
@@ -170,6 +170,14 @@ class AuthCASPlugin extends ForgeAuthPlugin {
 	protected function declareConfigVars() {
 		parent::declareConfigVars();
 
+		// Change vs default 
+		forge_define_config_item ('required', $this->name, 'yes');
+		forge_set_config_item_bool ('required', $this->name) ;
+
+		// Change vs default
+		forge_define_config_item ('sufficient', $this->name, 'yes');
+		forge_set_config_item_bool ('sufficient', $this->name) ;
+		
 		forge_define_config_item ('cas_server', $this->name, 'cas.example.com');
 		forge_define_config_item ('cas_port', $this->name, 443);
 		forge_define_config_item ('cas_version', $this->name, '2.0');

@@ -39,8 +39,10 @@ abstract class ForgeAuthPlugin extends Plugin {
 	 * ForgeAuthPlugin() - constructor
 	 *
 	 */
-	function ForgeAuthPlugin() {
+	function ForgeAuthPlugin($name) {
 		$this->Plugin();
+		$this->name = $name;
+		
 		// Common hooks that can be enabled per plugin:
 		// check_auth_session - is there a valid session?
 		// fetch_authenticated_user - what GFUser is logged in?
@@ -52,6 +54,8 @@ abstract class ForgeAuthPlugin extends Plugin {
 		// close_auth_session - terminate an authentication session
 		
 		$this->saved_user = NULL;
+		
+		$this->declareConfigVars();
 	}
 
 	// Hook dispatcher

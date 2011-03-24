@@ -33,9 +33,8 @@ class AuthBuiltinPlugin extends ForgeAuthPlugin {
 	 *
 	 */	
 	function AuthBuiltinPlugin() {
-		$this->ForgeAuthPlugin();
+		$this->ForgeAuthPlugin('authbuiltin');
 
-		$this->name = 'authbuiltin';
 		$this->text = 'Built-in authentication';
 
 		$this->_addHook('check_auth_session');
@@ -47,7 +46,7 @@ class AuthBuiltinPlugin extends ForgeAuthPlugin {
 		// restrict_roles - filter out unwanted roles
 		$this->_addHook('close_auth_session');
 
-		$this->declareConfigVars();
+		//$this->declareConfigVars();
 	}
 
 	/**
@@ -89,6 +88,20 @@ class AuthBuiltinPlugin extends ForgeAuthPlugin {
 		$result .= '<p>' . util_make_link ('/account/pending-resend.php', _('[Resend confirmation email to a pending account]')) . '</p>';
 
 		$params['html_snippets'][$this->name] = $result;
+	}
+	/**
+	 * TODO: Enter description here ...
+	 */
+	protected function declareConfigVars() {
+		parent::declareConfigVars();
+		
+		// Change vs default 
+		forge_define_config_item ('required', $this->name, 'yes');
+		forge_set_config_item_bool ('required', $this->name) ;
+
+		// Change vs default
+		forge_define_config_item ('sufficient', $this->name, 'yes');
+		forge_set_config_item_bool ('sufficient', $this->name) ;
 	}
 }
 

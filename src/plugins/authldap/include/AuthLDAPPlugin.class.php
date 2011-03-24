@@ -49,7 +49,7 @@ class AuthLDAPPlugin extends ForgeAuthPlugin {
 		$this->saved_password = '';
 		$this->saved_data = array();
 
-		$this->declareConfigVars();
+		//$this->declareConfigVars();
 	}
 	
 	function syncAccountInfo($params) {
@@ -216,6 +216,14 @@ class AuthLDAPPlugin extends ForgeAuthPlugin {
 	protected function declareConfigVars() {
 		parent::declareConfigVars();
 
+		// Change vs default 
+		forge_define_config_item ('required', $this->name, 'yes');
+		forge_set_config_item_bool ('required', $this->name) ;
+
+		// Change vs default
+		forge_define_config_item ('sufficient', $this->name, 'yes');
+		forge_set_config_item_bool ('sufficient', $this->name) ;
+		
 		forge_define_config_item('start_tls', $this->name, 'no');
 		forge_set_config_item_bool('start_tls', $this->name);
 
