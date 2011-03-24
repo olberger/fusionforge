@@ -41,8 +41,8 @@ class AuthCASPlugin extends ForgeAuthPlugin {
 		$this->_addHook("fetch_authenticated_user");
 		$this->_addHook("close_auth_session");
 
-		$this->saved_login = '';
-		$this->saved_user = NULL;
+		//$this->saved_login = '';
+		//$this->saved_user = NULL;
 
 		$this->declareConfigVars();
 	}
