@@ -1,0 +1,154 @@
+This plugin's latest state was provided by COSTARD Géraldine
+<geraldine.costard@cru.fr> with the following details (in french).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Bonjour,
+Le plugin sympa s'appuie sur l'utilisation d'appel d'une méthode Soap et sur un modèle de listes sympa personnalisé (toutes les listes sympa sont créées avec des modèles de liste)
+
+URL d'accès à sympa : http://www.sympa.org/
+
+Information sur Sympa SOAP server : http://www.sympa.org/manual/soap
+
+
+La méthode soap utilisée est : authenticateRemoteAppAndRun avec pour valeur au niveau du “service” : 'createList', 'closeList' … en fonction du résultat souhaité.
+
+
+
+Exemple de code pour la création d'une liste : 
+
+$this->client = @new SoapClient($this->wsdl);
+
+$this->client->authenticateRemoteAppAndRun($this->appname, $this->apppwd, 'USER_EMAIL='.$this->useremail,'createList',array($listname,$subject,$this->template,$description,'sourcesup'));
+
+Le tableau de paramètres correspondants aux informations suivantes comme l'indique le WSDL :
+
+<message name=''createListRequest''>
+      <part name=''list'' type=''xsd:string''/>
+      <part name=''subject'' type=''xsd:string''/>
+      <part name=''template'' type=''xsd:string''/>
+      <part name=''description'' type=''xsd:string''/>
+      <part name=''topics'' type=''xsd:string''/>
+
+</message> 
+
+Un modèle personnalisé de création de liste sympa pour Sourcesup a été créé par l'administrateur du serveur sympa pour exploiter la valeur d'un des paramètres , en l'occurence “subject” et l'utiliser pour définir une liste sympa s'appuyant, pour la définition d'une source de données, sur une requête SQL dynamique en fonction des projets et rôles des membres.
+Le format de "subject " a la syntaxe suivante : 
+
+
+
+$listRoles = implode(',',$tabRoles);
+$subject='Liste Projet Sourcesup __SSUPSEP__'.$groupId.'__SSUPSEP__'.$listRoles;
+En pièce jointe, le modèle personnalisé de liste sympa créé pour Sourcesup. 
+
+Pour information, le répertoire contenant les modèles livrés par défaut à l'installation de Sympa est :
+/home/sympa/default/create-list-templates (ou /home/sympa/bin/etc/create-list-templates si la version de sympa installée est < à la 6).
+
+
+Vous trouverez également en pièce jointe le code développé pour FusionForge et Sympa
+J'espère que cela conviendra
+Bonne fin de journée
+
+-- 
+Cordialement
+COSTARD Géraldine
+
+Comité Réseau des Universités |-->  www.cru.fr<http://www.cru.fr/>
+-------
+mail : geraldine.costard@cru.fr 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Example config.tt2 :
+--------------------
+
+[%# Initialisation des paramètrse de création de la liste
+Ces paramètres sont tous passés dans une unique chaîne de caractère dans la variable "subject".
+Les valeurs des paramètrse sont séparées par la chaînes '__SSUPSEP__'.
+Les paramètrse doivents être fournis dans cet ordre : 
+1- sujet de la liste
+2- group_id
+3- role_id
+%]
+
+[% params = subject.split('__SSUPSEP__') %]
+[% subject = params.0 %]
+[% group_id = params.1 %]
+[% role_id = params.2 %]
+
+subject [% subject %]
+
+status [% status %]
+
+[% IF topics -%]
+topics [% topics %]
+[% END %]
+
+visibility conceal
+
+send privateoreditorkey
+
+web_archive
+  access private
+
+archive
+  period month
+  access owner
+
+clean_delay_queuemod 15
+
+reply_to_header
+value list
+
+subscribe owner
+
+unsubscribe open,notify
+
+review private
+
+invite default
+
+custom_subject [% listname %]
+
+digest 5 20:56
+
+[% FOREACH o = owner -%]
+owner
+  email [% o.email %]
+  profile privileged
+  [% IF o.gecos -%] 
+  gecos [% o.gecos %]
+  [% END %]
+
+[% END %]
+
+[% IF editor -%]
+[% FOREACH e = editor -%]
+editor
+  email [% e.email %]
+
+[% END %]
+[% END %]
+
+shared_doc
+d_edit private
+d_read private
+
+pictures_feature on
+
+creation
+  date [% creation.date %]
+  date_epoch [% creation.date_epoch %]
+[% IF creation_email -%]
+  email [% creation_email %]
+[% END %]
+
+serial 0
+
+include_sql_query
+passwd liste4sourcesup
+db_name gforge
+db_type Pg
+user sympa
+sql_query SELECT email FROM users,user_group WHERE users.user_id=user_group.user_id AND user_group.group_id=[% group_id %]  AND user_group.role_id in ([% role_id %]);
+host sourcesup.cru.fr
