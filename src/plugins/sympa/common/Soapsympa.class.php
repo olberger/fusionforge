@@ -10,6 +10,7 @@ class sympaSoap  extends Error {
  *  Constructor.
  *
  */
+
   function sympaSoap($useremail){
     global  $sympa_urlsoapwsdl,$sympa_appname,$sympa_apppassword,$sympa_listsurl,$sympa_template;
     $this->Error();
@@ -19,9 +20,10 @@ class sympaSoap  extends Error {
     $this->listusrl = $sympa_listsurl;
     $this->template = $sympa_template;
     $this->useremail = $useremail;
-    try{
-      $this->client = @new SoapClient($this->wsdl);
-    }catch(SoapFault $f){
+    
+try{
+       $this->client = @new SoapClient($this->wsdl);
+   }catch(SoapFault $f){
       $this->setError(_('Soap::ERROR'));
       return false;
     }
@@ -53,12 +55,11 @@ class sympaSoap  extends Error {
 
   }
   
-  function create($listname,$description){
-     try{ 
-
-       $this->client->authenticateRemoteAppAndRun($this->appname, $this->apppwd, 'USER_EMAIL='.$this->useremail,'createList',array($listname,'Project List',$this->template,$description,'sourcesup'));
+  function create($listname,$description,$groupId,$listRoles){
+     try{
+$subject='Liste Projet Sourcesup __SSUPSEP__'.$groupId.'__SSUPSEP__'.$listRoles;      
+$this->client->authenticateRemoteAppAndRun($this->appname, $this->apppwd, 'USER_EMAIL='.$this->useremail,'createList',array($listname,$subject,$this->template,$description,'sourcesup'));
     }catch(SoapFault $f){
-  
       $this->setError(_("Error: list cannot be created"));
       return false;
     }
@@ -68,38 +69,6 @@ class sympaSoap  extends Error {
     
   }
   
-  function adduser($listname){
-  try{ 
-
-       $this->client->authenticateRemoteAppAndRun($this->appname, $this->apppwd, 'USER_EMAIL='.$this->useremail,'subscribe',array($listname));
-    }catch(SoapFault $f){
-  
-      $this->setError(_("Error: used cannot be added"));
-      return false;
-    }
-    
-    return true;
-
-
-    
-  }
-  
-  function deleteuser($listname){
-  try{ 
-
-       $this->client->authenticateRemoteAppAndRun($this->appname, $this->apppwd, 'USER_EMAIL='.$this->useremail,'signoff',array($listname));
-    }catch(SoapFault $f){
-  
-      $this->setError(_("Error: user cannot be removed"));
-      return false;
-    }
-    
-    return true;
-
-
-  }
 }
-
-
 
 ?>

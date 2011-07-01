@@ -31,6 +31,7 @@ if ($group_id) {
 	mailSympa_header(array(
 		'title' => sprintf(_('Mailing Lists for %1$s'), $Group->getPublicName())
 	));
+
        
 	$res = db_query("SELECT * FROM lists "
 			. "WHERE group_id='".$group_id."'"
@@ -53,6 +54,7 @@ if ($group_id) {
 	$tableHeaders = array(
 		_('Mailing list'),
 		_('Description'),
+		_('Wiki')
 	);
 	echo $HTML->listTableTop($tableHeaders);
 	
@@ -77,11 +79,24 @@ if ($group_id) {
 	    if($list_archives) {
 	      $archives = " [<a href=\"$list_archives\">Archives</a>]";
 	    }
+            echo '<td width="20%">'.
+              '<strong><a href="'.$list_url.'">' .
+              sprintf($list_name).'</a></strong>'.$archives.'</td>'.
+              '<td>'.htmlspecialchars($list_description). '</td>';
+
+	    $url_wiki = "http://".$sys_lists_host."/wiki/".$list_name;
+	    $file = fopen($url_wiki, 'r');
+	    $wiki=' ';  
+	    $action_wiki=' ';
+	   if ($file) {
+	   	$wiki=$url_wiki;
+		}  
 	    echo '<td width="20%">'.
-	      '<strong><a href="'.$list_url.'">' .
-	      sprintf($list_name).'</a></strong>'.$archives.'</td>'.
-	      '<td>'.htmlspecialchars($list_description). '</td>';
-	    
+	      '<strong><a href="'.$wiki.'">' .
+	      $wiki.'</a></strong></td>'.
+	      '<td>'.$action_wiki.'</td>';
+
+  
 	  }
 
 	}

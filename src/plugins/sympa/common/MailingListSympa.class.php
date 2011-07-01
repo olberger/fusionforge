@@ -99,11 +99,10 @@ class MailingListSympa extends Error {
 	 *
 	 *	@return	boolean	success.
 	 */
-	function create($listName, $description,$creator_id=false) {
+	function create($listName, $description,$tabRoles,$creator_id=false) {
 		//
 		//	During the group creation, the current user_id will not match the admin's id
 		//
-
 
 		if (!$creator_id) {
 			$creator_id=user_getid();
@@ -112,15 +111,34 @@ class MailingListSympa extends Error {
 				return false;
 			}
 		}
-		
+	
+ 		/* Mis en commentaire le 05/11
 		if(!$listName || strlen($listName) < MAIL__MAILING_LIST_NAME_MIN_LENGTH) {
 			$this->setError(_('Must Provide List Name That Is 4 or More Characters Long'));
 			return false;
 		}
+		*/
 		
 
-		$realListName = strtolower($this->Group->getUnixName().'-'.$listName);
-		
+                if(!$listName || strlen($listName) == 0) {
+                        $this->setError(_('Must Provide List Name'));
+                        return false;
+                }
+
+                if(!$description || strlen($description) == 0) {
+                        $this->setError(_('Must Provide Description'));
+                        return false;
+                }
+
+
+                if(!$tabRoles || count($tabRoles) == 0) {
+                        $this->setError(_('Must Provide Role'));
+                        return false;
+                }
+
+		$realListName = strtolower($listName);		
+		$listRoles = implode(',',$tabRoles);
+		$listRoles = preg_replace("/[a-z]*/","",$listRoles); 
 		if(!validate_email($realListName.'@'.$GLOBALS['sys_lists_host'])) {
 			$this->setError(_('Invalid List Name') . ': ' .$realListName.'@'.$GLOBALS['sys_lists_host']);
 			return false;
@@ -128,6 +146,7 @@ class MailingListSympa extends Error {
 
 		$result = db_query_params ('SELECT 1 FROM lists WHERE lower(list_name)=$1',
 					   array ($realListName)) ;
+
 
 		if (db_numrows($result) > 0) {
 			$this->setError(_('List Already Exists'));
@@ -148,11 +167,8 @@ class MailingListSympa extends Error {
 
 		$sympaSoap = new sympaSoap($userEmail);
 		
-		
 		if ($sympaSoap->noexist($realListName)){
-			
-			$soapres = $sympaSoap->create($realListeName,$description);
-			
+			$soapres = $sympaSoap->create($realListName,$description,$this->Group->getID(),$listRoles);
 			if($soapres){
 				db_begin();
 				$result = db_query_params ('INSERT INTO lists (group_id,list_name,list_url,list_description) VALUES ($1,$2,$3,$4)',
@@ -168,7 +184,7 @@ class MailingListSympa extends Error {
 				}
 				
 				$this->groupMailingListId = db_insertid($result, 'lists', 'list_id');
-				
+	
 				$this->fetchData($this->groupMailingListId);
 				$user = user_get_object($creator_id);
 				$userEmail = $user->getEmail();
@@ -180,7 +196,9 @@ class MailingListSympa extends Error {
 				return false;
 			}
 			
-		}else{return false;}
+		}else{
+                      $this->setError(_('List Already Exists'));
+	 	    return false;}
 		
 		return true;
 		
@@ -212,6 +230,7 @@ class MailingListSympa extends Error {
 	 *	@param	int	Pass (1) if it should be public (0) for private
 	 *	@return	boolean	success.
 	 */
+  /*
 	function update($description) {
 		if(! $this->userIsAdmin()) {
 			$this->setPermissionDeniedError();
@@ -231,6 +250,7 @@ class MailingListSympa extends Error {
 		return true;
 	}
 
+*/
 	/**
 	 *	getGroup - get the Group object this mailing list is associated with.
 	 *
@@ -318,37 +338,61 @@ class MailingListSympa extends Error {
 	/**
 	 *	delete - permanently delete this mailing list
 	 *
-	 *	@param	boolean	I'm Sure.
-	 *	@param	boolean	I'm Really Sure.
+	 *	@param	boolean	listName.
 	 *	@return	boolean success;
 	 */
-	function delete($sure,$really_sure) {
 
-		if (!$sure || !$really_sure) {
-			$this->setMissingParamsError();
-			return false;
-		}
-		if (!$this->userIsAdmin()) {
-			$this->setPermissionDeniedError();
-			return false;
-		}
-		$res = db_query_params ('INSERT INTO deleted_mailing_lists (mailing_list_name,delete_date,isdeleted) VALUES ($1,$2,$3)',
-					array ($this->getName(),
-					       time(),
-					       0)) ;
-		if (!$res) {
-			$this->setError('Could Not Insert Into Delete Queue: '.db_error());
-			return false;
-		}
-		$res = db_query_params ('DELETE FROM mail_group_list WHERE group_list_id=$1',
-					array ($this->getID())) ;
-		if (!$res) {
-			$this->setError('Could Not Delete List: '.db_error());
-			return false;
-		}
-		return true;
-		
-	}
+       function delete ($listName) {
+          if (!$creator_id) {
+                  $creator_id=user_getid();
+                  if(!$this->userIsAdmin()) {
+                           $this->setPermissionDeniedError();
+                           return false;
+                  }
+           }
+
+           if(!$listName || strlen($listName) == 0) {
+                   $this->setError(_('Must Provide List Name'));
+                   return false;
+           }
+
+
+
+            $user = user_get_object($creator_id);
+            $userEmail = $user->getEmail();
+            $sympaSoap = new sympaSoap($userEmail);
+
+            $soapres = $sympaSoap->delete($listName);
+            if($soapres){
+                db_begin();
+
+               $res = db_query_params ('INSERT INTO deleted_mailing_lists (mailing_list_name,delete_date,isdeleted) VALUES ($1,$2,$3)',
+                                        array ($listName,
+                                               time(),
+                                               0)) ;
+                if (!$res) {
+                        $this->setError('Could Not Insert Row'.db_error());
+                        return false;
+                }
+
+                $result = db_query_params ('DELETE FROM lists WHERE list_name=$1',
+                                                           array($listName));
+
+               if (!$result) {
+                      db_rollback();
+                      $this->setError(sprintf(_('Error Creating %1$s'), _('Error Creating %1$s')).db_error());
+                      return false;
+               }
+
+               db_commit();
+            }else{
+                    $this->setError(_('Error Deleting'));
+                     return false;
+            }
+
+            return true;
+
+        }
 
 	/**
 	 * userIsAdmin - use this function to know if the user can administrate mailing lists

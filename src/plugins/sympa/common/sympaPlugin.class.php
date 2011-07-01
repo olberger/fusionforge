@@ -17,6 +17,7 @@ class sympaPlugin extends Plugin {
 
 	function CallHook ($hookname, $params) {
 		global $use_sympaplugin,$G_SESSION,$HTML;
+
 		if ($hookname == "groupmenu") {
 			$group_id=$params['group'];
 			$project = &group_get_object($group_id);
@@ -68,8 +69,11 @@ class sympaPlugin extends Plugin {
 			$group_id = $params['group_id'];
 			$group = &group_get_object($group_id);
 			if ( $group->usesPlugin ( $this->name ) ) {
-				echo util_make_link ("/plugins/projects_hierarchy/index.php?id=".$group->getID().'&type=admin&pluginname='.$this->name,
+				/*
+				echo util_make_link ("/plugins/sympa/admin?group_id=".$group->getID(),
 						     _('View the sympa Administration')) ;
+				*/
+				echo _('View the sympa Administration');
 				echo '</p>';
 			}
 		}												    
