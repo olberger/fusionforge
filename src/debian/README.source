@@ -6,4 +6,6 @@ The Debian-specific package sources are managed in upstream's repository.
 Orig tarball is constructed from upstream's sources top-level dir
 using 'make orig'.
 
- -- Olivier Berger <olivier.berger@it-sudparis.eu>, Sat,  3 Apr 2010 19:38:08 +0200
+fusionforge_5.1.orig.tar.gz is in sync with upstream's "v5.1" svn tag (rev. 13667)
+
+ -- Olivier Berger <obergix@debian.org>, Fri, 12 Aug 2011 13:04:21 +0200
