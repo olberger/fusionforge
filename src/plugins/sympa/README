@@ -4,15 +4,17 @@ This plugin's latest state was provided by COSTARD Géraldine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Bonjour,
-Le plugin sympa s'appuie sur l'utilisation d'appel d'une méthode Soap et sur un modèle de listes sympa personnalisé (toutes les listes sympa sont créées avec des modèles de liste)
+Le plugin sympa s'appuie sur l'utilisation d'appel d'une méthode Soap et sur 
+un modèle de listes sympa personnalisé (toutes les listes sympa sont 
+créées avec des modèles de liste)
 
 URL d'accès à sympa : http://www.sympa.org/
 
 Information sur Sympa SOAP server : http://www.sympa.org/manual/soap
 
-
-La méthode soap utilisée est : authenticateRemoteAppAndRun avec pour valeur au niveau du “service” : 'createList', 'closeList' … en fonction du résultat souhaité.
-
+La méthode soap utilisée est : authenticateRemoteAppAndRun avec pour valeur 
+au niveau du “service” : 'createList', 'closeList' … en fonction du résultat 
+souhaité.
 
 
 Exemple de code pour la création d'une liste : 
@@ -32,20 +34,26 @@ Le tableau de paramètres correspondants aux informations suivantes comme l'indi
 
 </message> 
 
-Un modèle personnalisé de création de liste sympa pour Sourcesup a été créé par l'administrateur du serveur sympa pour exploiter la valeur d'un des paramètres , en l'occurence “subject” et l'utiliser pour définir une liste sympa s'appuyant, pour la définition d'une source de données, sur une requête SQL dynamique en fonction des projets et rôles des membres.
+Un modèle personnalisé de création de liste sympa pour Sourcesup a été créé 
+par l'administrateur du serveur sympa pour exploiter la valeur d'un des 
+paramètres, en l'occurence “subject” et l'utiliser pour définir une liste 
+sympa s'appuyant, pour la définition d'une source de données, 
+sur une requête SQL dynamique en fonction des projets et rôles des membres.
 Le format de "subject " a la syntaxe suivante : 
-
 
 
 $listRoles = implode(',',$tabRoles);
 $subject='Liste Projet Sourcesup __SSUPSEP__'.$groupId.'__SSUPSEP__'.$listRoles;
 En pièce jointe, le modèle personnalisé de liste sympa créé pour Sourcesup. 
 
-Pour information, le répertoire contenant les modèles livrés par défaut à l'installation de Sympa est :
-/home/sympa/default/create-list-templates (ou /home/sympa/bin/etc/create-list-templates si la version de sympa installée est < à la 6).
+Pour information, le répertoire contenant les modèles livrés par défaut 
+à l'installation de Sympa est :
+/home/sympa/default/create-list-templates 
+(ou /home/sympa/bin/etc/create-list-templates si la version de sympa installée est < à la 6).
 
 
-Vous trouverez également en pièce jointe le code développé pour FusionForge et Sympa
+Vous trouverez également en pièce jointe le code développé pour FusionForge 
+et Sympa
 J'espère que cela conviendra
 Bonne fin de journée
 
@@ -63,9 +71,10 @@ Example config.tt2 :
 --------------------
 
 [%# Initialisation des paramètrse de création de la liste
-Ces paramètres sont tous passés dans une unique chaîne de caractère dans la variable "subject".
+Ces paramètres sont tous passés dans une unique chaîne de caractère dans 
+la variable "subject".
 Les valeurs des paramètrse sont séparées par la chaînes '__SSUPSEP__'.
-Les paramètrse doivents être fournis dans cet ordre : 
+Les paramètres doivents être fournis dans cet ordre : 
 1- sujet de la liste
 2- group_id
 3- role_id
