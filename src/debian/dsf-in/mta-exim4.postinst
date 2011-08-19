@@ -57,15 +57,15 @@ case "$1" in
 		/usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh configure-files
 	    fi
 
-	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new ]
+	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new ]
 	    then
-		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf
-		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf
+		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new
 	    fi
-	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new ]
+	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new ]
 	    then
-		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf.template
-		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf.template
+		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new
 	    fi
 	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new ]
 	    then
