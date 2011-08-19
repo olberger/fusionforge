@@ -81,22 +81,26 @@ case "$1" in
 		/usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh configure-files
 	    fi
 
-	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa ]
+	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new ]
 	    then
-		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa /etc/exim4/exim4.conf
-		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf
+		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new
 	    fi
-	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa ]
+	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa-new ]
 	    then
-		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa /etc/exim4/exim4.conf.template
-		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf.template
+		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa-new
 	    fi
-	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa ]
+	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa-new ]
 	    then
-		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa /etc/exim4/exim4.conf.localmacros
-		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf.localmacros
+		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa-new
 	    fi
 	fi
+
+	update-exim4.conf
+	invoke-rc.d exim4 restart
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
