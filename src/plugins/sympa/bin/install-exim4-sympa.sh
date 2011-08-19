@@ -67,7 +67,7 @@ case "$1" in
     # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=169102)
 
     cat > $ucf_new_dir/exim4/$(basename $cfg_exim4_localmacros).$packagename-new  <<EOF
-# BEGIN GFORGE BLOCK -- DO NOT EDIT #
+# BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #
 # Activating pipe transport in system_aliases router (pipes in /etc/aliases)
 .ifndef SYSTEM_ALIASES_PIPE_TRANSPORT
 SYSTEM_ALIASES_PIPE_TRANSPORT = address_pipe
@@ -78,7 +78,7 @@ SYSTEM_ALIASES_USER = sympa
 .ifndef SYSTEM_ALIASES_GROUP
 SYSTEM_ALIASES_GROUP = sympa
 .endif
-# END GFORGE BLOCK #
+# END FUSIONFORGE SYMPA BLOCK #
 EOF
 
     # insinuate our system aliases rules in the routers section for /etc/mail/sympa/aliases
@@ -87,7 +87,7 @@ EOF
     perl -e '
 require ("/etc/gforge/local.pl") ;
 
-my $gf_block = "# BEGIN GFORGE BLOCK -- DO NOT EDIT #
+my $gf_block = "# BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #
 # Using alias pipe definitions for the Sympa lists in /etc/mail/sympa/aliases
 sympa_aliases:
   debug_print = ".chr(34)."R: system_aliases for \$local_part@\$domain".chr(34)."
@@ -99,7 +99,7 @@ sympa_aliases:
   user = sympa
   group = sympa
   pipe_transport = address_pipe
-# END GFORGE BLOCK #
+# END FUSIONFORGE SYMPA BLOCK #
 ";
 
 print $gf_block;
@@ -131,13 +131,13 @@ my $gf_block_done = 0;
 my @line_buf = ();
 while (<>) {
   last if /^\s*begin\s*$/;
-  if (/^# BEGIN GFORGE BLOCK -- DO NOT EDIT #/) {
+  if (/^# BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #/) {
     $in_gf_block = 1;
     push @line_buf, @gf_block unless $gf_block_done;
     $gf_block_done = 1;
   };
   push @line_buf, $_ unless $in_gf_block;
-  $in_gf_block = 0 if /^# END GFORGE BLOCK #/;
+  $in_gf_block = 0 if /^# END FUSIONFORGE SYMPA BLOCK #/;
 };
 push @line_buf, $_;
 print @gf_block unless $gf_block_done;
@@ -168,7 +168,7 @@ while (<>) { print; };
       cfg_gforge_router=$ucf_new_dir/exim4/$(basename $r).$packagename-new
       tmp1=$(mktemp /tmp/$pattern)
 
-      cp -a $cfg_gforge_router $tmp1
+      cp -a $r $tmp1
 
       # Second, kill our forwarding rules
       perl -e '
@@ -179,9 +179,9 @@ while (<>) {
 my $in_gf_block = 0;
 while (<>) {
   last if /^\s*begin\s*$/;
-  $in_gf_block = 1 if /^# BEGIN GFORGE BLOCK -- DO NOT EDIT #/;
+  $in_gf_block = 1 if /^# BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #/;
   print unless $in_gf_block;
-  $in_gf_block = 0 if /^# END GFORGE BLOCK #/;
+  $in_gf_block = 0 if /^# END FUSIONFORGE SYMPA BLOCK #/;
 };
 print;
 while (<>) { print; };
