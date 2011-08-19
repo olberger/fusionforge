@@ -26,18 +26,18 @@ packagename=$forgename-mta-exim4
 # The new files which will later be applied with ucf are generated inside that dir, and not directly in /etc
 ucf_new_dir=/var/lib/$forgename/$packagename/etc
 
-cfg_exim4=/etc/exim4/exim4.conf
-cfg_exim4_templ=/etc/exim4/exim4.conf.template
-cfg_exim4_split_main=/etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
-cfg_exim4_split_router=/etc/exim4/conf.d/router/01_gforge_forwards
+#cfg_exim4=/etc/exim4/exim4.conf
+#cfg_exim4_templ=/etc/exim4/exim4.conf.template
+#cfg_exim4_split_main=/etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
+#cfg_exim4_split_router=/etc/exim4/conf.d/router/01_gforge_forwards
 
-cfg_exim4_main="$cfg_exim4_templ $cfg_exim4_split_main"
-cfg_exim4_router="$cfg_exim4_templ"
+#cfg_exim4_main="$cfg_exim4_templ $cfg_exim4_split_main"
+#cfg_exim4_router="$cfg_exim4_templ"
 
-if [ -e $cfg_exim4 ]; then
-  cfg_exim4_main="$cfg_exim4_main $cfg_exim4"
-  cfg_exim4_router="$cfg_exim4_router $cfg_exim4"
-fi
+#if [ -e $cfg_exim4 ]; then
+#  cfg_exim4_main="$cfg_exim4_main $cfg_exim4"
+#  cfg_exim4_router="$cfg_exim4_router $cfg_exim4"
+#fi
 
 cfg_aliases=/etc/aliases
 #cfg_aliases_gforge=$cfg_aliases.gforge-new
