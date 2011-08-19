@@ -26,18 +26,27 @@ fi
 oldforgename=gforge
 forgename=fusionforge
 packagename=$forgename-plugin-sympa
+
 # The new files which will later be applied with ucf are generated inside that dir, and not directly in /etc
 ucf_new_dir=/var/lib/$oldforgename/$packagename/etc
 
+# usual non-split config files
 cfg_exim4=/etc/exim4/exim4.conf
 cfg_exim4_templ=/etc/exim4/exim4.conf.template
+
+# config file (not necessarily there already) in which to add local macro definitions
+# doesn't need to be applied to non-split conf file, as included by it already (if it exists)
 cfg_exim4_localmacros=/etc/exim4/exim4.conf.localmacros
+
+# New config file to add complementary system aliases read from /etc/mail/sympa/aliases
+# needs to be applied to non-split conf file
 cfg_exim4_split_router=/etc/exim4/conf.d/router/450_local-fusionforge_sympa_aliases
 
 #cfg_exim4_main="$cfg_exim4_templ $cfg_exim4_split_main"
 cfg_exim4_main="$cfg_exim4_templ"
 cfg_exim4_router="$cfg_exim4_templ"
 
+# If there's a /etc/exim4/exim4.conf file, add it to the non-split patch needing files
 if [ -e $cfg_exim4 ]; then
   cfg_exim4_main="$cfg_exim4_main $cfg_exim4"
   cfg_exim4_router="$cfg_exim4_router $cfg_exim4"
@@ -53,9 +62,11 @@ case "$1" in
 
     mkdir -p $ucf_new_dir/exim4
 
-    # Insinuate the support for system pipes
+    # Insinuate the support for system pipes already added in
+    # /etc/aliases by sympa package (Cf. discussion in
+    # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=169102)
 
-cat > $ucf_new_dir/exim4/$(basename $cfg_exim4_localmacros).$packagename-new  <<EOF
+    cat > $ucf_new_dir/exim4/$(basename $cfg_exim4_localmacros).$packagename-new  <<EOF
 # BEGIN GFORGE BLOCK -- DO NOT EDIT #
 # Activating pipe transport in system_aliases router (pipes in /etc/aliases)
 .ifndef SYSTEM_ALIASES_PIPE_TRANSPORT
@@ -72,6 +83,7 @@ EOF
 
     # insinuate our system aliases rules in the routers section for /etc/mail/sympa/aliases
 
+    #TODO : get rid of perl as we don't seem to need it
     perl -e '
 require ("/etc/gforge/local.pl") ;
 
@@ -93,7 +105,7 @@ sympa_aliases:
 print $gf_block;
 ' > $cfg_exim4_split_router
 
-    # processing the non-split router definitions
+    # processing the router definitions for the non-split conf files
     for r in $cfg_exim4_router; do
       echo Processing $r
 
