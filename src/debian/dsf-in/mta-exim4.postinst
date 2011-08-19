@@ -99,7 +99,6 @@ case "$1" in
 	fi
 
 	update-exim4.conf
-	invoke-rc.d exim4 restart
 
     ;;
 
