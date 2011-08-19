@@ -158,42 +158,6 @@ while (<>) { print; };
   purge-files)
     tmp1=$(mktemp /tmp/$pattern)
 
-    # cp -a $cfg_aliases $cfg_aliases_gforge
-
-    # grep -v "^gforge:" $cfg_aliases_gforge > $tmp1
-    # # Redirect "noreply" mail to the bit bucket (if need be)
-    # noreply_to_bitbucket=$(perl -e'require "/etc/gforge/local.pl"; print "$noreply_to_bitbucket\n";')
-    # if [ "$noreply_to_bitbucket" = "true" ] ; then
-    #   grep -v "^noreply:" $tmp1 > $cfg_aliases_gforge
-    # else
-    #   cat $tmp1 > $cfg_aliases_gforge
-    # fi
-
-    # rm -f $tmp1
-
-#     for m in $cfg_exim4_main; do
-#       #cfg_gforge_main=$m.gforge-new
-#       cfg_gforge_main=$ucf_new_dir/exim4/$(basename $m).$packagename-new
-#       tmp1=$(mktemp /tmp/$pattern)
-
-#       cp -a $m $tmp1
-
-#       # First, replace the list of local domains
-#       perl -e '
-# while (<>) {
-#   last if /^\s*domainlist\s*local_domains/;
-#   print unless /\s*GFORGE_DOMAINS=/;
-# };
-# chomp;
-# /^(\s*domainlist\s*local_domains\s*=\s*)(\S+)/;
-# my $l = $1 . join (":", grep(!/GFORGE_DOMAINS/, (split ":", $2)));
-# print "$l\n" ;
-# while (<>) { print; };
-# ' < $tmp1 > $cfg_gforge_main
-
-#       rm $tmp1
-#     done
-
     if [ -f $cfg_exim4_split_router ]
     then
     	mv $cfg_exim4_split_router $cfg_exim4_split_router.gforge-new
