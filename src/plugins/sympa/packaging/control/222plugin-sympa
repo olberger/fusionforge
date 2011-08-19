@@ -2,4 +2,5 @@ Package: @PACKAGE@-plugin-sympa
 Architecture: all
 Depends: @OLDPACKAGE@-common, @OLDPACKAGE@-db, @OLDPACKAGE@-web-apache2, @OLDPACKAGE@-mta, libsoap-lite-perl, libapache2-mod-fcgid, sympa (>= 6.0.1), ${misc:Depends}
 Provides: @OLDPACKAGE@-lists
+Conflicts: @OLDPACKAGE@-lists-mailman
 Description: collaborative development tool - Sympa mailing-lists plugin

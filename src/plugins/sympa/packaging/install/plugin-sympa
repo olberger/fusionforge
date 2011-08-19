@@ -2,3 +2,4 @@ plugins/sympa/common/*                  usr/share/@OLDPACKAGE@/plugins/sympa/com
 plugins/sympa/db/*                      usr/share/@OLDPACKAGE@/plugins/sympa/db/
 plugins/sympa/www/*                     usr/share/@OLDPACKAGE@/plugins/sympa/www/
 plugins/sympa/etc/plugins/sympa/*     etc/@OLDPACKAGE@/plugins/sympa/
+plugins/sympa/bin/install-exim4-sympa.sh usr/share/@OLDPACKAGE@/bin/
