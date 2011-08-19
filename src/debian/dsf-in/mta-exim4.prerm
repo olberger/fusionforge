@@ -34,7 +34,7 @@ case "$1" in
 	    use_mailman=true
 	fi
 	use_sympa=false
-	if [ -f /usr/share/@PACKAGE@/bin/install-exim4-sympa.sh ]
+	if [ -f /usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh ]
 	then
 	    use_sympa=true
 	fi
@@ -62,6 +62,30 @@ case "$1" in
 	    rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new
 	    ucf --purge /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
 	fi
+	if [ "$use_sympa" = "true" ]
+	then
+	    # prepare patched versions of the exim4 config files suitable for sympa
+	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh ]
+	    then
+		/usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh purge-files
+	    fi
+
+	    if [ -f /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new ]
+	    then
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf
+		rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.@PACKAGE@-plugin-sympa-new
+		ucf --purge /etc/exim4/exim4.conf
+	    fi
+
+	    ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf.template
+	    rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.template.@PACKAGE@-plugin-sympa-new
+	    ucf --purge /etc/exim4/exim4.conf.template
+
+	    ucf --debconf-ok /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa-new /etc/exim4/exim4.conf.localmacros
+	    rm /var/lib/@OLDPACKAGE@/@PACKAGE@-plugin-sympa/etc/exim4/exim4.conf.localmacros.@PACKAGE@-plugin-sympa-new
+	    ucf --purge /etc/exim4/exim4.conf.localmacros
+
+	fi
 
 	# Clean debconf after ourselves
 	db_stop
@@ -74,6 +98,13 @@ case "$1" in
 	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
 	    then
 		/usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh purge
+	    fi
+	fi
+	if [ "$use_sympa" = "true" ]
+	then
+	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh ]
+	    then
+		/usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh purge
 	    fi
 	fi
 
