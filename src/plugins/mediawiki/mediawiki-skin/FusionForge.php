@@ -82,12 +82,12 @@ class FusionForgeTemplate extends QuickTemplate {
 		<?php $this->html('headlinks') ?>
 		<title><?php $this->text('pagetitle') ?></title>
         	<!-- FUSIONFORGE Stylesheet BEGIN -->
-		<?php if (!$GLOBALS['sys_use_mwframe']){ 
+		<?php if (!$GLOBALS['sys_use_mwframe'] && !$this->data['printable']){
 		$GLOBALS['HTML']->headerFavIcon();
 		$GLOBALS['HTML']->headerRSS();
 		$GLOBALS['HTML']->headerSearch();
 	} ?>
-		<?php if (!$GLOBALS['sys_use_mwframe']){ $GLOBALS['HTML']->headerCSS(); } ?>
+		<?php if (!$GLOBALS['sys_use_mwframe'] && !$this->data['printable']){ $GLOBALS['HTML']->headerCSS(); } ?>
         	<!-- FUSIONFORGE Stylesheet END -->
 		<?php $this->html('csslinks') ?>
 
@@ -121,7 +121,7 @@ class FusionForgeTemplate extends QuickTemplate {
  class="mediawiki <?php $this->text('dir') ?> <?php $this->text('pageclass') ?> <?php $this->text('skinnameclass') ?>">
         <!-- FUSIONFORGE BodyHeader BEGIN -->
         <?php
-	if (!$GLOBALS['sys_use_mwframe']){
+	if (!$GLOBALS['sys_use_mwframe'] && !$this->data['printable']){
         	$project=group_get_object_by_name($GLOBALS['fusionforgeproject']);
         	if ($project) {
 			$GLOBALS['group_id']=$project->getID();
@@ -265,7 +265,7 @@ class FusionForgeTemplate extends QuickTemplate {
 -->
 <?php endif; ?>
         <!-- FUSIONFORGE Footer BEGIN -->
-<?php	if (!$GLOBALS['sys_use_mwframe']){
+<?php	if (!$GLOBALS['sys_use_mwframe'] && !$this->data['printable']){
 		$GLOBALS['HTML']->footer($params);
 	} else { ?>
 </body></html>

@@ -346,6 +346,8 @@ mantisbt plugin for FusionForge.
 %{__install} -m 755 -d $RPM_BUILD_ROOT/bin
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_DIR}
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_DIR}/lib
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_DIR}/www
+%{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_CONF_DIR}
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.d
 %{__install} -m 755 -d $RPM_BUILD_ROOT%{FORGE_CONF_DIR}/httpd.conf.d
@@ -446,6 +448,7 @@ WHICH_VERSION=%{version}-%{release}
 # plugin: cvssyncmail
 
 # plugin: cvstracker
+%{__ln_s} ../../plugins/cvstracker/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/cvstracker
 # delete stuff that is clearly outdated/obsolete so we don't package this and confuse others
 %{__rm} -f $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/cvstracker/httpd.conf
 %{__rm} -f $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/cvstracker/Makefile
@@ -454,6 +457,7 @@ WHICH_VERSION=%{version}-%{release}
 # plugin: externalsearch
 
 # plugin: fckeditor
+%{__ln_s} ../../plugins/fckeditor/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/fckeditor
 
 # plugin: forumml
 %{__ln_s} ../../plugins/forumml/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/forumml
@@ -465,8 +469,10 @@ WHICH_VERSION=%{version}-%{release}
 %{__rm} -rf $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/ldapextauth/rpm-specific
 
 # plugin: mantis
+%{__ln_s} ../../plugins/mantis/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/mantis
 
 # plugin: mediawiki
+%{__ln_s} ../../plugins/mediawiki/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/mediawiki
 # create symlink for apache configuration for mediawiki plugin
 ## first, delete the php_admin_value include_path
 %{__sed} -i -e "/^.*php_admin_value[[:space:]]*include_path.*/d" $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/mediawiki/etc/httpd.d/61plugin-mediawiki
@@ -487,10 +493,13 @@ WHICH_VERSION=%{version}-%{release}
 %{__cp} -f %{SOURCE1} $RPM_BUILD_ROOT%{FORGE_DIR}/plugins/mediawiki/README.jlbond
 
 # plugin: online_help
+%{__ln_s} ../../plugins/online_help/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/online_help
 
 # plugin: projects_hierarchy
+%{__ln_s} ../../plugins/projects_hierarchy/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/projects_hierarchy
 
 # plugin: quota_management
+%{__ln_s} ../../plugins/quota_management/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/quota_management
 
 # plugin: scmarch
 
@@ -520,6 +529,7 @@ WHICH_VERSION=%{version}-%{release}
 # plugin: svncommitemail
 
 # plugin: svntracker
+%{__ln_s} ../../plugins/svntracker/www $RPM_BUILD_ROOT%{FORGE_DIR}/www/plugins/svntracker
 # install crontab
 %{__install} -m 644 plugins/svntracker/rpm-specific/cron.d/gforge-plugin-svntracker $RPM_BUILD_ROOT%{_sysconfdir}/cron.d
 
@@ -677,6 +687,7 @@ fi
 %{FORGE_DIR}/gforge-restricted.sh
 %{FORGE_DIR}/install.sh
 %{FORGE_DIR}/install-common.inc
+%{FORGE_DIR}/install-ng
 # Directories under %{FORGE_DIR}
 %{FORGE_DIR}/backend
 %{FORGE_DIR}/common
@@ -686,6 +697,7 @@ fi
 %{FORGE_DIR}/docs
 %{FORGE_DIR}/etc
 %{FORGE_DIR}/image-sources
+%{FORGE_DIR}/install
 %{FORGE_DIR}/lib
 %{FORGE_DIR}/locales
 %{FORGE_DIR}/monitor
@@ -717,6 +729,7 @@ fi
 %{FORGE_DIR}/www/new
 %{FORGE_DIR}/www/news
 %{FORGE_DIR}/www/people
+%{FORGE_DIR}/www/plugins
 %{FORGE_DIR}/www/pm
 %{FORGE_DIR}/www/project
 %{FORGE_DIR}/www/register
@@ -829,7 +842,6 @@ fi
 %{FORGE_DIR}/www/plugins/quota_management
 
 %files plugin-scmarch
-%config(noreplace) %{FORGE_CONF_DIR}/plugins/scmarch/
 %config(noreplace) %{FORGE_CONF_DIR}/config.ini.d/scmarch.ini
 %{FORGE_DIR}/plugins/scmarch
 
@@ -839,23 +851,19 @@ fi
 %{FORGE_DIR}/plugins/scmbzr
 
 %files plugin-scmdarcs
-%config(noreplace) %{FORGE_CONF_DIR}/plugins/scmdarcs/
 %config(noreplace) %{FORGE_CONF_DIR}/config.ini.d/scmdarcs.ini
 %{FORGE_DIR}/plugins/scmdarcs
 
 %files plugin-scmgit
-%config(noreplace) %{FORGE_CONF_DIR}/plugins/scmgit/
 %config(noreplace) %{FORGE_CONF_DIR}/config.ini.d/scmgit.ini
 %{FORGE_DIR}/plugins/scmgit
 %{FORGE_DIR}/www/plugins/scmgit
 
 %files plugin-scmhg
-%config(noreplace) %{FORGE_CONF_DIR}/plugins/scmhg/
 %config(noreplace) %{FORGE_CONF_DIR}/config.ini.d/scmhg.ini
 %{FORGE_DIR}/plugins/scmhg
 
 %files plugin-scmccase
-%config(noreplace) %{FORGE_CONF_DIR}/plugins/scmccase/
 %config(noreplace) %{FORGE_CONF_DIR}/config.ini.d/scmccase.ini
 %{FORGE_DIR}/plugins/scmccase
 

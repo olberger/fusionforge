@@ -61,6 +61,7 @@ db/20090507-add_project_query.sql	usr/share/@OLDPACKAGE@/db/
 db/20090507-browse_list.sql		usr/share/@OLDPACKAGE@/db/
 db/2010*.sql				usr/share/@OLDPACKAGE@/db/
 db/2011*.sql				usr/share/@OLDPACKAGE@/db/
+db/FTI*.sql				usr/share/@OLDPACKAGE@/db/
 #
 utils/inject-users.php usr/share/@OLDPACKAGE@/bin/
 utils/inject-groups.php usr/share/@OLDPACKAGE@/bin/
@@ -69,4 +70,5 @@ utils/inject-files.php usr/share/@OLDPACKAGE@/bin/
 utils/normalize_roles.php	usr/share/@OLDPACKAGE@/bin/
 utils/sync_unix_groups.php	usr/share/@OLDPACKAGE@/bin/
 utils/fixscripts/populate_template_project.php	usr/share/@OLDPACKAGE@/bin/
+utils/fixscripts/fix_default_role.php	usr/share/@OLDPACKAGE@/bin/
 utils/forge_set_password                usr/share/@OLDPACKAGE@/bin/
