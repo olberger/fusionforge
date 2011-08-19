@@ -1,8 +1,15 @@
 #! /bin/sh
 #
-# Configure Exim4 for FusionForge
+# Configuration files for Exim4 for FusionForge
 # Christian Bayle, Roland Mas, debian-sf (GForge for Debian)
 # Converted to Exim4 by Guillem Jover
+#
+# This is only the generic configuration needed for basic features of fusionforge regarding exim4
+# Additional configuration needed for the mailing-list manager is handled by other packages
+#
+# The principle is to generate files somewhere in /var/lib that will
+# later (in postinst) be applied with ucf on real exim4 configuration
+# files (in /etc).
 
 set -e
 
@@ -16,6 +23,7 @@ fi
 
 forgename=gforge
 packagename=$forgename-mta-exim4
+# The new files which will later be applied with ucf are generated inside that dir, and not directly in /etc
 ucf_new_dir=/var/lib/$forgename/$packagename/etc
 
 cfg_exim4=/etc/exim4/exim4.conf
@@ -270,58 +278,58 @@ while (<>) { print; };
 
     rm -f $tmp1
 
-    for m in $cfg_exim4_main; do
-      cfg_gforge_main=$m.gforge-new
-      tmp1=$(mktemp /tmp/$pattern)
+#     for m in $cfg_exim4_main; do
+#       cfg_gforge_main=$m.gforge-new
+#       tmp1=$(mktemp /tmp/$pattern)
 
-      cp -a $m $tmp1
+#       cp -a $m $tmp1
 
-      # First, replace the list of local domains
-      perl -e '
-while (<>) {
-  last if /^\s*domainlist\s*local_domains/;
-  print unless /\s*GFORGE_DOMAINS=/;
-};
-chomp;
-/^(\s*domainlist\s*local_domains\s*=\s*)(\S+)/;
-my $l = $1 . join (":", grep(!/GFORGE_DOMAINS/, (split ":", $2)));
-print "$l\n" ;
-while (<>) { print; };
-' < $tmp1 > $cfg_gforge_main
+#       # First, replace the list of local domains
+#       perl -e '
+# while (<>) {
+#   last if /^\s*domainlist\s*local_domains/;
+#   print unless /\s*GFORGE_DOMAINS=/;
+# };
+# chomp;
+# /^(\s*domainlist\s*local_domains\s*=\s*)(\S+)/;
+# my $l = $1 . join (":", grep(!/GFORGE_DOMAINS/, (split ":", $2)));
+# print "$l\n" ;
+# while (<>) { print; };
+# ' < $tmp1 > $cfg_gforge_main
 
-      rm $tmp1
-    done
+#       rm $tmp1
+#     done
 
-    if [ -f $cfg_exim4_split_router ]
-    then
-    	mv $cfg_exim4_split_router $cfg_exim4_split_router.gforge-new
-    fi
+#     if [ -f $cfg_exim4_split_router ]
+#     then
+#     	mv $cfg_exim4_split_router $cfg_exim4_split_router.gforge-new
+#     fi
 
-    for r in $cfg_exim4_router; do
-      cfg_gforge_router=$r.gforge-new
-      tmp1=$(mktemp /tmp/$pattern)
+#     for r in $cfg_exim4_router; do
+#       cfg_gforge_router=$r.gforge-new
+#       tmp1=$(mktemp /tmp/$pattern)
 
-      cp -a $cfg_gforge_router $tmp1
+#       cp -a $cfg_gforge_router $tmp1
 
-      # Second, kill our forwarding rules
-      perl -e '
-while (<>) {
-  print;
-  last if /^\s*begin\s*routers\s*$/;
-};
-my $in_gf_block = 0;
-while (<>) {
-  last if /^\s*begin\s*$/;
-  $in_gf_block = 1 if /^# BEGIN GFORGE BLOCK -- DO NOT EDIT #/;
-  print unless $in_gf_block;
-  $in_gf_block = 0 if /^# END GFORGE BLOCK #/;
-};
-print;
-while (<>) { print; };
-' < $tmp1 > $cfg_gforge_router
+#       # Second, kill our forwarding rules
+#       perl -e '
+# while (<>) {
+#   print;
+#   last if /^\s*begin\s*routers\s*$/;
+# };
+# my $in_gf_block = 0;
+# while (<>) {
+#   last if /^\s*begin\s*$/;
+#   $in_gf_block = 1 if /^# BEGIN GFORGE BLOCK -- DO NOT EDIT #/;
+#   print unless $in_gf_block;
+#   $in_gf_block = 0 if /^# END GFORGE BLOCK #/;
+# };
+# print;
+# while (<>) { print; };
+# ' < $tmp1 > $cfg_gforge_router
 
-      rm $tmp1
-    done
+#       rm $tmp1
+#     done
   ;;
 
   purge)
