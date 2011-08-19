@@ -21,29 +21,62 @@ case "$1" in
     remove)
 	db_title "Unconfiguring @FORGENAME@"
 
-	# Unpatch Exim configuration files
+	# Unpatch Exim configuration file templates
 	/usr/share/@OLDPACKAGE@/bin/install-exim4.sh purge-files
+
 	ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-mta-exim4-new /etc/aliases
-	if [ -f /etc/exim4/exim4.conf.@OLDPACKAGE@-new ]
-	then
-		ucf --debconf-ok /etc/exim4/exim4.conf.@OLDPACKAGE@-new /etc/exim4/exim4.conf
-		rm /etc/exim4/exim4.conf.@OLDPACKAGE@-new
-	fi
-	ucf --debconf-ok /etc/exim4/exim4.conf.template.@OLDPACKAGE@-new /etc/exim4/exim4.conf.template
-	ucf --debconf-ok /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-new /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
 	rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-mta-exim4-new
-	rm /etc/exim4/exim4.conf.template.@OLDPACKAGE@-new
-	rm /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-new
 	ucf --purge /etc/aliases
-	ucf --purge /etc/exim4/exim4.conf
-	ucf --purge /etc/exim4/exim4.conf.template
-	ucf --purge /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
+
+	use_mailman=false
+	if [ -f /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
+	then
+	    use_mailman=true
+	fi
+	use_sympa=false
+	if [ -f /usr/share/@PACKAGE@/bin/install-exim4-sympa.sh ]
+	then
+	    use_sympa=true
+	fi
+
+	if [ "$use_mailman" = "true" ]
+	then
+
+	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
+	    then
+		/usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh purge-files
+	    fi
+
+	    if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new ]
+	    then
+		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf
+		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.@OLDPACKAGE@-lists-mailman-new
+		ucf --purge /etc/exim4/exim4.conf
+	    fi
+
+	    ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf.template
+	    rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new
+	    ucf --purge /etc/exim4/exim4.conf.template
+
+	    ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
+	    rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new
+	    ucf --purge /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
+	fi
 
 	# Clean debconf after ourselves
 	db_stop
 
         # Exim config removal
 	/usr/share/@OLDPACKAGE@/bin/install-exim4.sh purge
+
+	if [ "$use_mailman" = "true" ]
+	then
+	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
+	    then
+		/usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh purge
+	    fi
+	fi
+
 	;;
     upgrade|deconfigure|failed-upgrade)
         ;;
