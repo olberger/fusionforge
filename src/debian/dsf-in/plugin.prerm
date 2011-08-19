@@ -27,6 +27,11 @@ case "$1" in
 			/usr/share/@OLDPACKAGE@/plugins/@PLUGSHORTNAME@/bin/db-delete.pl
 		fi
 	fi
+        # Run plugin specific install
+	if [ -f /usr/share/@OLDPACKAGE@/plugins/@PLUGSHORTNAME@/bin/install.sh ]
+	then
+		/usr/share/@OLDPACKAGE@/plugins/@PLUGSHORTNAME@/bin/install.sh $1
+	fi
         ;;
     upgrade|failed-upgrade)
         ;;
