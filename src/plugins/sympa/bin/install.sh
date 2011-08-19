@@ -1,145 +1,88 @@
 #! /bin/sh
-# postinst script for @OLDPACKAGE@
+# postinst/prerm script for fusionforge-plugin-sympa
 #
-# see: dh_installdeb(1)
 
 set -e
 # set -x				# Be verbose, be very verbose.
 
-# summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
-#          <conflicting-package> <version>
-# for details, see /usr/share/doc/packaging-manual/
-#
-# quoting from the policy:
-#     Any necessary prompting should almost always be confined to the
-#     post-installation script, and should be protected with a conditional
-#     so that unnecessary prompting doesn't happen if a package's
-#     installation fails and the `postinst' is called with `abort-upgrade',
-#     `abort-remove' or `abort-deconfigure'.
+apply_modified_conffile_with_ucf() {
+    source_file=$1
+    destination_file=$2
+    package=$3
+    template=$4
 
-#. /usr/share/debconf/confmodule
+    debconf_template=$package/$template
+
+    if [ -f $source_file ]
+    then
+	ucf_package=`ucfq -w $destination_file | cut -d ':' -f 2`
+	if [ "x$ucf_package" != "x$package" ]
+	then
+	    ucf --debconf-ok --debconf-template $debconf_template $source_file $destination_file
+	else
+	    ucf --debconf-ok $source_file $destination_file
+	fi
+	ucfr $package $destination_file
+	rm $source_file
+    fi
+}
+
+cleanup_modified_conffile_with_ucf() {
+    source_file=$1
+    destination_file=$2
+    package=$3
+
+    ucf --debconf-ok $source_file $destination_file
+    rm $source_file
+    ucf --purge $destination_file
+    ucfr --purge $package $destination_file
+}
 
 case "$1" in
     configure)
 
-#	@PACKAGE@-config
-        # Patch Exim configuration files into templates
-#	/usr/share/@OLDPACKAGE@/bin/install-exim4.sh configure-files
+	echo "Generating customized exim4 configuration files in /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4"
+	/usr/share/gforge/bin/install-exim4-sympa.sh configure-files
 
-	# use_mailman=false
-	# if [ -f /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
-	# then
-	#     use_mailman=true
-	# fi
-	# use_sympa=false
-	# if [ -f /usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh ]
-	# then
-	#     use_sympa=true
-	# fi
+	echo "Using ucf to validate changes to exim4 configuration files in /etc/exim4/"
+	apply_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf fusionforge-plugin-sympa ucfexim4changeprompt 
 
-	
-	# if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-new ]
-	# then
-	# 	ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-new /etc/aliases
-	# 	rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-new
-	# fi
-	# if [ "$use_mailman" = "true" ]
-	# then
-	#     # prepare patched versions of the exim4 config files suitable for sympa
-	#     if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh ]
-	#     then
-	# 	/usr/share/@OLDPACKAGE@/bin/install-exim4-mailman.sh configure-files
-	#     fi
+	apply_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.template fusionforge-plugin-sympa ucfexim4changeprompt 
 
-	#     if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new ]
-	#     then
-	# 	ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf
-	# 	rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.@OLDPACKAGE@-lists-mailman-new
-	#     fi
-	#     if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new ]
-	#     then
-	# 	ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new /etc/exim4/exim4.conf.template
-	# 	rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/exim4/exim4.conf.template.@OLDPACKAGE@-lists-mailman-new
-	#     fi
-	#     if [ -f /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new ]
-	#     then
-	# 	ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new /etc/exim4/conf.d/main/01_exim4-config_listmacrosdefs
-	# 	rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-lists-mailman/etc/01_exim4-config_listmacrosdefs.@OLDPACKAGE@-lists-mailman-new
-	#     fi
-	# fi
-	# if [ "$use_sympa" = "true" ]
-	# then
-	    # prepare patched versions of the exim4 config files suitable for sympa
-#	    if [ -x /usr/share/@OLDPACKAGE@/bin/install-exim4-sympa.sh ]
-#	    then
-		/usr/share/gforge/bin/install-exim4-sympa.sh configure-files
-#	    fi
+	apply_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.localmacros fusionforge-plugin-sympa ucfexim4changeprompt 
 
-	    if [ -f /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new ]
-	    then
-		ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf
-		rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new
-	    fi
-	    if [ -f /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new ]
-	    then
-		ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.template
-		rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new
-	    fi
-	    if [ -f /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new ]
-	    then
-		ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.localmacros
-		rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new
-	    fi
-#	fi
-
-	    if [ /usr/share/gforge/bin/install-exim4.sh ]
-	    then
-		update-exim4.conf
-	    fi
+	if [ /usr/share/gforge/bin/install-exim4.sh ]
+	then
+	    echo "Applying changes to exim4 config with update-exim4.conf"
+	    update-exim4.conf
+	fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
 
     remove)
-	    # prepare patched versions of the exim4 config files suitable for sympa
-#	    if [ -x /usr/share/gforge/bin/install-exim4-sympa.sh ]
-#	    then
-		/usr/share/gforge/bin/install-exim4-sympa.sh purge-files
-#	    fi
 
-	    if [ -f /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new ]
-	    then
-		ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf
-		rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new
-		ucf --purge /etc/exim4/exim4.conf
-	    fi
+	echo "Generating clean exim4 configuration files in /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4"
+	/usr/share/gforge/bin/install-exim4-sympa.sh purge-files
 
-	    ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.template
-	    rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new
-	    ucf --purge /etc/exim4/exim4.conf.template
+	echo "Using ucf to validate the restoration of clean exim4 configuration files in /etc/exim4/"
+	if [ -f /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new ]
+	then
+	    cleanup_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf fusionforge-plugin-sympa
+	fi
 
-	    ucf --debconf-ok /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.localmacros
-	    rm /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new
-	    ucf --purge /etc/exim4/exim4.conf.localmacros
+	cleanup_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.template.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.template fusionforge-plugin-sympa
 
-#	fi
+	cleanup_modified_conffile_with_ucf /var/lib/gforge/fusionforge-plugin-sympa/etc/exim4/exim4.conf.localmacros.fusionforge-plugin-sympa-new /etc/exim4/exim4.conf.localmacro fusionforge-plugin-sympa
 
-#	    if [ -x /usr/share/gforge/bin/install-exim4-sympa.sh ]
-#	    then
-		/usr/share/gforge/bin/install-exim4-sympa.sh purge
-#	    fi
+	/usr/share/gforge/bin/install-exim4-sympa.sh purge
 
-	    if [ /usr/share/gforge/bin/install-exim4.sh ]
-	    then
-		update-exim4.conf
-	    fi
+	if [ /usr/share/gforge/bin/install-exim4.sh ]
+	then
+	    echo "Applying changes to exim4 config with update-exim4.conf"
+	    update-exim4.conf
+	fi
 
 	;;
     *)
@@ -147,10 +90,5 @@ case "$1" in
         exit 0
     ;;
 esac
-
-# dh_installdeb will replace this with shell code automatically
-# generated by other debhelper scripts.
-
-#DEBHELPER#
 
 exit 0
