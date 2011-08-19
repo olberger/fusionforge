@@ -66,6 +66,7 @@ case "$1" in
     # /etc/aliases by sympa package (Cf. discussion in
     # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=169102)
 
+    echo "Processing $cfg_exim4_localmacros"
     cat > $ucf_new_dir/exim4/$(basename $cfg_exim4_localmacros).$packagename-new  <<EOF
 # BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #
 # Activating pipe transport in system_aliases router (pipes in /etc/aliases)
@@ -107,7 +108,7 @@ print $gf_block;
 
     # processing the router definitions for the non-split conf files
     for r in $cfg_exim4_router; do
-      echo Processing $r
+      echo "Processing $r"
 
       #cfg_gforge_router=$r.gforge-new
       cfg_gforge_router=$ucf_new_dir/exim4/$(basename $r).$packagename-new
