@@ -37,11 +37,12 @@ case "$1" in
 		ucf --debconf-ok /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-new /etc/aliases
 		rm /var/lib/@OLDPACKAGE@/@OLDPACKAGE@-mta-exim4/etc/aliases.@OLDPACKAGE@-new
 	fi
-	if [ -f /etc/exim4/exim4.conf.@OLDPACKAGE@-new ]
-	then
-		ucf --debconf-ok /etc/exim4/exim4.conf.@OLDPACKAGE@-new /etc/exim4/exim4.conf
-		rm /etc/exim4/exim4.conf.@OLDPACKAGE@-new
-	fi
+	# There does no longer seem to be a need to have this file patched
+	# if [ -f /etc/exim4/exim4.conf.@OLDPACKAGE@-new ]
+	# then
+	# 	ucf --debconf-ok /etc/exim4/exim4.conf.@OLDPACKAGE@-new /etc/exim4/exim4.conf
+	# 	rm /etc/exim4/exim4.conf.@OLDPACKAGE@-new
+	# fi
 	if [ -f /etc/exim4/exim4.conf.template.@OLDPACKAGE@-new ]
 	then
 		ucf --debconf-ok /etc/exim4/exim4.conf.template.@OLDPACKAGE@-new /etc/exim4/exim4.conf.template
