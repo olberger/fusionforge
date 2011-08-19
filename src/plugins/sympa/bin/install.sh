@@ -98,8 +98,10 @@ case "$1" in
 	    fi
 #	fi
 
-	update-exim4.conf
-
+	    if [ /usr/share/gforge/bin/install-exim4.sh ]
+	    then
+		update-exim4.conf
+	    fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
@@ -133,6 +135,11 @@ case "$1" in
 #	    then
 		/usr/share/gforge/bin/install-exim4-sympa.sh purge
 #	    fi
+
+	    if [ /usr/share/gforge/bin/install-exim4.sh ]
+	    then
+		update-exim4.conf
+	    fi
 
 	;;
     *)
