@@ -160,25 +160,20 @@ while (<>) { print; };
 
     if [ -f $cfg_exim4_split_router ]
     then
-    	mv $cfg_exim4_split_router $cfg_exim4_split_router.gforge-new
+    	mv $cfg_exim4_split_router $ucf_new_dir/exim4/$(basename $cfg_exim4_split_router).$packagename-old
     fi
 
-    for r in $cfg_exim4_router; do
+    for r in $cfg_exim4_router $cfg_exim4_localmacros; do
       #cfg_gforge_router=$r.gforge-new
       cfg_gforge_router=$ucf_new_dir/exim4/$(basename $r).$packagename-new
       tmp1=$(mktemp /tmp/$pattern)
 
       cp -a $r $tmp1
 
-      # Second, kill our forwarding rules
+      # Second, kill our customizations
       perl -e '
-while (<>) {
-  print;
-  last if /^\s*begin\s*routers\s*$/;
-};
 my $in_gf_block = 0;
 while (<>) {
-  last if /^\s*begin\s*$/;
   $in_gf_block = 1 if /^# BEGIN FUSIONFORGE SYMPA BLOCK -- DO NOT EDIT #/;
   print unless $in_gf_block;
   $in_gf_block = 0 if /^# END FUSIONFORGE SYMPA BLOCK #/;
