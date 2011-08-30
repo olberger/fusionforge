@@ -1,1 +1,4 @@
-Use libAuthentication : https://github.com/melvincarvalho/libAuthentication
+libAuthentication (https://github.com/melvincarvalho/libAuthentication)
+code as of c2c7b9eb603c86b46ae56f3d9e3f7361c1f95061 was checked-out from github on 2011/08/30 with git clone git://github.com/melvincarvalho/libAuthentication.git
+
+Attention, it uses ARC2 internally, which may be also included by other plugins but with different paths
