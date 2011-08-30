@@ -25,9 +25,9 @@
  */
 
 global $gfplugins;
-require_once $gfplugins.'authwebid/include/authWebIDPlugin.class.php' ;
+require_once $gfplugins.'authwebid/include/AuthWebIDPlugin.class.php' ;
 
-$authWebIDPluginObject = new authWebIDPlugin ;
+$authWebIDPluginObject = new AuthWebIDPlugin ;
 
 register_plugin ($authWebIDPluginObject) ;
 

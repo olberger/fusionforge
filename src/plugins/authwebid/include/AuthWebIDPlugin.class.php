@@ -25,19 +25,20 @@
 
 require_once $GLOBALS['gfcommon'].'include/User.class.php';
 
-// from lightwebid (http://code.google.com/p/lightwebid/)
-//require_once 'webid.php';
+// WebID framework
+require_once('libAuthentication/lib/Authentication.php');
 
 /**
- * Authentication manager for FusionForge CASification
+ * WebID Authentication manager Plugin for FusionForge
  *
  */
-class authWebIDPlugin extends ForgeAuthPlugin {
+class AuthWebIDPlugin extends ForgeAuthPlugin {
+	
 	var $webid;
 
 	var $webid_identity;
 
-	function authWebIDPlugin () {
+	function AuthWebIDPlugin () {
 		global $gfconfig;
 		$this->ForgeAuthPlugin() ;
 		$this->name = "authWebID";
@@ -79,6 +80,7 @@ class authWebIDPlugin extends ForgeAuthPlugin {
 		$result .= _('Cookies must be enabled past this point.');
 		$result .= '</p>';
 
+		// TODO here link which redirects to the WebID IdP
 		$result .= '<form action="' . util_make_url('/plugins/authwebid/post-login.php') . '" method="post">
 <input type="hidden" name="form_key" value="' . form_generate_key() . '"/>
 <input type="hidden" name="return_to" value="' . htmlspecialchars(stripslashes($return_to)) . '" />

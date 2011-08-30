@@ -33,7 +33,7 @@ require_once $gfcommon.'include/pre.php';
 require_once('../../../www/include/login-form.php');
 
 // from lightwebid (http://code.google.com/p/lightwebid/)
-require_once 'webid.php';
+// TODO require_once 'webid.php';
 
 $plugin = plugin_get_object('authwebid');
 
@@ -51,7 +51,8 @@ if (forge_get_config('use_ssl') && !session_issecure()) {
 try {
 
 	// initialize the WebID lib handler which will read the posted args
-	// TODO $plugin->webid = new Lightwebid;
+	$plugin->webid = new Authentication_FoafSSLDelegate();
+
 	// check the 'webid_mode' that may be set on returning from WebID provider
 	if(!$plugin->webid->mode) {
 
@@ -73,7 +74,8 @@ try {
     } else {
 
     	// Authentication should have been attempted by WebID provider
-    	if ($plugin->webid->validate()) {
+    	// if ($plugin->webid->validate()) {
+    	if ( $auth->isAuthenticated() ) {
     		// If user successfully logged in to WebID provider
 
     		// initiate session
