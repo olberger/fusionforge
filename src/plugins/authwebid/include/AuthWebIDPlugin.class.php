@@ -41,7 +41,7 @@ class AuthWebIDPlugin extends ForgeAuthPlugin {
 	function AuthWebIDPlugin () {
 		global $gfconfig;
 		$this->ForgeAuthPlugin() ;
-		$this->name = "authWebID";
+		$this->name = "authwebid";
 		$this->text = "WebID authentication";
 
 		$this->_addHook('display_auth_form');
@@ -81,12 +81,7 @@ class AuthWebIDPlugin extends ForgeAuthPlugin {
 		$result .= '</p>';
 
 		// TODO here link which redirects to the WebID IdP
-		$result .= '<form action="' . util_make_url('/plugins/authwebid/post-login.php') . '" method="post">
-<input type="hidden" name="form_key" value="' . form_generate_key() . '"/>
-<input type="hidden" name="return_to" value="' . htmlspecialchars(stripslashes($return_to)) . '" />
-Your WebID identifier: <input type="text" name="webid_identifier" />
-<input type="submit" name="login" value="' . _('Login via WebID') . '" />
-</form>';
+		$result .= '<a href="https://foafssl.org/srv/idp?authreqissuer='. util_make_url('/plugins/authwebid/post-login.php') .'">Click here to Login via foafssl.org</a>';
 
 		$params['html_snippets'][$this->name] = $result;
 

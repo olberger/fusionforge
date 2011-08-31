@@ -50,6 +50,8 @@ if (forge_get_config('use_ssl') && !session_issecure()) {
 
 try {
 
+	// TODO check error param in request
+	
 	// initialize the WebID lib handler which will read the posted args
 	$plugin->webid = new Authentication_FoafSSLDelegate();
 
