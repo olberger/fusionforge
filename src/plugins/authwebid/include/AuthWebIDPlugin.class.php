@@ -82,6 +82,8 @@ class AuthWebIDPlugin extends ForgeAuthPlugin {
 
 		// TODO Use a trusted IdP that was configured previously by the forge admin, and which is trusted by the libAuthentication checks
 		$result .= '<a href="https://foafssl.org/srv/idp?authreqissuer='. util_make_url('/plugins/authwebid/post-login.php') .'">Click here to Login via foafssl.org</a>';
+		echo "<br />";
+		$result .= '<a href="https://auth.fcns.eu/auth/index.php?authreqissuer='. util_make_url('/plugins/authwebid/post-login.php') .'">Click here to Login via auth.fcns.eu</a>';
 
 		$params['html_snippets'][$this->name] = $result;
 
