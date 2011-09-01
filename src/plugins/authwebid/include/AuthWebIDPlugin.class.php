@@ -80,7 +80,7 @@ class AuthWebIDPlugin extends ForgeAuthPlugin {
 		$result .= _('Cookies must be enabled past this point.');
 		$result .= '</p>';
 
-		// TODO here link which redirects to the WebID IdP
+		// TODO Use a trusted IdP that was configured previously by the forge admin, and which is trusted by the libAuthentication checks
 		$result .= '<a href="https://foafssl.org/srv/idp?authreqissuer='. util_make_url('/plugins/authwebid/post-login.php') .'">Click here to Login via foafssl.org</a>';
 
 		$params['html_snippets'][$this->name] = $result;

@@ -28,7 +28,7 @@ require_once ('../../../www/env.inc.php');
 require_once $gfcommon.'include/pre.php';
 
 // from lightwebid (http://code.google.com/p/lightwebid/)
-require_once 'webid.php';
+//require_once 'webid.php';
 
 session_require_login();
 
@@ -40,14 +40,14 @@ if (!$u || !is_object($u)) {
 	exit_error($u->getErrorMessage(),'my');
 }
 
-$webid_identity = htmlspecialchars(trim(getStringFromRequest('webid_identity', 'http://')));
+//$webid_identity = htmlspecialchars(trim(getStringFromRequest('webid_identity', 'http://')));
 
-try {
+//try {
 
 	// initialize the WebID lib handler which will read the posted args
 //TODO	$plugin->webid = new Lightwebid;
 	// check the 'webid_mode' that may be set on returning from webid provider
-	if($plugin->webid->mode) {
+//	if($plugin->webid->mode) {
 
     	// or we are called back by the WebID provider
     	if($plugin->webid->mode == 'cancel') {
