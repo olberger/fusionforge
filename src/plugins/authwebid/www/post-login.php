@@ -55,7 +55,17 @@ if (forge_get_config('use_ssl') && !session_issecure()) {
 	
 	// initialize the WebID lib handler which will read the posted args
 	$IDPCertificates = array ( 'auth.fcns.eu' =>
-"-----BEGIN CERTIFICATE-----
+"-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyfLj5x7XR+v07NgOCtOc
+KJgMkq7p1rEvSQ9jfTFYDcL454wv4QFS6OLnkH6KpV61npj0XYznYycgmNvWw9cD
+RdhN+fLW0VKqSRYqNAkvSc1JkmW9JisldX33iTiyhVoEDfviu9pMBImalZ1y14A4
+LPHAkV5rZy/fRk7F/gMo29JuLSmPngu4ze/+oHHp1+EiIlhMi8exisQvVhhc9n2C
+RWL5eYmG9Qr90C1nJnMygDKraTFj3CxStk0HN5NhNYKe1kNFElny9hLxlpL8D0Ul
+VYhfC0gRHc6mTRB3NEfSmkQCWJCR1iV9ZrMFD5fO27w5AkMIN4AULUMNxLed3KmC
+1QIDAQAB
+-----END PUBLIC KEY-----
+",
+/* "-----BEGIN CERTIFICATE-----
 MIIElDCCA3ygAwIBAgILAQAAAAABLyznhtwwDQYJKoZIhvcNAQEFBQAwNjERMA8G
 A1UECxMIQWxwaGEgQ0ExDjAMBgNVBAoTBUFscGhhMREwDwYDVQQDEwhBbHBoYSBD
 QTAeFw0xMTA0MDYyMTMxMzNaFw0xMjA0MDYyMTMxMzBaMFgxCzAJBgNVBAYTAkZS
@@ -82,7 +92,7 @@ rkCGu+VOfWZIu0uu63rrWWMVLQi5OAFBbuczOLYXE/76PpMYbiKORGr8gXzmZ/zq
 y24vK4vwFIrWXgldC6FkiI2RBL5to4bWlD/bPjOwpFMfiOOqCALs5zBr/ijIAib3
 sbT0swwb2fUto/0Nl7hw9oyQpckoilKX
 -----END CERTIFICATE-----
-",
+", */
 'foafssl.org' =>
 "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhFboiwS5HzsQAAerGOj8
@@ -95,8 +105,8 @@ aQIDAQAB
 -----END PUBLIC KEY-----
 ");
 	$certRepository = new Authentication_X509CertRepo($IDPCertificates);
-	$plugin->webid = new Authentication_FoafSSLDelegate(TRUE, NULL, NULL, $certRepository);
 
+	$plugin->webid = new Authentication_FoafSSLDelegate(FALSE, NULL, NULL, $certRepository);
 	/*
 	// check the 'webid_mode' that may be set on returning from WebID provider
 	if(!$plugin->webid->mode) {
@@ -122,7 +132,9 @@ aQIDAQAB
     	// if ($plugin->webid->validate()) {*/
     	if ( $plugin->webid->isAuthenticated() ) {
     		// If user successfully logged in to WebID provider
-
+		echo "authenticated as :";
+		print_r($plugin->webid);
+		exit(0);
     		// initiate session
 	    	if ($plugin->isSufficient()) {
 	    		$user = False;
